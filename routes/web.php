@@ -16,7 +16,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         return Inertia::render('dashboard');
     })->name('dashboard');
 
-    Route::get('companies', [CompanyController::class, 'index'])->name('companies.index');
+    Route::get('companies', [CompanyController::class, 'index'])->name('companies');
+    Route::get('companies/create', [CompanyController::class, 'create'])->name('companies.create');
+    Route::post('companies/store', [CompanyController::class, 'store'])->name('companies.store');
 });
 
 

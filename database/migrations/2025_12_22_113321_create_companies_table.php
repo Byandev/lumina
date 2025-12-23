@@ -25,11 +25,14 @@ return new class extends Migration
             $table->enum('status', ['active', 'inactive', 'terminated'])->default('inactive');
             $table->enum('notarization_status', ['pending', 'done', 'rejected'])->default('pending');
             $table->enum('erp_status', ['active', 'inactive'])->default('active');
-            $table->enum('sales_activity', ['generating', 'testing', 'inactive'])->nullable();
+            $table->enum('sales_activity', ['generating', 'testing', 'inactive'])->default('testing');
             $table->enum('level', ['educate', 'empowerment', 'enterprise', 'exponential'])->default('educate');
 
             $table->unsignedBigInteger('sponsor_id')->nullable();
             $table->foreign('sponsor_id')->references('id')->on('companies');
+
+            $table->unsignedBigInteger('coach_id')->nullable();
+            $table->foreign('coach_id')->references('id')->on('users');
 
             $table->timestamps();
 

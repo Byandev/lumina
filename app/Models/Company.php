@@ -19,6 +19,15 @@ class Company extends Model
         return $this->belongsTo(Company::class);
     }
 
+    public function coach()
+    {
+        return $this->hasOne(User::class, 'id', 'coach_id');
+    }
+
+    public function owners(){
+        return $this->hasMany(User::class, );
+    }
+
 
 
 

@@ -10,7 +10,7 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import { dashboard } from '@/routes';
+import { dashboard, companies } from '@/routes';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
 import { BookOpen, Folder, LayoutGrid } from 'lucide-react';
@@ -24,16 +24,11 @@ const mainNavItems: NavItem[] = [
     },
     {
         title: 'Companies',
-        href: dashboard(),
+        href: companies(),
         icon: LayoutGrid,
     },
     {
         title: 'Users',
-        href: dashboard(),
-        icon: LayoutGrid,
-    },
-    {
-        title: 'Companies',
         href: dashboard(),
         icon: LayoutGrid,
     },

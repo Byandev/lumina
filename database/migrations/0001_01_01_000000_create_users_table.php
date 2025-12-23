@@ -21,9 +21,6 @@ return new class extends Migration
             $table->string('facebook')->nullable();
             $table->date('birthdate')->nullable();
             $table->string('ids')->nullable();
-            $table->unsignedBigInteger('coach_id')->nullable();
-
-            $table->foreign('coach_id')->references('id')->on('users');
 
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
