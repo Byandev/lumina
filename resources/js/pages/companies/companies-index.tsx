@@ -25,7 +25,14 @@ interface Company {
     owners_count: number;
     created_at: string;
     updated_at: string;
-    sponsor?: string;
+    sponsor?: {
+        id: number;
+        name: string;
+        logo: string | null;
+    };
+    total_checklist_count: number;
+    completed_checklist_count: number;
+    checklist_progress: number;
     notarization_status?: string;
     erp_status?: string;
     sales_activity?: string;
@@ -164,7 +171,7 @@ export default function CompaniesIndex({
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Companies" />
 
-            <div className="container mx-auto px-4 py-6">
+            <div className="px-4 py-6">
                 {/* Header */}
                 <div className="mb-6 flex items-center justify-between">
                     <div>
@@ -300,9 +307,7 @@ export default function CompaniesIndex({
                                                         <div className="h-7 w-7 flex-shrink-0">
                                                             {company.logo ? (
                                                                 <img
-                                                                    src={
-                                                                        `/storage/${company.logo}`
-                                                                    }
+                                                                    src={`/storage/${company.logo}`}
                                                                     alt={
                                                                         company.name
                                                                     }
@@ -320,11 +325,19 @@ export default function CompaniesIndex({
                                                         </div>
                                                         <div>
                                                             <div className="text-xs font-medium text-gray-900">
-                                                                {company.name
-                                                                    .length > 20
-                                                                    ? `${company.name.substring(0, 20)}...`
-                                                                    : company.name}
+                                                                <Link
+                                                                    href={`/companies/${company.id}`}
+                                                                    className="hover:underline"
+                                                                >
+                                                                    {company
+                                                                        .name
+                                                                        .length >
+                                                                    20
+                                                                        ? `${company.name.substring(0, 20)}...`
+                                                                        : company.name}
+                                                                </Link>
                                                             </div>
+
                                                             {company.email && (
                                                                 <div className="flex items-center text-xs text-gray-500">
                                                                     <Mail className="mr-1 h-3 w-3" />
@@ -340,7 +353,7 @@ export default function CompaniesIndex({
                                                     </div>
                                                 </td>
 
-                                                {/* Owners Column - Now as a list */}
+                                                {/* Owners Column */}
                                                 <td className="px-3 py-2.5">
                                                     <div className="space-y-1">
                                                         {company.owners &&
@@ -434,44 +447,107 @@ export default function CompaniesIndex({
                                                     </div>
                                                 </td>
 
-                                                {/* Sponsor Column */}
                                                 <td className="px-3 py-2.5">
-                                                    <span className="text-xs text-gray-700">
-                                                        {company.sponsor ? (
-                                                            company.sponsor
-                                                                .length > 15 ? (
-                                                                `${company.sponsor.substring(0, 15)}...`
-                                                            ) : (
-                                                                company.sponsor
-                                                            )
-                                                        ) : (
-                                                            <span className="text-gray-400">
-                                                                -
-                                                            </span>
-                                                        )}
-                                                    </span>
+                                                    {company.sponsor ? (
+                                                        <div className="flex items-center gap-1.5">
+                                                            <div className="h-5 w-5 flex-shrink-0">
+                                                                {company.sponsor
+                                                                    .logo ? (
+                                                                    <img
+                                                                        src={`/storage/${company.sponsor.logo}`}
+                                                                        alt={
+                                                                            company
+                                                                                .sponsor
+                                                                                .name
+                                                                        }
+                                                                        className="h-5 w-5 rounded border object-cover"
+                                                                    />
+                                                                ) : (
+                                                                    <div className="flex h-5 w-5 items-center justify-center rounded border bg-gray-100">
+                                                                        <span className="text-[8px] font-medium text-gray-600">
+                                                                            {getInitials(
+                                                                                company
+                                                                                    .sponsor
+                                                                                    .name,
+                                                                            )}
+                                                                        </span>
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                            <div className="min-w-0">
+                                                                <div className="truncate text-xs font-medium text-gray-900">
+                                                                    <Link
+                                                                        href={`/companies/${company.sponsor.id}`}
+                                                                        className="hover:underline"
+                                                                    >
+                                                                        {company
+                                                                            .sponsor
+                                                                            .name
+                                                                            .length >
+                                                                        15
+                                                                            ? `${company.sponsor.name.substring(0, 15)}...`
+                                                                            : company
+                                                                                  .sponsor
+                                                                                  .name}
+                                                                    </Link>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    ) : (
+                                                        <span className="text-xs text-gray-400">
+                                                            -
+                                                        </span>
+                                                    )}
                                                 </td>
 
-                                                {/* Onboarding Progress */}
                                                 <td className="px-3 py-2.5">
                                                     <div className="flex items-center">
                                                         <div className="w-full">
                                                             <div className="mb-0.5 h-1.5 w-20 overflow-hidden rounded-full bg-gray-200">
                                                                 <div
-                                                                    className="h-full bg-blue-600"
+                                                                    className={`h-full transition-all duration-300 ${
+                                                                        company.checklist_progress ===
+                                                                        100
+                                                                            ? 'bg-green-600'
+                                                                            : company.checklist_progress >=
+                                                                                70
+                                                                              ? 'bg-blue-600'
+                                                                              : company.checklist_progress >=
+                                                                                  30
+                                                                                ? 'bg-yellow-500'
+                                                                                : 'bg-red-500'
+                                                                    }`}
                                                                     style={{
-                                                                        width: '75%',
+                                                                        width: `${company.checklist_progress}%`,
                                                                     }}
                                                                 />
                                                             </div>
-                                                            <span className="text-xs text-gray-600">
-                                                                75%
-                                                            </span>
+                                                            <div className="flex items-center justify-between">
+                                                                <span
+                                                                    className={`text-xs font-medium ${
+                                                                        company.checklist_progress ===
+                                                                        100
+                                                                            ? 'text-green-700'
+                                                                            : company.checklist_progress >=
+                                                                                70
+                                                                              ? 'text-blue-700'
+                                                                              : company.checklist_progress >=
+                                                                                  30
+                                                                                ? 'text-yellow-700'
+                                                                                : 'text-red-700'
+                                                                    }`}
+                                                                >
+                                                                    {
+                                                                        company.checklist_progress
+                                                                    }
+                                                                    %
+                                                                </span>
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </td>
 
-                                                {/* Notarization Status */}
+                                                {/* Rest of the columns remain the same */}
                                                 <td className="px-3 py-2.5">
                                                     <span
                                                         className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${getStatusColor(company.notarization_status)}`}
@@ -482,7 +558,6 @@ export default function CompaniesIndex({
                                                     </span>
                                                 </td>
 
-                                                {/* ERP Status */}
                                                 <td className="px-3 py-2.5">
                                                     <span
                                                         className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${getStatusColor(company.erp_status)}`}
@@ -493,7 +568,6 @@ export default function CompaniesIndex({
                                                     </span>
                                                 </td>
 
-                                                {/* Sales Activity */}
                                                 <td className="px-3 py-2.5">
                                                     <span
                                                         className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${getStatusColor(company.sales_activity)}`}
@@ -504,7 +578,6 @@ export default function CompaniesIndex({
                                                     </span>
                                                 </td>
 
-                                                {/* Level */}
                                                 <td className="px-3 py-2.5">
                                                     <span
                                                         className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${getLevelColor(company.level)}`}

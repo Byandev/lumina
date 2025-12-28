@@ -2,11 +2,33 @@ import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 import AppLayout from '@/layouts/app-layout';
 import { companies } from '@/routes';
 import { type BreadcrumbItem } from '@/types';
 import { Head, useForm } from '@inertiajs/react';
-import { CalendarIcon, FileText, Loader2, Plus, Trash2, Upload, X, Link, User, Mail, MapPin, Camera, Phone } from 'lucide-react';
+import {
+    CalendarIcon,
+    Camera,
+    Check,
+    FileText,
+    Link as LinkIcon,
+    Loader2,
+    Mail,
+    MapPin,
+    Phone,
+    Plus,
+    Trash2,
+    Upload,
+    User,
+    X,
+} from 'lucide-react';
 import React, { useRef, useState } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -31,66 +53,88 @@ type Owner = {
     id_file: File | null;
 };
 
-export default function CompaniesCreate() {
+type ChecklistItem = {
+    id?: number; // For existing items
+    title: string;
+    is_completed: boolean;
+};
+
+interface Company {
+    id: number;
+    name: string | null;
+    logo: string | null;
+}
+
+interface User {
+    id: number;
+    name: string;
+    photo: string | null;
+}
+
+interface CompaniesProps {
+    companies: Company[];
+    users: User[];
+}
+
+type FormData = {
+    name: string;
+    email: string;
+    phone: string;
+    address: string;
+    logo: File | null;
+    owners: Owner[];
+    sponsor_id: string;
+    coach_id: string;
+    checklists: ChecklistItem[];
+};
+
+export default function CompaniesCreate({ companies, users }: CompaniesProps) {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-    const [ownerPreviewUrls, setOwnerPreviewUrls] = useState<Record<number, string>>({});
+    const [ownerPreviewUrls, setOwnerPreviewUrls] = useState<
+        Record<number, string>
+    >({});
     const [idFileNames, setIdFileNames] = useState<Record<number, string>>({});
 
-    const { data, setData, post, processing, errors, reset } = useForm({
-        name: '',
-        email: '',
-        phone: '',
-        address: '',
-        logo: null as File | null,
-        owners: [] as Owner[],
-    });
+    const { data, setData, post, processing, errors, reset } =
+        useForm<FormData>({
+            name: '',
+            email: '',
+            phone: '',
+            address: '',
+            logo: null,
+            owners: [] as Owner[],
+            sponsor_id: '',
+            coach_id: '',
+            checklists: [] as ChecklistItem[],
+        });
 
     function submit(e: React.FormEvent) {
         e.preventDefault();
 
-        const formData = new FormData();
-        formData.append('name', data.name);
-        formData.append('email', data.email);
-        formData.append('phone', data.phone);
-        formData.append('address', data.address);
-
-        if (data.logo) {
-            formData.append('logo', data.logo);
-        }
-
-        data.owners.forEach((owner, index) => {
-            formData.append(`owners[${index}][name]`, owner.name);
-            formData.append(`owners[${index}][email]`, owner.email);
-            formData.append(`owners[${index}][phone]`, owner.phone);
-            formData.append(`owners[${index}][address]`, owner.address);
-            formData.append(`owners[${index}][facebook]`, owner.facebook);
-            formData.append(`owners[${index}][birthdate]`, owner.birthdate);
-            if (owner.photo) {
-                formData.append(`owners[${index}][photo]`, owner.photo);
-            }
-            if (owner.id_file) {
-                formData.append(`owners[${index}][id_file]`, owner.id_file);
-            }
-        });
-
         post('/companies/store', {
-            data: formData,
             forceFormData: true,
         });
     }
 
     function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
         const { name, value } = e.target;
-        setData(name as keyof typeof data, value);
+        setData(name as keyof FormData, value);
     }
 
     function handleLogoChange(e: React.ChangeEvent<HTMLInputElement>) {
         const file = e.target.files?.[0];
         if (file) {
-            const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+            const validTypes = [
+                'image/jpeg',
+                'image/png',
+                'image/gif',
+                'image/webp',
+            ];
             if (!validTypes.includes(file.type)) {
-                alert('Please upload a valid image file (JPEG, PNG, GIF, WebP)');
+                alert(
+                    'Please upload a valid image file (JPEG, PNG, GIF, WebP)',
+                );
                 return;
             }
 
@@ -109,12 +153,23 @@ export default function CompaniesCreate() {
         }
     }
 
-    function handleOwnerPhotoChange(index: number, e: React.ChangeEvent<HTMLInputElement>) {
+    function handleOwnerPhotoChange(
+        index: number,
+        e: React.ChangeEvent<HTMLInputElement>,
+    ) {
         const file = e.target.files?.[0];
         if (file) {
-            const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'application/pdf'];
+            const validTypes = [
+                'image/jpeg',
+                'image/png',
+                'image/gif',
+                'image/webp',
+                'application/pdf',
+            ];
             if (!validTypes.includes(file.type)) {
-                alert('Please upload a valid image file (JPEG, PNG, GIF, WebP) or PDF');
+                alert(
+                    'Please upload a valid image file (JPEG, PNG, GIF, WebP) or PDF',
+                );
                 return;
             }
 
@@ -133,7 +188,7 @@ export default function CompaniesCreate() {
 
             const reader = new FileReader();
             reader.onloadend = () => {
-                setOwnerPreviewUrls(prev => ({
+                setOwnerPreviewUrls((prev) => ({
                     ...prev,
                     [index]: reader.result as string,
                 }));
@@ -142,12 +197,23 @@ export default function CompaniesCreate() {
         }
     }
 
-    function handleIdFileChange(index: number, e: React.ChangeEvent<HTMLInputElement>) {
+    function handleIdFileChange(
+        index: number,
+        e: React.ChangeEvent<HTMLInputElement>,
+    ) {
         const file = e.target.files?.[0];
         if (file) {
-            const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'application/pdf'];
+            const validTypes = [
+                'image/jpeg',
+                'image/png',
+                'image/gif',
+                'image/webp',
+                'application/pdf',
+            ];
             if (!validTypes.includes(file.type)) {
-                alert('Please upload a valid image file (JPEG, PNG, GIF, WebP) or PDF');
+                alert(
+                    'Please upload a valid image file (JPEG, PNG, GIF, WebP) or PDF',
+                );
                 return;
             }
 
@@ -164,7 +230,7 @@ export default function CompaniesCreate() {
             };
             setData('owners', updatedOwners);
 
-            setIdFileNames(prev => ({
+            setIdFileNames((prev) => ({
                 ...prev,
                 [index]: file.name,
             }));
@@ -187,7 +253,7 @@ export default function CompaniesCreate() {
         };
         setData('owners', updatedOwners);
 
-        setOwnerPreviewUrls(prev => {
+        setOwnerPreviewUrls((prev) => {
             const newUrls = { ...prev };
             delete newUrls[index];
             return newUrls;
@@ -202,14 +268,18 @@ export default function CompaniesCreate() {
         };
         setData('owners', updatedOwners);
 
-        setIdFileNames(prev => {
+        setIdFileNames((prev) => {
             const newNames = { ...prev };
             delete newNames[index];
             return newNames;
         });
     }
 
-    function handleOwnerChange(index: number, field: keyof Owner, value: string) {
+    function handleOwnerChange(
+        index: number,
+        field: keyof Owner,
+        value: string,
+    ) {
         const updatedOwners = [...data.owners];
         updatedOwners[index] = {
             ...updatedOwners[index],
@@ -238,17 +308,51 @@ export default function CompaniesCreate() {
         const updatedOwners = data.owners.filter((_, i) => i !== index);
         setData('owners', updatedOwners);
 
-        setOwnerPreviewUrls(prev => {
+        setOwnerPreviewUrls((prev) => {
             const newUrls = { ...prev };
             delete newUrls[index];
             return newUrls;
         });
 
-        setIdFileNames(prev => {
+        setIdFileNames((prev) => {
             const newNames = { ...prev };
             delete newNames[index];
             return newNames;
         });
+    }
+
+    // Checklist functions
+    function addChecklistItem() {
+        setData('checklists', [
+            ...data.checklists,
+            {
+                title: '',
+                is_completed: false,
+            },
+        ]);
+    }
+
+    function removeChecklistItem(index: number) {
+        const updatedChecklists = data.checklists.filter((_, i) => i !== index);
+        setData('checklists', updatedChecklists);
+    }
+
+    function handleChecklistChange(index: number, value: string) {
+        const updatedChecklists = [...data.checklists];
+        updatedChecklists[index] = {
+            ...updatedChecklists[index],
+            title: value,
+        };
+        setData('checklists', updatedChecklists);
+    }
+
+    function handleChecklistToggle(index: number) {
+        const updatedChecklists = [...data.checklists];
+        updatedChecklists[index] = {
+            ...updatedChecklists[index],
+            is_completed: !updatedChecklists[index].is_completed,
+        };
+        setData('checklists', updatedChecklists);
     }
 
     function handleReset() {
@@ -264,7 +368,7 @@ export default function CompaniesCreate() {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Create Company" />
-            <div className="container mx-auto max-w-4xl py-6">
+            <div className="px-4 py-6">
                 <div className="mb-8">
                     <h1 className="text-2xl font-bold text-gray-900">
                         Create New Company
@@ -279,8 +383,18 @@ export default function CompaniesCreate() {
                     <div className="rounded-lg border border-gray-200 bg-white p-6">
                         <h2 className="mb-6 flex items-center gap-2 text-lg font-semibold text-gray-900">
                             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100">
-                                <svg className="h-4 w-4 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                <svg
+                                    className="h-4 w-4 text-blue-600"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+                                    />
                                 </svg>
                             </div>
                             Company Information
@@ -289,7 +403,10 @@ export default function CompaniesCreate() {
                         <div className="grid gap-6 md:grid-cols-2">
                             <div className="space-y-4">
                                 <div className="space-y-2">
-                                    <Label htmlFor="name" className="text-sm font-medium text-gray-700">
+                                    <Label
+                                        htmlFor="name"
+                                        className="text-sm font-medium text-gray-700"
+                                    >
                                         Company Name *
                                     </Label>
                                     <Input
@@ -308,7 +425,10 @@ export default function CompaniesCreate() {
                                 </div>
 
                                 <div className="space-y-2">
-                                    <Label htmlFor="email" className="text-sm font-medium text-gray-700">
+                                    <Label
+                                        htmlFor="email"
+                                        className="text-sm font-medium text-gray-700"
+                                    >
                                         Company Email
                                     </Label>
                                     <Input
@@ -325,7 +445,10 @@ export default function CompaniesCreate() {
                                 </div>
 
                                 <div className="space-y-2">
-                                    <Label htmlFor="phone" className="text-sm font-medium text-gray-700">
+                                    <Label
+                                        htmlFor="phone"
+                                        className="text-sm font-medium text-gray-700"
+                                    >
                                         Phone
                                     </Label>
                                     <Input
@@ -344,7 +467,10 @@ export default function CompaniesCreate() {
 
                             <div className="space-y-4">
                                 <div className="space-y-2">
-                                    <Label htmlFor="address" className="text-sm font-medium text-gray-700">
+                                    <Label
+                                        htmlFor="address"
+                                        className="text-sm font-medium text-gray-700"
+                                    >
                                         Company Address
                                     </Label>
                                     <Input
@@ -358,6 +484,69 @@ export default function CompaniesCreate() {
                                         disabled={processing}
                                     />
                                     <InputError message={errors.address} />
+                                </div>
+
+                                {/* Sponsor Select */}
+                                <div className="space-y-2">
+                                    <Label className="text-sm font-medium text-gray-700">
+                                        Sponsor Company
+                                    </Label>
+                                    <Select
+                                        value={data.sponsor_id}
+                                        onValueChange={(value) =>
+                                            setData('sponsor_id', value)
+                                        }
+                                    >
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Select sponsor company" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="none">
+                                                None
+                                            </SelectItem>
+                                            {companies.map((company) => (
+                                                <SelectItem
+                                                    key={company.id}
+                                                    value={company.id.toString()}
+                                                >
+                                                    {company.name ||
+                                                        `Company #${company.id}`}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    <InputError message={errors.sponsor_id} />
+                                </div>
+
+                                {/* Coach Select */}
+                                <div className="space-y-2">
+                                    <Label className="text-sm font-medium text-gray-700">
+                                        Coach
+                                    </Label>
+                                    <Select
+                                        value={data.coach_id}
+                                        onValueChange={(value) =>
+                                            setData('coach_id', value)
+                                        }
+                                    >
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Select coach" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="none">
+                                                None
+                                            </SelectItem>
+                                            {users.map((user) => (
+                                                <SelectItem
+                                                    key={user.id}
+                                                    value={user.id.toString()}
+                                                >
+                                                    {user.name}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    <InputError message={errors.coach_id} />
                                 </div>
 
                                 <div className="space-y-2">
@@ -377,7 +566,9 @@ export default function CompaniesCreate() {
                                             <Button
                                                 type="button"
                                                 variant="outline"
-                                                onClick={() => fileInputRef.current?.click()}
+                                                onClick={() =>
+                                                    fileInputRef.current?.click()
+                                                }
                                                 disabled={processing}
                                                 className="flex-1"
                                             >
@@ -418,6 +609,93 @@ export default function CompaniesCreate() {
                         </div>
                     </div>
 
+                    {/* Onboarding Checklist */}
+                    <div className="rounded-lg border border-gray-200 bg-white p-6">
+                        <div className="mb-6 flex items-center justify-between">
+                            <h2 className="flex items-center gap-2 text-lg font-semibold text-gray-900">
+                                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-100">
+                                    <Check className="h-4 w-4 text-green-600" />
+                                </div>
+                                Onboarding Checklist
+                            </h2>
+                            <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={addChecklistItem}
+                                disabled={processing}
+                            >
+                                <Plus className="mr-2 h-4 w-4" />
+                                Add Checklist Item
+                            </Button>
+                        </div>
+
+                        {data.checklists.length === 0 ? (
+                            <div className="rounded-lg border-2 border-dashed border-gray-300 p-8 text-center">
+                                <Check className="mx-auto h-12 w-12 text-gray-400" />
+                                <p className="mt-2 text-sm font-medium text-gray-900">
+                                    No checklist items added
+                                </p>
+                                <p className="mt-1 text-sm text-gray-500">
+                                    Add onboarding checklist items for the company
+                                </p>
+                            </div>
+                        ) : (
+                            <div className="space-y-4">
+                                {data.checklists.map((item, index) => (
+                                    <div
+                                        key={index}
+                                        className="flex items-center justify-between rounded-lg border border-gray-200 p-4"
+                                    >
+                                        <div className="flex items-center gap-3 flex-1">
+                                            <button
+                                                type="button"
+                                                onClick={() => handleChecklistToggle(index)}
+                                                className={`flex h-6 w-6 items-center justify-center rounded-full border ${
+                                                    item.is_completed
+                                                        ? 'bg-green-100 border-green-300'
+                                                        : 'bg-gray-100 border-gray-300'
+                                                }`}
+                                                disabled={processing}
+                                            >
+                                                {item.is_completed && (
+                                                    <Check className="h-3 w-3 text-green-600" />
+                                                )}
+                                            </button>
+                                            <div className="flex-1">
+                                                <Input
+                                                    value={item.title}
+                                                    onChange={(e) =>
+                                                        handleChecklistChange(index, e.target.value)
+                                                    }
+                                                    placeholder="Enter checklist item title"
+                                                    className="border px-2 focus:ring-0 focus-visible:ring-0"
+                                                    disabled={processing}
+                                                />
+                                            </div>
+                                        </div>
+                                        <Button
+                                            type="button"
+                                            variant="ghost"
+                                            size="sm"
+                                            onClick={() => removeChecklistItem(index)}
+                                            disabled={processing}
+                                            className="ml-2 text-gray-500 hover:text-red-600"
+                                        >
+                                            <Trash2 className="h-4 w-4" />
+                                        </Button>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+
+                        <div className="mt-4 text-sm text-gray-500">
+                            <p>• Checklist items will be created for the company</p>
+                            <p>• You can mark items as completed during company onboarding</p>
+                            <p>• Progress will be tracked automatically</p>
+                        </div>
+                    </div>
+
                     {/* Company Owners */}
                     <div className="rounded-lg border border-gray-200 bg-white p-6">
                         <div className="mb-6 flex items-center justify-between">
@@ -452,7 +730,10 @@ export default function CompaniesCreate() {
                         ) : (
                             <div className="space-y-6">
                                 {data.owners.map((owner, index) => (
-                                    <div key={index} className="rounded-lg border border-gray-200 p-5">
+                                    <div
+                                        key={index}
+                                        className="rounded-lg border border-gray-200 p-5"
+                                    >
                                         <div className="mb-4 flex items-center justify-between">
                                             <div className="flex items-center gap-3">
                                                 <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-100">
@@ -463,7 +744,8 @@ export default function CompaniesCreate() {
                                                         Owner #{index + 1}
                                                     </h3>
                                                     <p className="text-sm text-gray-500">
-                                                        {owner.name || "Unnamed owner"}
+                                                        {owner.name ||
+                                                            'Unnamed owner'}
                                                     </p>
                                                 </div>
                                             </div>
@@ -472,7 +754,9 @@ export default function CompaniesCreate() {
                                                     type="button"
                                                     variant="ghost"
                                                     size="sm"
-                                                    onClick={() => removeOwner(index)}
+                                                    onClick={() =>
+                                                        removeOwner(index)
+                                                    }
                                                     disabled={processing}
                                                     className="text-gray-500 hover:text-red-600"
                                                 >
@@ -485,11 +769,14 @@ export default function CompaniesCreate() {
                                             {/* First Row: Name, Email, Phone */}
                                             <div className="grid gap-4 md:grid-cols-3">
                                                 <div className="space-y-2">
-                                                    <Label htmlFor={`owner-name-${index}`} className="text-sm font-medium text-gray-700">
+                                                    <Label
+                                                        htmlFor={`owner-name-${index}`}
+                                                        className="text-sm font-medium text-gray-700"
+                                                    >
                                                         Full Name *
                                                     </Label>
                                                     <div className="relative">
-                                                        <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                                                        <User className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
                                                         <Input
                                                             id={`owner-name-${index}`}
                                                             type="text"
@@ -497,19 +784,37 @@ export default function CompaniesCreate() {
                                                             required
                                                             className="pl-10"
                                                             placeholder="John Doe"
-                                                            onChange={(e) => handleOwnerChange(index, 'name', e.target.value)}
-                                                            disabled={processing}
+                                                            onChange={(e) =>
+                                                                handleOwnerChange(
+                                                                    index,
+                                                                    'name',
+                                                                    e.target
+                                                                        .value,
+                                                                )
+                                                            }
+                                                            disabled={
+                                                                processing
+                                                            }
                                                         />
                                                     </div>
-                                                    <InputError message={errors[`owners.${index}.name`]} />
+                                                    <InputError
+                                                        message={
+                                                            errors[
+                                                                `owners.${index}.name`
+                                                                ]
+                                                        }
+                                                    />
                                                 </div>
 
                                                 <div className="space-y-2">
-                                                    <Label htmlFor={`owner-email-${index}`} className="text-sm font-medium text-gray-700">
+                                                    <Label
+                                                        htmlFor={`owner-email-${index}`}
+                                                        className="text-sm font-medium text-gray-700"
+                                                    >
                                                         Email Address *
                                                     </Label>
                                                     <div className="relative">
-                                                        <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                                                        <Mail className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
                                                         <Input
                                                             id={`owner-email-${index}`}
                                                             type="email"
@@ -517,19 +822,37 @@ export default function CompaniesCreate() {
                                                             required
                                                             className="pl-10"
                                                             placeholder="owner@example.com"
-                                                            onChange={(e) => handleOwnerChange(index, 'email', e.target.value)}
-                                                            disabled={processing}
+                                                            onChange={(e) =>
+                                                                handleOwnerChange(
+                                                                    index,
+                                                                    'email',
+                                                                    e.target
+                                                                        .value,
+                                                                )
+                                                            }
+                                                            disabled={
+                                                                processing
+                                                            }
                                                         />
                                                     </div>
-                                                    <InputError message={errors[`owners.${index}.email`]} />
+                                                    <InputError
+                                                        message={
+                                                            errors[
+                                                                `owners.${index}.email`
+                                                                ]
+                                                        }
+                                                    />
                                                 </div>
 
                                                 <div className="space-y-2">
-                                                    <Label htmlFor={`owner-phone-${index}`} className="text-sm font-medium text-gray-700">
+                                                    <Label
+                                                        htmlFor={`owner-phone-${index}`}
+                                                        className="text-sm font-medium text-gray-700"
+                                                    >
                                                         Phone *
                                                     </Label>
                                                     <div className="relative">
-                                                        <Phone className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                                                        <Phone className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
                                                         <Input
                                                             id={`owner-phone-${index}`}
                                                             type="tel"
@@ -537,70 +860,145 @@ export default function CompaniesCreate() {
                                                             required
                                                             className="pl-10"
                                                             placeholder="+1 (555) 123-4567"
-                                                            onChange={(e) => handleOwnerChange(index, 'phone', e.target.value)}
-                                                            disabled={processing}
+                                                            onChange={(e) =>
+                                                                handleOwnerChange(
+                                                                    index,
+                                                                    'phone',
+                                                                    e.target
+                                                                        .value,
+                                                                )
+                                                            }
+                                                            disabled={
+                                                                processing
+                                                            }
                                                         />
                                                     </div>
-                                                    <InputError message={errors[`owners.${index}.phone`]} />
+                                                    <InputError
+                                                        message={
+                                                            errors[
+                                                                `owners.${index}.phone`
+                                                                ]
+                                                        }
+                                                    />
                                                 </div>
                                             </div>
 
                                             {/* Second Row: Facebook, Birthdate, Address */}
-                                            <div className="grid gap-4 md:grid-cols-3">
+                                             <div className="grid gap-4 md:grid-cols-3">
                                                 <div className="space-y-2">
-                                                    <Label htmlFor={`owner-facebook-${index}`} className="text-sm font-medium text-gray-700">
+                                                    <Label
+                                                        htmlFor={`owner-facebook-${index}`}
+                                                        className="text-sm font-medium text-gray-700"
+                                                    >
                                                         Facebook Profile
                                                     </Label>
                                                     <div className="relative">
-                                                        <Link className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                                                        <LinkIcon className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
                                                         <Input
                                                             id={`owner-facebook-${index}`}
                                                             type="url"
-                                                            value={owner.facebook}
+                                                            value={
+                                                                owner.facebook
+                                                            }
                                                             className="pl-10"
                                                             placeholder="https://facebook.com/username"
-                                                            onChange={(e) => handleOwnerChange(index, 'facebook', e.target.value)}
-                                                            disabled={processing}
+                                                            onChange={(e) =>
+                                                                handleOwnerChange(
+                                                                    index,
+                                                                    'facebook',
+                                                                    e.target
+                                                                        .value,
+                                                                )
+                                                            }
+                                                            disabled={
+                                                                processing
+                                                            }
                                                         />
                                                     </div>
-                                                    <InputError message={errors[`owners.${index}.facebook`]} />
+                                                    <InputError
+                                                        message={
+                                                            errors[
+                                                                `owners.${index}.facebook`
+                                                                ]
+                                                        }
+                                                    />
                                                 </div>
 
                                                 <div className="space-y-2">
-                                                    <Label htmlFor={`owner-birthdate-${index}`} className="text-sm font-medium text-gray-700">
+                                                    <Label
+                                                        htmlFor={`owner-birthdate-${index}`}
+                                                        className="text-sm font-medium text-gray-700"
+                                                    >
                                                         Birth Date
                                                     </Label>
                                                     <div className="relative">
-                                                        <CalendarIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                                                        <CalendarIcon className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
                                                         <Input
                                                             id={`owner-birthdate-${index}`}
                                                             type="date"
-                                                            value={owner.birthdate}
+                                                            value={
+                                                                owner.birthdate
+                                                            }
                                                             className="pl-10"
-                                                            onChange={(e) => handleOwnerChange(index, 'birthdate', e.target.value)}
-                                                            disabled={processing}
+                                                            onChange={(e) =>
+                                                                handleOwnerChange(
+                                                                    index,
+                                                                    'birthdate',
+                                                                    e.target
+                                                                        .value,
+                                                                )
+                                                            }
+                                                            disabled={
+                                                                processing
+                                                            }
                                                         />
                                                     </div>
-                                                    <InputError message={errors[`owners.${index}.birthdate`]} />
+                                                    <InputError
+                                                        message={
+                                                            errors[
+                                                                `owners.${index}.birthdate`
+                                                                ]
+                                                        }
+                                                    />
                                                 </div>
 
                                                 <div className="space-y-2">
-                                                    <Label htmlFor={`owner-address-${index}`} className="text-sm font-medium text-gray-700">
+                                                    <Label
+                                                        htmlFor={`owner-address-${index}`}
+                                                        className="text-sm font-medium text-gray-700"
+                                                    >
                                                         Address
                                                     </Label>
                                                     <div className="relative">
-                                                        <MapPin className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                                                        <MapPin className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
                                                         <Input
                                                             id={`owner-address-${index}`}
                                                             type="text"
-                                                            value={owner.address}
+                                                            value={
+                                                                owner.address
+                                                            }
                                                             className="pl-10"
                                                             placeholder="Owner's address"
-                                                            onChange={(e) => handleOwnerChange(index, 'address', e.target.value)}
-                                                            disabled={processing}
+                                                            onChange={(e) =>
+                                                                handleOwnerChange(
+                                                                    index,
+                                                                    'address',
+                                                                    e.target
+                                                                        .value,
+                                                                )
+                                                            }
+                                                            disabled={
+                                                                processing
+                                                            }
                                                         />
                                                     </div>
-                                                    <InputError message={errors[`owners.${index}.address`]} />
+                                                    <InputError
+                                                        message={
+                                                            errors[
+                                                                `owners.${index}.address`
+                                                                ]
+                                                        }
+                                                    />
                                                 </div>
                                             </div>
 
@@ -616,38 +1014,67 @@ export default function CompaniesCreate() {
                                                                 id={`owner-photo-${index}`}
                                                                 type="file"
                                                                 accept="image/*"
-                                                                onChange={(e) => handleOwnerPhotoChange(index, e)}
-                                                                disabled={processing}
+                                                                onChange={(e) =>
+                                                                    handleOwnerPhotoChange(
+                                                                        index,
+                                                                        e,
+                                                                    )
+                                                                }
+                                                                disabled={
+                                                                    processing
+                                                                }
                                                                 className="hidden"
                                                             />
                                                             <Button
                                                                 type="button"
                                                                 variant="outline"
-                                                                onClick={() => document.getElementById(`owner-photo-${index}`)?.click()}
-                                                                disabled={processing}
+                                                                onClick={() =>
+                                                                    document
+                                                                        .getElementById(
+                                                                            `owner-photo-${index}`,
+                                                                        )
+                                                                        ?.click()
+                                                                }
+                                                                disabled={
+                                                                    processing
+                                                                }
                                                                 className="flex-1"
                                                             >
                                                                 <Camera className="mr-2 h-4 w-4" />
                                                                 Choose Photo
                                                             </Button>
-                                                            {ownerPreviewUrls[index] && (
+                                                            {ownerPreviewUrls[
+                                                                index
+                                                                ] && (
                                                                 <Button
                                                                     type="button"
                                                                     variant="ghost"
                                                                     size="sm"
-                                                                    onClick={() => removeOwnerPhoto(index)}
-                                                                    disabled={processing}
+                                                                    onClick={() =>
+                                                                        removeOwnerPhoto(
+                                                                            index,
+                                                                        )
+                                                                    }
+                                                                    disabled={
+                                                                        processing
+                                                                    }
                                                                 >
                                                                     <X className="h-4 w-4" />
                                                                 </Button>
                                                             )}
                                                         </div>
 
-                                                        {ownerPreviewUrls[index] && (
+                                                        {ownerPreviewUrls[
+                                                            index
+                                                            ] && (
                                                             <div className="mt-2">
                                                                 <div className="relative h-20 w-20 overflow-hidden rounded-full border">
                                                                     <img
-                                                                        src={ownerPreviewUrls[index]}
+                                                                        src={
+                                                                            ownerPreviewUrls[
+                                                                                index
+                                                                                ]
+                                                                        }
                                                                         alt="Owner preview"
                                                                         className="h-full w-full object-cover"
                                                                     />
@@ -656,7 +1083,8 @@ export default function CompaniesCreate() {
                                                         )}
                                                     </div>
                                                     <p className="text-xs text-gray-500">
-                                                        Optional. Max 5MB (JPEG, PNG, GIF, WebP)
+                                                        Optional. Max 5MB (JPEG,
+                                                        PNG, GIF, WebP)
                                                     </p>
                                                 </div>
 
@@ -670,27 +1098,50 @@ export default function CompaniesCreate() {
                                                                 id={`owner-id-file-${index}`}
                                                                 type="file"
                                                                 accept="image/*,.pdf"
-                                                                onChange={(e) => handleIdFileChange(index, e)}
-                                                                disabled={processing}
+                                                                onChange={(e) =>
+                                                                    handleIdFileChange(
+                                                                        index,
+                                                                        e,
+                                                                    )
+                                                                }
+                                                                disabled={
+                                                                    processing
+                                                                }
                                                                 className="hidden"
                                                             />
                                                             <Button
                                                                 type="button"
                                                                 variant="outline"
-                                                                onClick={() => document.getElementById(`owner-id-file-${index}`)?.click()}
-                                                                disabled={processing}
+                                                                onClick={() =>
+                                                                    document
+                                                                        .getElementById(
+                                                                            `owner-id-file-${index}`,
+                                                                        )
+                                                                        ?.click()
+                                                                }
+                                                                disabled={
+                                                                    processing
+                                                                }
                                                                 className="flex-1"
                                                             >
                                                                 <FileText className="mr-2 h-4 w-4" />
                                                                 Upload ID
                                                             </Button>
-                                                            {idFileNames[index] && (
+                                                            {idFileNames[
+                                                                index
+                                                                ] && (
                                                                 <Button
                                                                     type="button"
                                                                     variant="ghost"
                                                                     size="sm"
-                                                                    onClick={() => removeIdFile(index)}
-                                                                    disabled={processing}
+                                                                    onClick={() =>
+                                                                        removeIdFile(
+                                                                            index,
+                                                                        )
+                                                                    }
+                                                                    disabled={
+                                                                        processing
+                                                                    }
                                                                 >
                                                                     <X className="h-4 w-4" />
                                                                 </Button>
@@ -701,15 +1152,26 @@ export default function CompaniesCreate() {
                                                             <div className="mt-2 flex items-center gap-2 rounded border bg-gray-50 px-3 py-2">
                                                                 <FileText className="h-4 w-4 text-gray-500" />
                                                                 <span className="text-sm text-gray-700">
-                                                                    {idFileNames[index]}
+                                                                    {
+                                                                        idFileNames[
+                                                                            index
+                                                                            ]
+                                                                    }
                                                                 </span>
                                                             </div>
                                                         )}
                                                     </div>
                                                     <p className="text-xs text-gray-500">
-                                                        Required. Max 10MB (JPEG, PNG, PDF)
+                                                        Required. Max 10MB
+                                                        (JPEG, PNG, PDF)
                                                     </p>
-                                                    <InputError message={errors[`owners.${index}.id_file`]} />
+                                                    <InputError
+                                                        message={
+                                                            errors[
+                                                                `owners.${index}.id_file`
+                                                                ]
+                                                        }
+                                                    />
                                                 </div>
                                             </div>
                                         </div>

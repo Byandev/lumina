@@ -29,7 +29,6 @@ return new class extends Migration
             $table->enum('level', ['educate', 'empowerment', 'enterprise', 'exponential'])->default('educate');
 
             $table->unsignedBigInteger('sponsor_id')->nullable();
-            $table->foreign('sponsor_id')->references('id')->on('companies');
 
             $table->unsignedBigInteger('coach_id')->nullable();
             $table->foreign('coach_id')->references('id')->on('users');
