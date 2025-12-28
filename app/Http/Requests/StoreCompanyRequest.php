@@ -45,6 +45,25 @@ class StoreCompanyRequest extends FormRequest
                 'dimensions:min_width=100,min_height=100,max_width=2000,max_height=2000',
             ],
 
+            // Sponsor and Coach
+            'sponsor_id' => [
+                'nullable',
+                'string',
+                Rule::exists('companies', 'id')->where(function ($query) {
+                    // Optional: Add additional conditions if needed
+                    return $query;
+                }),
+            ],
+            'coach_id' => [
+                'nullable',
+                'string',
+                Rule::exists('users', 'id')->where(function ($query) {
+                    // Optional: Add role-based filtering if needed
+                    // return $query->where('role', 'coach');
+                    return $query;
+                }),
+            ],
+
             // Owners - array validation
             'owners' => 'required|array|min:1',
             'owners.*.name' => 'required|string|max:255',
@@ -81,6 +100,9 @@ class StoreCompanyRequest extends FormRequest
                 'mimes:jpeg,png,jpg,pdf',
                 'max:10240', // 10MB for ID files
             ],
+            'checklists' => 'required|array',
+            'checklists.*.title' => 'required|string|max:255',
+            'checklists.*.is_completed' => 'boolean',
         ];
     }
 
@@ -99,6 +121,10 @@ class StoreCompanyRequest extends FormRequest
             'logo.mimes' => 'Logo must be a JPEG, PNG, JPG, GIF, or WebP file.',
             'logo.max' => 'Logo size should not exceed 5MB.',
             'logo.dimensions' => 'Logo dimensions should be between 100x100 and 2000x2000 pixels.',
+
+            // Sponsor and Coach messages
+            'sponsor_id.exists' => 'The selected sponsor company does not exist.',
+            'coach_id.exists' => 'The selected coach does not exist.',
 
             // Owners messages
             'owners.required' => 'At least one company owner is required.',
@@ -136,6 +162,8 @@ class StoreCompanyRequest extends FormRequest
             'phone' => 'company phone',
             'address' => 'company address',
             'logo' => 'company logo',
+            'sponsor_id' => 'sponsor company',
+            'coach_id' => 'coach',
             'owners' => 'company owners',
             'owners.*.name' => 'owner name',
             'owners.*.email' => 'owner email',
@@ -160,6 +188,16 @@ class StoreCompanyRequest extends FormRequest
             'phone' => trim($this->phone),
             'address' => trim($this->address),
         ]);
+
+        // Handle sponsor_id - convert "none" to null
+        if ($this->has('sponsor_id') && $this->sponsor_id === 'none') {
+            $this->merge(['sponsor_id' => null]);
+        }
+
+        // Handle coach_id - convert "none" to null
+        if ($this->has('coach_id') && $this->coach_id === 'none') {
+            $this->merge(['coach_id' => null]);
+        }
 
         // Trim owner fields
         if ($this->has('owners') && is_array($this->owners)) {
@@ -187,6 +225,15 @@ class StoreCompanyRequest extends FormRequest
     {
         $validated = parent::validated($key, $default);
 
+        // Convert empty strings to null for sponsor_id and coach_id
+        if (isset($validated['sponsor_id']) && $validated['sponsor_id'] === 'none') {
+            $validated['sponsor_id'] = null;
+        }
+
+        if (isset($validated['coach_id']) && $validated['coach_id'] === 'none') {
+            $validated['coach_id'] = null;
+        }
+
         // Ensure owners array is properly formatted
         if (isset($validated['owners'])) {
             $validated['owners'] = array_map(function ($owner) {
@@ -197,7 +244,6 @@ class StoreCompanyRequest extends FormRequest
                     'address' => $owner['address'] ?? null,
                     'facebook' => $owner['facebook'] ?? null,
                     'birthdate' => $owner['birthdate'] ?? null,
-                    // 'photo' and 'id_file' will be handled separately in controller for file storage
                 ];
             }, $validated['owners']);
         }

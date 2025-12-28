@@ -28,8 +28,8 @@ const mainNavItems: NavItem[] = [
         icon: LayoutGrid,
     },
     {
-        title: 'Users',
-        href: dashboard(),
+        title: 'Events',
+        href: companies(),
         icon: LayoutGrid,
     },
 ];

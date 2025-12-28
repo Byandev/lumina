@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreCompanyRequest;
 use App\Models\Company;
+use App\Models\OnboardingChecklist;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -17,12 +18,25 @@ class CompanyController extends Controller
     {
         $search = $request->input('search', '');
 
-        $companies = Company::with('owners')
+        $companies = Company::with('owners', 'sponsor:id,name,logo')
+            ->withCount([
+                'checklists as total_checklist_count',
+                'checklists as completed_checklist_count' => function ($query) {
+                    $query->where('is_completed', true);
+                }
+            ])
             ->when($search, function ($query, $search) {
                 return $query->where('companies.name', 'LIKE', "%{$search}%");
             })
             ->latest()
             ->paginate(20);
+
+        $companies->getCollection()->transform(function ($company) {
+            $company->checklist_progress = $company->total_checklist_count > 0
+                ? round(($company->completed_checklist_count / $company->total_checklist_count) * 100)
+                : 0;
+            return $company;
+        });
 
         return Inertia::render('companies/companies-index', [
             'companies' => $companies,
@@ -30,8 +44,15 @@ class CompanyController extends Controller
         ]);
     }
 
-    public function create(){
-        return Inertia::render('companies/companies-create');
+    public function create()
+    {
+        $companies = Company::get([ 'id', 'name', 'logo']);
+        $users = User::get(['id', 'name', 'photo']);
+
+        return Inertia::render('companies/companies-create', [
+            'companies' => $companies,
+            'users' => $users,
+        ]);
     }
 
     /**
@@ -57,16 +78,31 @@ class CompanyController extends Controller
                 $uploadedFiles[] = $logoPath;
             }
 
-            // 2. Create the company
+            // 2. Create the company with sponsor and coach
             $company = Company::create([
                 'name' => trim($request->name),
                 'email' => $request->email ? trim($request->email) : null,
                 'phone' => $request->phone ? trim($request->phone) : null,
                 'address' => $request->address ? trim($request->address) : null,
                 'logo' => $logoPath,
+                'sponsor_id' => $request->sponsor_id ?: null, // Already converted to null if 'none' in request
+                'coach_id' => $request->coach_id ?: null, // Already converted to null if 'none' in request
             ]);
 
+            if ($request->has('checklists') && is_array($request->checklists)) {
+                foreach ($request->checklists as $checklistData) {
+                    OnboardingChecklist::create([
+                        'company_id' => $company->id,
+                        'title' => $checklistData['title'],
+                        'is_completed' => $checklistData['is_completed'] ?? false,
+                    ]);
+                }
+            }
+
+
             $createdCompany = $company;
+
+
 
             // 3. Process company owners
             if ($request->has('owners') && is_array($request->owners) && count($request->owners) > 0) {
@@ -121,6 +157,8 @@ class CompanyController extends Controller
                             if ($owner->id_file_path && Storage::disk('public')->exists($owner->id_file_path)) {
                                 Storage::disk('public')->delete($owner->id_file_path);
                             }
+                            $updateData['id_file_path'] = $idFilePath;
+                            $updateData['id_file_name'] = $idFileOriginalName;
                         }
 
                         $owner->update($updateData);
@@ -175,12 +213,89 @@ class CompanyController extends Controller
                 'request_data' => $request->except(['logo', 'owners.*.photo', 'owners.*.id_file']),
             ]);
 
-            dd($e->getMessage());
-
-            // Return error response
             return back()->withErrors([
                 'server_error' => 'An error occurred while creating the company. Please try again. If the problem persists, contact support.'
             ])->withInput();
         }
     }
+
+
+    public function show(Company $company)
+    {
+        $company = $company->load('owners', 'checklists', 'coach:id,name,photo', 'sponsor:id,name,logo');
+
+        $sponsors = Company::where('id', '!=', $company->id)
+            ->orderBy('name')
+            ->get(['id', 'name'])
+            ->toArray();
+        $totalChecklists = $company->checklists()->count();
+        $completedChecklists = $company->checklists()->where('is_completed', true)->count();
+
+        $checklistPercentage = $totalChecklists > 0
+            ? round(($completedChecklists / $totalChecklists) * 100)
+            : 0;
+
+        return Inertia::render('companies/company/index', [
+            'company' => [
+                ...$company->toArray(),
+                'checklist_percentage' => $checklistPercentage,
+                'total_checklists' => $totalChecklists,
+                'completed_checklists' => $completedChecklists,
+                'checklists' => $company->checklists,
+                'owners' => $company->owners,
+            ],
+            'sponsors' => $sponsors,
+        ]);
+    }
+
+
+    public function update(Request $request, $id)
+    {
+
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'email', 'max:255'],
+            'phone' => ['nullable', 'string', 'max:30'],
+            'address' => ['nullable', 'string', 'max:255'],
+            'status' => ['required'],
+            'notarization_status' => ['required'],
+            'erp_status' => ['required'],
+            'level' => ['required'],
+            'sponsor_id' => ['nullable', 'integer', 'exists:companies,id'],
+            'sales_activity' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        $company = Company::findOrFail($id);
+
+        $company->update([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'phone' => $validated['phone'] ?? null,
+            'address' => $validated['address'] ?? null,
+            'status' => $validated['status'],
+            'notarization_status' => $validated['notarization_status'],
+            'erp_status' => $validated['erp_status'],
+            'level' => $validated['level'],
+            'sales_activity' => $validated['sales_activity'] ?? null,
+            'sponsor_id' => $validated['sponsor_id'] ?? null,
+        ]);
+
+        return back()->with('success', 'Company updated successfully.');
+    }
+
+    public function destroy(Company $company)
+    {
+        if ($company->logo) {
+            Storage::disk('public')->delete($company->logo);
+        }
+
+        $company->owners()->delete();
+
+        $company->delete();
+
+        return redirect()
+            ->route('companies')
+            ->with('success', 'Company deleted successfully.');
+    }
+
 }
