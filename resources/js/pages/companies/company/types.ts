@@ -1,3 +1,5 @@
+import Attendance from '@/routes/attendance';
+
 export interface BreadcrumbItem {
     title: string;
     href: string;
@@ -32,6 +34,23 @@ export interface Sponsor {
     logo: string;
 }
 
+export interface Event {
+    id: number;
+    name: string;
+    date: string;
+    type: string;
+    location: string;
+}
+
+
+export interface Attendance {
+    company_id: number;
+    event_id: number;
+    type: string;
+    status?: string;
+    event: Event;
+}
+
 export interface Company {
     sponsor_id: number | null;
     id: number;
@@ -46,6 +65,7 @@ export interface Company {
     created_at: string;
     updated_at: string;
     sponsor?: Sponsor;
+    attendances?: Attendance[];
     notarization_status?: string;
     erp_status?: string;
     sales_activity?: string;

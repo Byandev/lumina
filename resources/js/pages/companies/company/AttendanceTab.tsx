@@ -1,86 +1,92 @@
-import { Calendar, Clock, Target } from 'lucide-react';
+import { Attendance } from '@/pages/companies/company/types';
 
-export default function AttendanceTab() {
+interface Props {
+    attendances: Attendance[];
+}
+
+export default function AttendanceTab({ attendances }: Props) {
     return (
         <div className="space-y-4">
             <h3 className="text-sm font-semibold text-gray-900">
                 Attendance Overview
             </h3>
 
-            <div className="grid grid-cols-2 gap-3">
-                <AttendanceMetric
-                    icon={<Clock className="h-3.5 w-3.5 text-gray-400" />}
-                    label="This Month"
-                    value="85%"
-                />
-                <AttendanceMetric
-                    icon={<Calendar className="h-3.5 w-3.5 text-gray-400" />}
-                    label="Last Month"
-                    value="78%"
-                />
-                <AttendanceMetric
-                    icon={<Target className="h-3.5 w-3.5 text-gray-400" />}
-                    label="Present Days"
-                    value="18"
-                />
-                <AttendanceMetric
-                    icon={<Clock className="h-3.5 w-3.5 text-gray-400" />}
-                    label="Absent Days"
-                    value="3"
-                />
-            </div>
 
-            {/* Attendance Trend */}
-            <div className="rounded border border-gray-200 p-3">
-                <div className="mb-2 flex items-center justify-between">
-                    <p className="text-xs font-medium text-gray-700">
-                        Monthly Trend
-                    </p>
-                    <span className="text-xs text-green-600">
-                        +7% improvement
-                    </span>
-                </div>
-                <div className="flex items-end gap-1">
-                    {[65, 70, 72, 68, 75, 78, 80, 82, 85].map(
-                        (height, index) => (
-                            <div key={index} className="flex-1">
-                                <div
-                                    className="rounded-t bg-blue-100"
-                                    style={{
-                                        height: `${height}%`,
-                                        minHeight: '20px',
-                                    }}
-                                ></div>
-                                <div className="pt-1 text-center text-[10px] text-gray-500">
-                                    W{index + 1}
-                                </div>
-                            </div>
-                        ),
-                    )}
-                </div>
-            </div>
-        </div>
-    );
-}
 
-interface AttendanceMetricProps {
-    icon: React.ReactNode;
-    label: string;
-    value: string;
-}
+                <div className="mb-4 rounded-lg border bg-white">
+                    <div className="overflow-x-auto">
+                        <table className="w-full">
+                            <thead>
+                                <tr className="border-b bg-gray-50">
+                                    <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
+                                        Event Name
+                                    </th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
+                                        Date & Time
+                                    </th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
+                                        Type
+                                    </th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
+                                        Location
+                                    </th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
+                                        Status
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-gray-200">
+                                {attendances.length === 0 ? (
+                                    <tr>
+                                        <td
+                                            colSpan={6}
+                                            className="px-6 py-8 text-center text-gray-500"
+                                        >
+                                            <>"No event attended"</>
+                                        </td>
+                                    </tr>
+                                ) : (
+                                    attendances.map((attendance) => (
+                                        <tr
+                                            key={attendance.company_id}
+                                            className="hover:bg-gray-50"
+                                        >
+                                            <td className="px-6 py-4">
+                                                <div className="font-medium text-gray-900">
+                                                    {attendance?.event?.name}
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <div className="font-medium text-gray-900">
+                                                    {attendance?.event?.date}
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <div className="font-medium text-gray-900">
+                                                    {attendance?.event?.type}
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <div className="font-medium text-gray-900">
+                                                    {
+                                                        attendance?.event
+                                                            ?.location
+                                                    }
+                                                </div>
+                                            </td>
 
-function AttendanceMetric({ icon, label, value }: AttendanceMetricProps) {
-    return (
-        <div className="rounded border border-gray-200 p-3">
-            <div className="flex items-center gap-2">
-                {icon}
-                <div>
-                    <p className="text-xs font-medium text-gray-600">{label}</p>
-                    <p className="text-sm font-semibold text-gray-900">
-                        {value}
-                    </p>
+                                            <td className="px-6 py-4">
+                                                <div className="text-sm text-gray-900">
+                                                    {attendance?.status}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
-            </div>
         </div>
     );
 }

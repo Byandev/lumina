@@ -216,7 +216,7 @@ export default function Index({ company, sponsors }: ShowProps) {
 
                         {/* Tab 3: Attendance */}
                         <TabPanel className="p-4">
-                            <AttendanceTab />
+                            <AttendanceTab attendances={company.attendances}/>
                         </TabPanel>
 
                         {/* Tab 4: Performance */}
