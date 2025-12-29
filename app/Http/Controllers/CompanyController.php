@@ -222,8 +222,9 @@ class CompanyController extends Controller
 
     public function show(Company $company)
     {
-        $company = $company->load('owners', 'checklists', 'coach:id,name,photo', 'sponsor:id,name,logo');
+        $company = $company->load('owners', 'checklists', 'coach:id,name,photo', 'sponsor:id,name,logo', 'attendances.event:id,name,date,type,location');
 
+        dd($company->toArray());
         $sponsors = Company::where('id', '!=', $company->id)
             ->orderBy('name')
             ->get(['id', 'name'])

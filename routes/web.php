@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ChecklistRemarkController;
 use App\Http\Controllers\CompanyController;
+use App\Http\Controllers\EventController;
 use App\Http\Controllers\OwnerController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -26,11 +27,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('companies/{company}/destroy', [CompanyController::class, 'destroy'])->name('companies.destroy');
     Route::post('companies/{company}/owners', [OwnerController::class, 'store'])->name('owner.store');
     Route::put('owners/{user}', [OwnerController::class, 'update'])->name('owner.update');
-
     Route::post('/companies/{company}/remarks', [ChecklistRemarkController::class, 'store'])->name('remark.store');
 
 
-//    Route::get('/events')
+    Route::get('/events', [EventController::class, 'index'])->name('events');
+    Route::post('/events', [EventController::class, 'store'])->name('events.store');
+    Route::get('/events/{event}', [EventController::class, 'show'])->name('events.show');
+    Route::put('/events/{event}', [EventController::class, 'update'])->name('events.update');
+    Route::delete('/events/{event}', [EventController::class, 'destroy'])->name('events.update');
+
+    Route::post('/events/{event}/attendance', [\App\Http\Controllers\CompanyEventController::class, 'store'])->name('attendance.store');
 });
 
 

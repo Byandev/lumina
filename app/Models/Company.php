@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Company extends Model
 {
@@ -61,6 +63,22 @@ class Company extends Model
     {
         return $this->hasMany(ChecklistRemark::class);
     }
+
+    public function events()
+    {
+        return $this->belongsToMany(
+            Event::class,
+            'company_events',
+            'company_id',
+            'event_id'
+        );
+    }
+
+    public function attendances()
+    {
+        return $this->hasMany(CompanyEvent::class);
+    }
+
 
 
 
