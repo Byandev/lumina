@@ -1,4 +1,5 @@
 import Attendance from '@/routes/attendance';
+import React from 'react';
 
 export interface BreadcrumbItem {
     title: string;
@@ -65,7 +66,7 @@ export interface Company {
     created_at: string;
     updated_at: string;
     sponsor?: Sponsor;
-    attendances?: Attendance[];
+    attendances?: Attendance[] | null;
     notarization_status?: string;
     erp_status?: string;
     sales_activity?: string;
@@ -89,7 +90,8 @@ export interface OwnerFormData {
 
 
 export interface Sponsors {
-    sponsors: Sponsor[];
+    sponsors: Sponsor[] | null;
+    map(element: (sponsor: Sponsor[]) => React.JSX.Element): React.ReactNode | undefined;
 }
 
 

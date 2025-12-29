@@ -111,21 +111,22 @@ export default function EventAttendancePage({ event }: Props) {
     };
 
     const handleSaveAttendance = () => {
-        const payload: AttendanceRecord[] = Object.entries(attendance).map(
-            ([companyId, status]) => ({
-                company_id: Number(companyId),
-                status,
-            })
-        );
+        // Convert attendance to the format Inertia expects
+        const attendanceData: Record<string, any> = {
+            event_id: event.id,
+            attendance: Object.entries(attendance).map(
+                ([companyId, status]) => ({
+                    company_id: Number(companyId),
+                    status,
+                }),
+            ),
+        };
 
         setProcessing(true);
 
         router.post(
-            `/events/${event.id}/attendance `,
-            {
-                event_id: event.id,
-                attendance: payload,
-            },
+            `/events/${event.id}/attendance`,
+            attendanceData, // Use the properly formatted data
             {
                 preserveScroll: true,
                 onSuccess: () => {
@@ -138,7 +139,7 @@ export default function EventAttendancePage({ event }: Props) {
                 onError: () => {
                     setProcessing(false);
                 },
-            }
+            },
         );
     };
 

@@ -39,15 +39,14 @@ import {
     Owner,
     OwnerFormData,
     Sponsor,
-    Sponsors,
-} from './types';
+} from './types'; // Remove Sponsors import
 
 interface CompanyDetailsTabProps {
     company: Company;
     isEditingCompany: boolean;
     companyFormData: CompanyFormData;
     errors: Record<string, string>;
-    sponsors: Sponsors;
+    sponsors: Sponsor[]; // Change from Sponsors to Sponsor[]
     onCompanyInputChange: (e: ChangeEvent<HTMLInputElement>) => void;
     onCompanySelectChange: (name: keyof CompanyFormData, value: string) => void;
 }
@@ -58,14 +57,14 @@ const levelOptions = ['educate', 'empowerment', 'enterprise', 'exponential'];
 const salesActivityOptions = ['generating', 'testing', 'inactive'];
 
 export default function CompanyDetailsTab({
-    company,
-    isEditingCompany,
-    companyFormData,
-    errors,
-    sponsors,
-    onCompanyInputChange,
-    onCompanySelectChange,
-}: CompanyDetailsTabProps) {
+                                              company,
+                                              isEditingCompany,
+                                              companyFormData,
+                                              errors,
+                                              sponsors,
+                                              onCompanyInputChange,
+                                              onCompanySelectChange,
+                                          }: CompanyDetailsTabProps) {
     const [isOwnerDialogOpen, setIsOwnerDialogOpen] = useState(false);
     const [editingOwner, setEditingOwner] = useState<Owner | null>(null);
     const [ownerFormData, setOwnerFormData] = useState<OwnerFormData>({
@@ -76,8 +75,6 @@ export default function CompanyDetailsTab({
         address: '',
         birthdate: '',
     });
-
-
 
     const getInitials = (name: string) => {
         return name
@@ -320,13 +317,12 @@ export default function CompanyDetailsTab({
                                     <SelectTrigger>
                                         <SelectValue placeholder="Select sponsor" />
                                     </SelectTrigger>
-
                                     <SelectContent>
                                         <SelectItem value="none">
                                             No Sponsor
                                         </SelectItem>
 
-                                        {sponsors.map((sponsor: Sponsor) => (
+                                        {sponsors?.map((sponsor: Sponsor) => (
                                             <SelectItem
                                                 key={sponsor.id}
                                                 value={sponsor.id.toString()}
@@ -347,7 +343,9 @@ export default function CompanyDetailsTab({
                         ) : (
                             <div className="flex items-center gap-2">
                                 <p className="text-sm text-gray-900">
-                                    {company.sponsor?.name || 'No Sponsor'}
+                                    {Array.isArray(company.sponsor) && company.sponsor.length > 0
+                                        ? company.sponsor[0].name
+                                        : 'No Sponsor'}
                                 </p>
                             </div>
                         )}
@@ -420,7 +418,7 @@ export default function CompanyDetailsTab({
                             </div>
                             <div className="flex items-center gap-2">
                                 <span className="text-xs font-semibold text-blue-600">
-                                    {company.checklist_percentage}%
+                                    {company.checklist_percentage || 0}%
                                 </span>
                             </div>
                         </div>
@@ -525,15 +523,15 @@ interface CompanyContactFieldProps {
 }
 
 function CompanyContactField({
-    icon,
-    label,
-    isEditing,
-    name,
-    value,
-    error,
-    onChange,
-    displayValue,
-}: CompanyContactFieldProps) {
+                                 icon,
+                                 label,
+                                 isEditing,
+                                 name,
+                                 value,
+                                 error,
+                                 onChange,
+                                 displayValue,
+                             }: CompanyContactFieldProps) {
     return (
         <div className="space-y-1">
             <div className="flex items-center gap-2">
@@ -567,16 +565,16 @@ interface StatusFieldProps {
 }
 
 function StatusField({
-    icon,
-    label,
-    isEditing,
-    value,
-    options,
-    onSelectChange,
-    displayValue,
-    getStatusColor,
-    formatStatus,
-}: StatusFieldProps) {
+                         icon,
+                         label,
+                         isEditing,
+                         value,
+                         options,
+                         onSelectChange,
+                         displayValue,
+                         getStatusColor,
+                         formatStatus,
+                     }: StatusFieldProps) {
     return (
         <div className="space-y-1">
             <div className="flex items-center gap-2">
@@ -622,14 +620,14 @@ interface OwnerDialogProps {
 }
 
 function OwnerDialog({
-    isOpen,
-    onOpenChange,
-    editingOwner,
-    ownerFormData,
-    onOwnerInputChange,
-    onSubmit,
-    onCancel,
-}: OwnerDialogProps) {
+                         isOpen,
+                         onOpenChange,
+                         editingOwner,
+                         ownerFormData,
+                         onOwnerInputChange,
+                         onSubmit,
+                         onCancel,
+                     }: OwnerDialogProps) {
     return (
         <Dialog open={isOpen} onOpenChange={onOpenChange}>
             <DialogContent>
