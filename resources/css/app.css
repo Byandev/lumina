@@ -141,3 +141,39 @@
         @apply bg-background text-foreground;
     }
 }
+
+
+@tailwind utilities;
+
+/* Custom shooting star animation */
+@layer utilities {
+    @keyframes shooting-star {
+        0% {
+            transform: translateX(100%) translateY(-100%) rotate(45deg);
+            opacity: 1;
+        }
+        70% {
+            opacity: 1;
+        }
+        100% {
+            transform: translateX(-100%) translateY(100%) rotate(45deg);
+            opacity: 0;
+        }
+    }
+
+    .animate-shooting-star-custom {
+        animation: shooting-star 3s ease-in-out infinite;
+    }
+
+    .animate-shooting-star-delayed-1-custom {
+        animation: shooting-star 3.5s ease-in-out infinite 1.2s;
+    }
+
+    .animate-shooting-star-delayed-2-custom {
+        animation: shooting-star 4s ease-in-out infinite 2.5s;
+    }
+
+    .animate-shooting-star-delayed-3-custom {
+        animation: shooting-star 3.2s ease-in-out infinite 4s;
+    }
+}

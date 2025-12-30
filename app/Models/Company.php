@@ -79,6 +79,11 @@ class Company extends Model
         return $this->hasMany(CompanyEvent::class);
     }
 
+    public function records()
+    {
+        return $this->hasMany(PerformanceRecord::class);
+    }
+
 
 
 
