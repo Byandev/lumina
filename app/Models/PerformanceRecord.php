@@ -23,11 +23,21 @@ class PerformanceRecord extends Model
         'attachment_path',
     ];
 
+    protected $casts = [
+        'start_date' => 'date',
+        'end_date' => 'date',
+        'no_of_items' => 'integer',
+        'avg_ads_spent' => 'decimal:2',
+        'roas' => 'decimal:2',
+        'rts' => 'decimal:2',
+        'total_revenue' => 'decimal:2',
+        'gross_profit' => 'decimal:2',
+        'profit_margin' => 'decimal:2',
+        'highlights' => 'string',
+        'challenges' => 'string',
+        'action_plan' => 'string',
+    ];
 
-
-    /* ====================
-       Relationships
-    ==================== */
 
     public function company()
     {

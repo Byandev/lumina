@@ -326,7 +326,7 @@ export default function CompaniesIndex({
                                                         <div>
                                                             <div className="text-xs font-medium text-gray-900">
                                                                 <Link
-                                                                    href={`/companies/${company.id}`}
+                                                                    href={`/companies/${company.id}/details`}
                                                                     className="hover:underline"
                                                                 >
                                                                     {company

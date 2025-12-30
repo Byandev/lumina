@@ -222,12 +222,9 @@ class CompanyController extends Controller
 
     public function show(Company $company)
     {
-        $company = $company->load('owners', 'checklists', 'coach:id,name,photo', 'sponsor:id,name,logo', 'attendances.event:id,name,date,type,location');
 
-        $sponsors = Company::where('id', '!=', $company->id)
-            ->orderBy('name')
-            ->get(['id', 'name'])
-            ->toArray();
+        $company = $company->load('owners', 'coach:id,name,photo', 'sponsor:id,name,logo');
+
         $totalChecklists = $company->checklists()->count();
         $completedChecklists = $company->checklists()->where('is_completed', true)->count();
 
@@ -235,18 +232,19 @@ class CompanyController extends Controller
             ? round(($completedChecklists / $totalChecklists) * 100)
             : 0;
 
-        return Inertia::render('companies/company/index', [
+
+        return Inertia::render('companies/company/detail-tab', [
             'company' => [
                 ...$company->toArray(),
                 'checklist_percentage' => $checklistPercentage,
-                'total_checklists' => $totalChecklists,
-                'completed_checklists' => $completedChecklists,
-                'checklists' => $company->checklists,
                 'owners' => $company->owners,
-            ],
-            'sponsors' => $sponsors,
+            ],            'sponsors' => \App\Models\Company::all(),
         ]);
     }
+
+
+    // Performance tab
+
 
 
     public function update(Request $request, $id)

@@ -1,5 +1,4 @@
 import Attendance from '@/routes/attendance';
-import React from 'react';
 
 export interface BreadcrumbItem {
     title: string;
@@ -30,7 +29,7 @@ export interface Coach {
 }
 
 export interface Sponsor {
-    id: number;
+    id?: number | null;
     name: string;
     logo: string;
 }
@@ -65,18 +64,14 @@ export interface Company {
     owners_count: number;
     created_at: string;
     updated_at: string;
-    sponsor?: Sponsor;
-    attendances?: Attendance[] | null;
+    sponsor?: Sponsor[];
     notarization_status?: string;
     erp_status?: string;
     sales_activity?: string;
     level?: string;
     owners?: Owner[];
     coach?: Coach[];
-    checklists?: ChecklistItem[];
-    checklist_percentage: number;
-    completed_checklist_count?: number;
-    total_checklist_count?: number;
+    checklist_percentage?: number;
 }
 
 export interface OwnerFormData {

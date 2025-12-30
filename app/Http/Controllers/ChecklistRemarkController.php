@@ -11,16 +11,11 @@ class ChecklistRemarkController extends Controller
 {
     public function store(Request $request, Company $company)
     {
-
-
         $validated = $request->validate([
             'remarks' => 'required|string|min:10|max:2000',
             'checklist_item_id' => 'required|exists:onboarding_checklists,id',
             'attachment' => 'nullable|file|mimes:jpg,jpeg,png,pdf,doc,docx,xls,xlsx|max:5120',
         ]);
-
-
-
 
 
         // Create the remark

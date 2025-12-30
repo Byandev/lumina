@@ -23,7 +23,7 @@ class OnboardingChecklist extends Model
     }
 
     public function remarks(){
-        return $this->hasMany(ChecklistRemark::class);
+        return $this->hasMany(ChecklistRemark::class, 'checklist_id');
     }
 
 
