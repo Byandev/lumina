@@ -1,3 +1,9 @@
+import React, { useEffect, useState } from 'react';
+import { useForm, router } from '@inertiajs/react';
+import { CheckCircle, Edit, Plus, Trash2, TrendingUp, AlertCircle, Target, AlertTriangle } from 'lucide-react';
+
+import CompanyLayout from '@/pages/companies/company/company-layout';
+
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -6,6 +12,7 @@ import {
     DialogFooter,
     DialogHeader,
     DialogTitle,
+    DialogTrigger,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -16,12 +23,6 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-
-
-import { useForm } from '@inertiajs/react';
-import { CheckCircle, Edit, Plus, Trash2, TrendingUp } from 'lucide-react';
-import { useState, useEffect } from 'react';
-import CompanyLayout from '@/pages/companies/company/company-layout';
 import { Textarea } from '@headlessui/react';
 
 // Define interfaces matching backend structure
@@ -35,7 +36,6 @@ interface PerformanceRecord {
     avg_ads_spent: string | number;
     roas: string | number;
     rts: string | number;
-    total_revenue?: string | number | null;
     gross_profit?: string | number | null;
     profit_margin?: string | number | null;
     highlights: string | null;
@@ -87,241 +87,185 @@ interface PerformanceProps {
     company: Company;
 }
 
-interface PerformanceFormData {
-    start_date: string;
-    end_date: string;
-    phase: string;
-    no_of_items: string;
-    avg_ads_spent: string;
-    roas: string;
-    rts: string;
-    highlights: string;
-    challenges: string;
-    action_plan: string;
-    attachment: File | null;
-}
-
 const phases = ['Testing', 'Scaling'] as const;
 
 export default function PerformanceTab({ company }: PerformanceProps) {
     const [isOpen, setIsOpen] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [editingRecord, setEditingRecord] = useState<PerformanceRecord | null>(null);
+    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+    const [recordToDelete, setRecordToDelete] = useState<PerformanceRecord | null>(null);
     const [performanceRecords, setPerformanceRecords] = useState<PerformanceRecord[]>([]);
 
     // Initialize with company records from backend
     useEffect(() => {
-        if (company.records && company.records.length > 0) {
-            setPerformanceRecords(company.records);
-        }
+        setPerformanceRecords(company.records ?? []);
     }, [company.records]);
 
-    const { data, setData, post, put, delete: destroy, processing, errors, reset } = useForm<PerformanceFormData>({
-        start_date: '',
-        end_date: '',
-        phase: '',
-        no_of_items: '',
-        avg_ads_spent: '',
-        roas: '',
-        rts: '',
-        highlights: '',
-        challenges: '',
-        action_plan: '',
-        attachment: null,
-    });
+    const { data, setData, post, delete: destroy, processing, errors, reset } =
+        useForm({
+            start_date: '',
+            end_date: '',
+            phase: '',
+            no_of_items: '',
+            avg_ads_spent: '',
+            roas: '',
+            rts: '',
+            highlights: '',
+            challenges: '',
+            action_plan: '',
+            attachment: null,
+        });
 
     const handleOpenDialog = (record?: PerformanceRecord) => {
         if (record) {
             setIsEditing(true);
             setEditingRecord(record);
+
             setData({
                 start_date: record.start_date,
                 end_date: record.end_date,
                 phase: record.phase,
-                no_of_items: record.no_of_items.toString(),
-                avg_ads_spent: typeof record.avg_ads_spent === 'number'
-                    ? record.avg_ads_spent.toString()
-                    : record.avg_ads_spent || '',
-                roas: typeof record.roas === 'number'
-                    ? record.roas.toString()
-                    : record.roas || '',
-                rts: typeof record.rts === 'number'
-                    ? record.rts.toString()
-                    : record.rts || '',
-                highlights: record.highlights || '',
-                challenges: record.challenges || '',
-                action_plan: record.action_plan || '',
+                no_of_items: String(record.no_of_items ?? ''),
+                avg_ads_spent: String(record.avg_ads_spent ?? ''),
+                roas: String(record.roas ?? ''),
+                rts: String(record.rts ?? ''),
+                highlights: record.highlights ?? '',
+                challenges: record.challenges ?? '',
+                action_plan: record.action_plan ?? '',
                 attachment: null,
             });
         } else {
             setIsEditing(false);
             setEditingRecord(null);
-            reset({
-                start_date: '',
-                end_date: '',
-                phase: '',
-                no_of_items: '',
-                avg_ads_spent: '',
-                roas: '',
-                rts: '',
-                highlights: '',
-                challenges: '',
-                action_plan: '',
-                attachment: null,
-            });
+            reset();
         }
+
         setIsOpen(true);
     };
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
 
-        // Prepare form data
-        const formData = new FormData();
+        const url = isEditing && editingRecord
+            ? `/companies/${company.id}/performance-records/${editingRecord.id}`
+            : `/companies/${company.id}/performance-records`;
 
-        // Append all form data
-        formData.append('start_date', data.start_date);
-        formData.append('end_date', data.end_date);
-        formData.append('phase', data.phase);
-        formData.append('no_of_items', data.no_of_items);
-        formData.append('avg_ads_spent', data.avg_ads_spent);
-        formData.append('roas', data.roas);
-        formData.append('rts', data.rts);
-        formData.append('highlights', data.highlights);
-        formData.append('challenges', data.challenges);
-        formData.append('action_plan', data.action_plan);
+        const submitData = isEditing
+            ? { ...data, _method: 'PUT' }
+            : data;
 
-        if (data.attachment instanceof File) {
-            formData.append('attachment', data.attachment);
-        }
-
-        if (isEditing && editingRecord) {
-            // Handle update - use post with _method=PUT for Inertia
-            formData.append('_method', 'PUT');
-            post(`/companies/${company.id}/performance-records/${editingRecord.id}`, {
-                data: formData,
-                preserveScroll: true,
-                onSuccess: () => {
-                    setIsOpen(false);
-                    reset();
-                },
-                onError: (errors) => {
-                    console.error('Update errors:', errors);
-                },
-            });
-        } else {
-            // Handle create
-            post(`/companies/${company.id}/performance-records`, {
-                data: formData,
-                preserveScroll: true,
-                onSuccess: () => {
-                    setIsOpen(false);
-                    reset();
-                },
-                onError: (errors) => {
-                    console.error('Create errors:', errors);
-                },
-            });
-        }
+        post(url, submitData, {
+            forceFormData: true,
+            preserveScroll: true,
+            onSuccess: () => {
+                router.reload({ only: ['company'] });
+                setIsOpen(false);
+                reset();
+            },
+            onError: (errs) => console.error('Submit errors:', errs),
+        });
     };
 
     const handleDelete = (recordId: number) => {
-        if (confirm('Are you sure you want to delete this performance record?')) {
-            destroy(`/companies/${company.id}/performance-records/${recordId}`, {
-                preserveScroll: true,
-                onSuccess: () => {
-                    // Remove from local state
-                    setPerformanceRecords(prev => prev.filter(record => record.id !== recordId));
-                },
-                onError: (errors) => {
-                    console.error('Delete errors:', errors);
-                },
-            });
-        }
+        if (!recordToDelete) return;
+
+        destroy(`/companies/${company.id}/performance-records/${recordId}`, {
+            preserveScroll: true,
+            onSuccess: () => {
+                // Update local list immediately
+                setPerformanceRecords((prev) =>
+                    prev.filter((r) => r.id !== recordId),
+                );
+                setDeleteDialogOpen(false);
+                setRecordToDelete(null);
+                router.reload({ only: ['company'] });
+            },
+            onError: (errs) => console.error('Delete errors:', errs),
+        });
     };
 
-    const formatCurrency = (amount: string | number | null | undefined): string => {
-        if (amount === null || amount === undefined) return '$0.00';
+    const openDeleteDialog = (record: PerformanceRecord) => {
+        setRecordToDelete(record);
+        setDeleteDialogOpen(true);
+    };
 
-        const num = typeof amount === 'string' ? parseFloat(amount) : amount;
-        if (isNaN(num as number)) return '$0.00';
+    const parseToFloat = (value: string | number | null | undefined): number => {
+        if (value === null || value === undefined) return 0;
+        const num = typeof value === 'string' ? Number(value) : value;
+        return Number.isFinite(num) ? num : 0;
+    };
 
-        return new Intl.NumberFormat('en-US', {
+    const formatCurrency = (amount: string | number | null | undefined) => {
+        const num =
+            typeof amount === 'string'
+                ? Number(amount)
+                : typeof amount === 'number'
+                    ? amount
+                    : 0;
+
+        if (!Number.isFinite(num)) return '₱0.00';
+
+        return new Intl.NumberFormat('en-PH', {
             style: 'currency',
-            currency: 'USD',
+            currency: 'PHP',
             minimumFractionDigits: 2,
             maximumFractionDigits: 2,
-        }).format(num as number);
+        }).format(num);
     };
 
     const formatDate = (dateString: string | null | undefined): string => {
         if (!dateString) return 'N/A';
-        try {
-            const date = new Date(dateString);
-            if (isNaN(date.getTime())) return 'Invalid Date';
+        const date = new Date(dateString);
+        if (Number.isNaN(date.getTime())) return 'Invalid Date';
 
-            return date.toLocaleDateString('en-US', {
-                year: 'numeric',
-                month: 'short',
-                day: 'numeric',
-            });
-        } catch (e) {
-            return 'Invalid Date';
-        }
+        return date.toLocaleDateString('en-PH', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+        });
     };
 
-    const calculateROASColor = (roas: string | number | null | undefined): string => {
-        if (roas === null || roas === undefined) return 'text-gray-600';
-
-        const roasNum = typeof roas === 'string' ? parseFloat(roas) : roas;
-        if (isNaN(roasNum as number)) return 'text-gray-600';
-
+    const calculateROASColor = (roas: string | number | null | undefined) => {
+        const roasNum = parseToFloat(roas);
         if (roasNum >= 4) return 'text-green-600';
         if (roasNum >= 2) return 'text-yellow-600';
         return 'text-red-600';
     };
 
-    const calculateRTSColor = (rts: string | number | null | undefined): string => {
-        if (rts === null || rts === undefined) return 'text-gray-600';
-
-        const rtsNum = typeof rts === 'string' ? parseFloat(rts) : rts;
-        if (isNaN(rtsNum as number)) return 'text-gray-600';
-
+    const calculateRTSColor = (rts: string | number | null | undefined) => {
+        const rtsNum = parseToFloat(rts);
         if (rtsNum >= 90) return 'text-green-600';
         if (rtsNum >= 70) return 'text-yellow-600';
         return 'text-red-600';
     };
 
-    const parseToFloat = (value: string | number | null | undefined): number => {
-        if (value === null || value === undefined) return 0;
-        const num = typeof value === 'string' ? parseFloat(value) : value;
-        return isNaN(num as number) ? 0 : num as number;
-    };
+    // Totals
+    const totalAdsSpent = performanceRecords.reduce(
+        (sum, record) => sum + parseToFloat(record.avg_ads_spent),
+        0,
+    );
 
-    // Calculate totals
-    const totalRevenue = performanceRecords.reduce((sum, record) => {
-        return sum + parseToFloat(record.total_revenue);
-    }, 0);
+    const totalItemsSold = performanceRecords.reduce(
+        (sum, record) => sum + (record.no_of_items || 0),
+        0,
+    );
 
-    const totalAdsSpent = performanceRecords.reduce((sum, record) => {
-        return sum + parseToFloat(record.avg_ads_spent);
-    }, 0);
+    const avgROAS =
+        performanceRecords.length > 0
+            ? performanceRecords.reduce(
+            (sum, r) => sum + parseToFloat(r.roas),
+            0,
+        ) / performanceRecords.length
+            : 0;
 
-    const totalItemsSold = performanceRecords.reduce((sum, record) => {
-        return sum + (record.no_of_items || 0);
-    }, 0);
-
-    const avgROAS = performanceRecords.length > 0
-        ? performanceRecords.reduce((sum, record) => {
-        return sum + parseToFloat(record.roas);
-    }, 0) / performanceRecords.length
-        : 0;
-
-    const avgRTS = performanceRecords.length > 0
-        ? performanceRecords.reduce((sum, record) => {
-        return sum + parseToFloat(record.rts);
-    }, 0) / performanceRecords.length
-        : 0;
+    const avgRTS =
+        performanceRecords.length > 0
+            ? performanceRecords.reduce(
+            (sum, r) => sum + parseToFloat(r.rts),
+            0,
+        ) / performanceRecords.length
+            : 0;
 
     return (
         <CompanyLayout
@@ -347,15 +291,7 @@ export default function PerformanceTab({ company }: PerformanceProps) {
 
                 {/* Summary Statistics */}
                 {performanceRecords.length > 0 && (
-                    <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-                        <div className="rounded-lg border border-gray-200 bg-white p-4">
-                            <div className="text-sm text-gray-600">
-                                Total Revenue
-                            </div>
-                            <div className="text-xl font-bold text-green-600">
-                                {formatCurrency(totalRevenue)}
-                            </div>
-                        </div>
+                    <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
                         <div className="rounded-lg border border-gray-200 bg-white p-4">
                             <div className="text-sm text-gray-600">
                                 Total Ad Spend
@@ -379,15 +315,15 @@ export default function PerformanceTab({ company }: PerformanceProps) {
                             <div
                                 className={`text-xl font-bold ${calculateROASColor(avgROAS)}`}
                             >
-                                {isNaN(avgROAS)
-                                    ? '0.0x'
-                                    : `${avgROAS.toFixed(1)}x`}
+                                {Number.isFinite(avgROAS)
+                                    ? `${avgROAS.toFixed(1)}x`
+                                    : '0.0x'}
                             </div>
                         </div>
                     </div>
                 )}
 
-                {/* Performance Records */}
+                {/* Performance Records Table */}
                 {performanceRecords.length === 0 ? (
                     <div className="rounded-lg border-2 border-dashed border-gray-300 p-12 text-center">
                         <TrendingUp className="mx-auto mb-4 h-12 w-12 text-gray-400" />
@@ -404,169 +340,255 @@ export default function PerformanceTab({ company }: PerformanceProps) {
                         </Button>
                     </div>
                 ) : (
-                    <div className="space-y-4">
-                        <h4 className="text-sm font-semibold text-gray-900">
-                            Performance History ({performanceRecords.length}{' '}
-                            records)
-                        </h4>
-                        {performanceRecords.map((record) => (
-                            <div
-                                key={record.id}
-                                className="rounded-lg border border-gray-200 bg-white p-5 transition-all hover:border-gray-300 hover:shadow-sm"
-                            >
-                                <div className="mb-4 flex items-start justify-between">
-                                    <div>
-                                        <div className="mb-2 flex items-center gap-2">
-                                            <span
-                                                className={`rounded-full px-3 py-1 text-xs font-medium ${
-                                                    record.phase === 'Testing'
-                                                        ? 'bg-blue-100 text-blue-800'
-                                                        : 'bg-green-100 text-green-800'
-                                                }`}
-                                            >
-                                                {record.phase}
-                                            </span>
-                                            <span className="text-sm text-gray-500">
-                                                {formatDate(record.start_date)}{' '}
-                                                - {formatDate(record.end_date)}
-                                            </span>
-                                        </div>
-                                        <h4 className="text-base font-semibold text-gray-900">
-                                            Performance Report #{record.id}
-                                        </h4>
-                                        {record.total_revenue && (
-                                            <p className="mt-1 text-sm text-gray-600">
-                                                Revenue:{' '}
-                                                {formatCurrency(
-                                                    record.total_revenue,
-                                                )}
-                                            </p>
-                                        )}
-                                    </div>
-                                    <div className="flex gap-2">
-                                        <Button
-                                            size="sm"
-                                            variant="outline"
-                                            onClick={() =>
-                                                handleOpenDialog(record)
-                                            }
-                                        >
-                                            <Edit className="h-4 w-4" />
-                                        </Button>
-                                        <Button
-                                            size="sm"
-                                            variant="outline"
-                                            className="text-red-600 hover:bg-red-50 hover:text-red-700"
-                                            onClick={() =>
-                                                handleDelete(record.id)
-                                            }
-                                        >
-                                            <Trash2 className="h-4 w-4" />
-                                        </Button>
-                                    </div>
-                                </div>
+                    <div className="overflow-hidden rounded-lg border border-gray-200 bg-white">
+                        <div className="border-b border-gray-200 p-4">
+                            <h4 className="text-sm font-semibold text-gray-900">
+                                Performance History ({performanceRecords.length}{' '}
+                                records)
+                            </h4>
+                        </div>
 
-                                <div className="mb-4 grid grid-cols-2 gap-4 md:grid-cols-4">
-                                    <div className="rounded bg-gray-50 p-3">
-                                        <div className="mb-1 text-xs text-gray-600">
+                        <div className="overflow-x-auto">
+                            <table className="min-w-full divide-y divide-gray-200">
+                                <thead className="bg-gray-50">
+                                    <tr>
+                                        <th
+                                            scope="col"
+                                            className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase"
+                                        >
+                                            Period & Phase
+                                        </th>
+                                        <th
+                                            scope="col"
+                                            className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase"
+                                        >
                                             Items Sold
-                                        </div>
-                                        <div className="font-semibold text-gray-900">
-                                            {record.no_of_items.toLocaleString()}
-                                        </div>
-                                    </div>
-                                    <div className="rounded bg-gray-50 p-3">
-                                        <div className="mb-1 text-xs text-gray-600">
+                                        </th>
+                                        <th
+                                            scope="col"
+                                            className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase"
+                                        >
                                             Ad Spend
-                                        </div>
-                                        <div className="font-semibold text-blue-600">
-                                            {formatCurrency(
-                                                record.avg_ads_spent,
-                                            )}
-                                        </div>
-                                    </div>
-                                    <div className="rounded bg-gray-50 p-3">
-                                        <div className="mb-1 text-xs text-gray-600">
+                                        </th>
+                                        <th
+                                            scope="col"
+                                            className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase"
+                                        >
                                             ROAS
-                                        </div>
-                                        <div
-                                            className={`font-semibold ${calculateROASColor(record.roas)}`}
+                                        </th>
+                                        <th
+                                            scope="col"
+                                            className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase"
                                         >
-                                            {parseToFloat(record.roas).toFixed(
-                                                1,
-                                            )}
-                                            x
-                                        </div>
-                                    </div>
-                                    <div className="rounded bg-gray-50 p-3">
-                                        <div className="mb-1 text-xs text-gray-600">
                                             RTS
-                                        </div>
-                                        <div
-                                            className={`font-semibold ${calculateRTSColor(record.rts)}`}
+                                        </th>
+                                        <th
+                                            scope="col"
+                                            className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase"
                                         >
-                                            {parseToFloat(record.rts).toFixed(
-                                                1,
-                                            )}
-                                            %
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {record.highlights && (
-                                    <div className="mb-3">
-                                        <div className="mb-2 flex items-center gap-2">
-                                            <CheckCircle className="h-4 w-4 text-green-500" />
-                                            <span className="text-sm font-medium text-gray-900">
-                                                Highlights
-                                            </span>
-                                        </div>
-                                        <p className="pl-6 text-sm text-gray-600">
-                                            {record.highlights}
-                                        </p>
-                                    </div>
+                                            Notes
+                                        </th>
+                                        <th
+                                            scope="col"
+                                            className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase"
+                                        >
+                                            Actions
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-gray-200 bg-white">
+                                    {performanceRecords.map((record) => (
+                                        <tr
+                                            key={record.id}
+                                            className="transition-colors hover:bg-gray-50"
+                                        >
+                                            <td className="px-6 py-4">
+                                                <div className="flex flex-col space-y-1">
+                                                    <div className="flex items-center gap-2">
+                                                        <span
+                                                            className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                                                                record.phase ===
+                                                                'Testing'
+                                                                    ? 'bg-blue-100 text-blue-800'
+                                                                    : 'bg-green-100 text-green-800'
+                                                            }`}
+                                                        >
+                                                            {record.phase}
+                                                        </span>
+                                                    </div>
+                                                    <div className="text-sm text-gray-900">
+                                                        {formatDate(
+                                                            record.start_date,
+                                                        )}{' '}
+                                                        -{' '}
+                                                        {formatDate(
+                                                            record.end_date,
+                                                        )}
+                                                    </div>
+                                                    <div className="text-xs text-gray-500">
+                                                        Created:{' '}
+                                                        {formatDate(
+                                                            record.created_at,
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <div className="text-sm font-medium text-gray-900">
+                                                    {record.no_of_items.toLocaleString()}
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <div className="text-sm font-medium text-blue-600">
+                                                    {formatCurrency(
+                                                        record.avg_ads_spent,
+                                                    )}
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <div
+                                                    className={`text-sm font-medium ${calculateROASColor(record.roas)}`}
+                                                >
+                                                    {parseToFloat(
+                                                        record.roas,
+                                                    ).toFixed(1)}
+                                                    x
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <div
+                                                    className={`text-sm font-medium ${calculateRTSColor(record.rts)}`}
+                                                >
+                                                    {parseToFloat(
+                                                        record.rts,
+                                                    ).toFixed(1)}
+                                                    %
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <div className="max-w-xs space-y-1">
+                                                    {record.highlights && (
+                                                        <div className="flex items-start gap-2">
+                                                            <CheckCircle className="mt-0.5 h-3 w-3 flex-shrink-0 text-green-500" />
+                                                            <div className="text-xs">
+                                                                <div className="font-medium text-gray-700">
+                                                                    Highlights:
+                                                                </div>
+                                                                <div className="truncate text-gray-600">
+                                                                    {
+                                                                        record.highlights
+                                                                    }
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                    {record.challenges && (
+                                                        <div className="flex items-start gap-2">
+                                                            <AlertTriangle className="mt-0.5 h-3 w-3 flex-shrink-0 text-yellow-500" />
+                                                            <div className="text-xs">
+                                                                <div className="font-medium text-gray-700">
+                                                                    Challenges:
+                                                                </div>
+                                                                <div className="truncate text-gray-600">
+                                                                    {
+                                                                        record.challenges
+                                                                    }
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                    {record.action_plan && (
+                                                        <div className="flex items-start gap-2">
+                                                            <Target className="mt-0.5 h-3 w-3 flex-shrink-0 text-blue-500" />
+                                                            <div className="text-xs">
+                                                                <div className="font-medium text-gray-700">
+                                                                    Action Plan:
+                                                                </div>
+                                                                <div className="truncate text-gray-600">
+                                                                    {
+                                                                        record.action_plan
+                                                                    }
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                    {!record.highlights &&
+                                                        !record.challenges &&
+                                                        !record.action_plan && (
+                                                            <div className="text-xs text-gray-400 italic">
+                                                                No notes
+                                                            </div>
+                                                        )}
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4 text-right text-sm font-medium whitespace-nowrap">
+                                                <div className="flex items-center gap-2">
+                                                    <Button
+                                                        size="sm"
+                                                        variant="outline"
+                                                        onClick={() =>
+                                                            handleOpenDialog(
+                                                                record,
+                                                            )
+                                                        }
+                                                        className="h-8 w-8 p-0"
+                                                    >
+                                                        <Edit className="h-4 w-4" />
+                                                    </Button>
+                                                    <Button
+                                                        size="sm"
+                                                        variant="outline"
+                                                        className="h-8 w-8 p-0 text-red-600 hover:bg-red-50 hover:text-red-700"
+                                                        onClick={() =>
+                                                            openDeleteDialog(
+                                                                record,
+                                                            )
+                                                        }
+                                                    >
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </Button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                                {performanceRecords.length > 0 && (
+                                    <tfoot className="bg-gray-50">
+                                        <tr>
+                                            <td className="px-6 py-3 text-sm font-medium text-gray-900">
+                                                Totals / Averages
+                                            </td>
+                                            <td className="px-6 py-3 text-sm font-medium text-gray-900">
+                                                {totalItemsSold.toLocaleString()}
+                                            </td>
+                                            <td className="px-6 py-3 text-sm font-medium text-blue-600">
+                                                {formatCurrency(totalAdsSpent)}
+                                            </td>
+                                            <td className="px-6 py-3 text-sm font-medium">
+                                                <span
+                                                    className={calculateROASColor(
+                                                        avgROAS,
+                                                    )}
+                                                >
+                                                    {avgROAS.toFixed(1)}x
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-3 text-sm font-medium">
+                                                <span
+                                                    className={calculateRTSColor(
+                                                        avgRTS,
+                                                    )}
+                                                >
+                                                    {avgRTS.toFixed(1)}%
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-3"></td>
+                                            <td className="px-6 py-3"></td>
+                                        </tr>
+                                    </tfoot>
                                 )}
-
-                                {record.challenges && (
-                                    <div className="mb-3">
-                                        <div className="mb-2 flex items-center gap-2">
-                                            <span className="text-sm font-medium text-gray-900">
-                                                Challenges
-                                            </span>
-                                        </div>
-                                        <p className="pl-6 text-sm text-gray-600">
-                                            {record.challenges}
-                                        </p>
-                                    </div>
-                                )}
-
-                                {record.action_plan && (
-                                    <div>
-                                        <div className="mb-2 flex items-center gap-2">
-                                            <span className="text-sm font-medium text-gray-900">
-                                                Action Plan
-                                            </span>
-                                        </div>
-                                        <p className="pl-6 text-sm text-gray-600">
-                                            {record.action_plan}
-                                        </p>
-                                    </div>
-                                )}
-
-                                <div className="mt-4 flex justify-between border-t pt-4 text-xs text-gray-500">
-                                    <span>
-                                        Created: {formatDate(record.created_at)}
-                                    </span>
-                                    {record.updated_at !==
-                                        record.created_at && (
-                                        <span>
-                                            Updated:{' '}
-                                            {formatDate(record.updated_at)}
-                                        </span>
-                                    )}
-                                </div>
-                            </div>
-                        ))}
+                            </table>
+                        </div>
                     </div>
                 )}
             </div>
@@ -614,6 +636,7 @@ export default function PerformanceTab({ company }: PerformanceProps) {
                                     </p>
                                 )}
                             </div>
+
                             <div className="space-y-2">
                                 <Label htmlFor="end_date">End Date *</Label>
                                 <Input
@@ -681,9 +704,10 @@ export default function PerformanceTab({ company }: PerformanceProps) {
                                     </p>
                                 )}
                             </div>
+
                             <div className="space-y-2">
                                 <Label htmlFor="avg_ads_spent">
-                                    Average Ad Spend ($) *
+                                    Average Ad Spend (₱) *
                                 </Label>
                                 <Input
                                     id="avg_ads_spent"
@@ -726,6 +750,7 @@ export default function PerformanceTab({ company }: PerformanceProps) {
                                     </p>
                                 )}
                             </div>
+
                             <div className="space-y-2">
                                 <Label htmlFor="rts">RTS (%) *</Label>
                                 <Input
@@ -758,6 +783,7 @@ export default function PerformanceTab({ company }: PerformanceProps) {
                                 }
                                 rows={3}
                                 placeholder="Key achievements and successes during this period..."
+                                className="mt-2 w-full rounded-lg border border-slate-300 p-2"
                             />
                             {errors.highlights && (
                                 <p className="text-sm text-red-500">
@@ -776,6 +802,7 @@ export default function PerformanceTab({ company }: PerformanceProps) {
                                 }
                                 rows={3}
                                 placeholder="Difficulties and obstacles faced..."
+                                className="mt-2 w-full rounded-lg border border-slate-300 p-2"
                             />
                             {errors.challenges && (
                                 <p className="text-sm text-red-500">
@@ -794,6 +821,7 @@ export default function PerformanceTab({ company }: PerformanceProps) {
                                 }
                                 rows={3}
                                 placeholder="Plan for addressing challenges and future improvements..."
+                                className="mt-2 w-full rounded-lg border border-slate-300 p-2"
                             />
                             {errors.action_plan && (
                                 <p className="text-sm text-red-500">
@@ -846,6 +874,114 @@ export default function PerformanceTab({ company }: PerformanceProps) {
                             </Button>
                         </DialogFooter>
                     </form>
+                </DialogContent>
+            </Dialog>
+
+            {/* Delete Confirmation Dialog */}
+            <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+                <DialogContent className="max-w-md">
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2">
+                            <AlertCircle className="h-5 w-5 text-red-500" />
+                            Delete Performance Record
+                        </DialogTitle>
+                        <DialogDescription>
+                            Are you sure you want to delete this performance
+                            record? This action cannot be undone.
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    {recordToDelete && (
+                        <div className="space-y-3">
+                            <div className="rounded-lg bg-red-50 p-4">
+                                <div className="flex items-center gap-3">
+                                    <div
+                                        className={`rounded-full px-3 py-1 text-xs font-medium ${
+                                            recordToDelete.phase === 'Testing'
+                                                ? 'bg-blue-100 text-blue-800'
+                                                : 'bg-green-100 text-green-800'
+                                        }`}
+                                    >
+                                        {recordToDelete.phase}
+                                    </div>
+                                    <div className="text-sm font-medium text-gray-900">
+                                        {formatDate(recordToDelete.start_date)}{' '}
+                                        - {formatDate(recordToDelete.end_date)}
+                                    </div>
+                                </div>
+                                <div className="mt-2 grid grid-cols-2 gap-2 text-sm">
+                                    <div>
+                                        <span className="text-gray-600">
+                                            Items:{' '}
+                                        </span>
+                                        <span className="font-medium">
+                                            {recordToDelete.no_of_items.toLocaleString()}
+                                        </span>
+                                    </div>
+                                    <div>
+                                        <span className="text-gray-600">
+                                            Ad Spend:{' '}
+                                        </span>
+                                        <span className="font-medium">
+                                            {formatCurrency(
+                                                recordToDelete.avg_ads_spent,
+                                            )}
+                                        </span>
+                                    </div>
+                                    <div>
+                                        <span className="text-gray-600">
+                                            ROAS:{' '}
+                                        </span>
+                                        <span
+                                            className={`font-medium ${calculateROASColor(recordToDelete.roas)}`}
+                                        >
+                                            {parseToFloat(
+                                                recordToDelete.roas,
+                                            ).toFixed(1)}
+                                            x
+                                        </span>
+                                    </div>
+                                    <div>
+                                        <span className="text-gray-600">
+                                            RTS:{' '}
+                                        </span>
+                                        <span
+                                            className={`font-medium ${calculateRTSColor(recordToDelete.rts)}`}
+                                        >
+                                            {parseToFloat(
+                                                recordToDelete.rts,
+                                            ).toFixed(1)}
+                                            %
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    <DialogFooter>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => {
+                                setDeleteDialogOpen(false);
+                                setRecordToDelete(null);
+                            }}
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            type="button"
+                            variant="destructive"
+                            onClick={() =>
+                                recordToDelete &&
+                                handleDelete(recordToDelete.id)
+                            }
+                            disabled={processing}
+                        >
+                            {processing ? 'Deleting...' : 'Delete Record'}
+                        </Button>
+                    </DialogFooter>
                 </DialogContent>
             </Dialog>
         </CompanyLayout>

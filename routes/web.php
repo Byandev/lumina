@@ -50,11 +50,10 @@ Route::prefix('companies/{company}')->group(function () {
     Route::get('/attendance', [CompanyEventController::class, 'index'])->name('companies.attendance');
     Route::get('performance-records', [PerformanceRecordController::class, 'index'])->name('companies.performance-records.store');
     Route::post('performance-records', [PerformanceRecordController::class, 'store'])->name('companies.performance-records.store');
-    Route::put('performance-records/{performance}', [PerformanceRecordController::class, 'update'])->name('companies.performance-records.update');
+    Route::post('performance-records/{performance}/', [PerformanceRecordController::class, 'update'])->name('companies.performance-records.update');
     Route::delete('performance-records/{performance}', [PerformanceRecordController::class, 'destroy'])->name('companies.performance-records.destroy');
-    Route::get('performance-records/{performance}/download', [PerformanceRecordController::class, 'downloadAttachment'])->name('companies.performance-records.download');
+//    Route::get('performance-records/{performance}/download', [PerformanceRecordController::class, 'downloadAttachment'])->name('companies.performance-records.download');
 });
-
 
 
 

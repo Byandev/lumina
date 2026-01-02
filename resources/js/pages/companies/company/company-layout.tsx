@@ -29,9 +29,9 @@ export default function CompanyLayout({
     const tabs = [
         {
             name: 'Details',
-            href: `/companies/${company.id}`,
+            href: `/companies/${company.id}/details`,
             icon: Building,
-            current: currentPath === `/companies/${company.id}`,
+            current: currentPath === `/companies/${company.id}/details`,
         },
         {
             name: 'Onboarding',
@@ -47,7 +47,7 @@ export default function CompanyLayout({
         },
         {
             name: 'Performance',
-            href: `/companies/${company.id}/performance`,
+            href: `/companies/${company.id}/performance-records`,
             icon: TrendingUp,
             current: currentPath.includes('performance'),
         },
@@ -67,16 +67,6 @@ export default function CompanyLayout({
                             <p className="mt-0.5 text-sm text-gray-600">
                                 Company Management
                             </p>
-                        </div>
-                        <div className="flex gap-2">
-                            <Link href={`/companies/${company.id}/edit`}>
-                                <Button variant="outline" size="sm">
-                                    Edit Company
-                                </Button>
-                            </Link>
-                            <Button variant="destructive" size="sm">
-                                Delete Company
-                            </Button>
                         </div>
                     </div>
 
