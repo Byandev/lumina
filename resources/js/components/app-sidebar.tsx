@@ -10,7 +10,7 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import { dashboard, companies, events } from '@/routes';
+import { dashboard, companies, events, users } from '@/routes';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
 import { BookOpen, Folder, LayoutGrid } from 'lucide-react';
@@ -30,6 +30,11 @@ const mainNavItems: NavItem[] = [
     {
         title: 'Events',
         href: events(),
+        icon: LayoutGrid,
+    },
+    {
+        title: 'Users',
+        href: users(),
         icon: LayoutGrid,
     },
 ];
