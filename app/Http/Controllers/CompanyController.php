@@ -38,6 +38,8 @@ class CompanyController extends Controller
             return $company;
         });
 
+
+
         return Inertia::render('companies/companies-index', [
             'companies' => $companies,
             'search' => $search,
@@ -228,6 +230,7 @@ class CompanyController extends Controller
         $totalChecklists = $company->checklists()->count();
         $completedChecklists = $company->checklists()->where('is_completed', true)->count();
 
+
         $checklistPercentage = $totalChecklists > 0
             ? round(($completedChecklists / $totalChecklists) * 100)
             : 0;
@@ -238,7 +241,9 @@ class CompanyController extends Controller
                 ...$company->toArray(),
                 'checklist_percentage' => $checklistPercentage,
                 'owners' => $company->owners,
-            ],            'sponsors' => \App\Models\Company::all(),
+            ],
+            'sponsors' => \App\Models\Company::all(),
+            'coaches' => \App\Models\User::all(),
         ]);
     }
 
@@ -261,9 +266,18 @@ class CompanyController extends Controller
             'level' => ['required'],
             'sponsor_id' => ['nullable', 'integer', 'exists:companies,id'],
             'sales_activity' => ['nullable', 'string', 'max:255'],
+            'coach_id' => ['nullable', 'integer', 'exists:users,id'],
         ]);
 
         $company = Company::findOrFail($id);
+
+        $logoPath = null;
+        if ($request->hasFile('logo') && $request->file('logo')->isValid()) {
+            $logoFile = $request->file('logo');
+            $logoFileName = 'logo_' . uniqid() . '_' . time() . '.' . $logoFile->getClientOriginalExtension();
+            $logoPath = $logoFile->storeAs('companies/logos', $logoFileName, 'public');
+            $uploadedFiles[] = $logoPath;
+        }
 
         $company->update([
             'name' => $validated['name'],
@@ -276,7 +290,13 @@ class CompanyController extends Controller
             'level' => $validated['level'],
             'sales_activity' => $validated['sales_activity'] ?? null,
             'sponsor_id' => $validated['sponsor_id'] ?? null,
+            'coach_id' => $validated['coach_id'] ?? null,
+            'logo' => $logoPath,
         ]);
+
+
+
+
 
         return back()->with('success', 'Company updated successfully.');
     }

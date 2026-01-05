@@ -27,7 +27,6 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import { Checkbox } from '@/components/ui/checkbox';
 import AppLayout from '@/layouts/app-layout';
 import { dashboard } from '@/routes';
 import type { BreadcrumbItem } from '@/types';
@@ -48,6 +47,14 @@ import {
 import { FormEvent, useEffect, useState, useCallback } from 'react';
 import { debounce } from 'lodash';
 import { route } from 'ziggy-js';
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from '@/components/ui/tooltip';
+import ReactSelect from 'react-select';
+import makeAnimated from 'react-select/animated';
 
 interface Event {
     id: number;
@@ -55,8 +62,8 @@ interface Event {
     date: string;
     type: string;
     location: string;
-    company_ids: string[]; // Changed from company_id to company_ids
-    companies?: { // Changed from company to companies
+    company_ids: string[];
+    companies?: {
         id: number;
         name: string;
     }[];
@@ -90,17 +97,25 @@ interface EventsPageProps {
     search: string;
 }
 
+// For react-select animation
+const animatedComponents = makeAnimated();
+
 export default function index({
-                                  events,
-                                  companies,
-                                  search: initialSearch = '',
-                              }: EventsPageProps) {
+    events,
+    companies,
+    search: initialSearch = '',
+}: EventsPageProps) {
     const [isOpen, setIsOpen] = useState(false);
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const [editingEvent, setEditingEvent] = useState<Event | null>(null);
     const [eventToDelete, setEventToDelete] = useState<Event | null>(null);
     const [search, setSearch] = useState(initialSearch);
-    const [selectedCompanies, setSelectedCompanies] = useState<string[]>([]);
+
+    // Convert companies to react-select options
+    const companyOptions = companies.map((company) => ({
+        value: company.id.toString(),
+        label: company.name,
+    }));
 
     const {
         data,
@@ -116,8 +131,21 @@ export default function index({
         date: '',
         type: '',
         location: '',
-        company_ids: [] as string[], // Changed from company_id to company_ids array
+        company_ids: [] as string[],
     });
+
+    // Convert selected company_ids to react-select value format
+    const selectedCompanyValues = companyOptions.filter((option) =>
+        data.company_ids.includes(option.value),
+    );
+
+    // Handle company selection with react-select
+    const handleCompanyChange = (selectedOptions: any) => {
+        const selectedIds = selectedOptions
+            ? selectedOptions.map((option: any) => option.value)
+            : [];
+        setData('company_ids', selectedIds);
+    };
 
     // Debounced search function
     const debouncedSearch = useCallback(
@@ -129,10 +157,10 @@ export default function index({
                     preserveState: true,
                     replace: true,
                     preserveScroll: true,
-                }
+                },
             );
         }, 500),
-        []
+        [],
     );
 
     // Clear search
@@ -145,7 +173,7 @@ export default function index({
                 preserveState: true,
                 replace: true,
                 preserveScroll: true,
-            }
+            },
         );
     };
 
@@ -159,45 +187,25 @@ export default function index({
     // Handle page change
     const handlePageChange = (url: string | null) => {
         if (url) {
-            router.get(url, {}, {
-                preserveState: true,
-                preserveScroll: true,
-            });
+            router.get(
+                url,
+                {},
+                {
+                    preserveState: true,
+                    preserveScroll: true,
+                },
+            );
         }
-    };
-
-    // Handle company selection
-    const handleCompanySelect = (companyId: string) => {
-        setSelectedCompanies(prev => {
-            if (prev.includes(companyId)) {
-                return prev.filter(id => id !== companyId);
-            } else {
-                return [...prev, companyId];
-            }
-        });
-    };
-
-    // Handle select all companies
-    const handleSelectAll = () => {
-        if (selectedCompanies.length === companies.length) {
-            setSelectedCompanies([]);
-        } else {
-            const allCompanyIds = companies.map(company => company.id.toString());
-            setSelectedCompanies(allCompanyIds);
-        }
-    };
-
-    // Handle clear all selections
-    const handleClearAll = () => {
-        setSelectedCompanies([]);
     };
 
     useEffect(() => {
         if (editingEvent) {
-            const companyIds = editingEvent.company_ids ||
-                (editingEvent.companies ? editingEvent.companies.map(c => c.id.toString()) : []);
+            const companyIds =
+                editingEvent.company_ids ||
+                (editingEvent.companies
+                    ? editingEvent.companies.map((c) => c.id.toString())
+                    : []);
 
-            setSelectedCompanies(companyIds);
             setData({
                 name: editingEvent.name,
                 date: editingEvent.date,
@@ -206,14 +214,9 @@ export default function index({
                 company_ids: companyIds,
             });
         } else {
-            setSelectedCompanies([]);
+            setData('company_ids', []);
         }
     }, [editingEvent]);
-
-    // Update form data when selected companies change
-    useEffect(() => {
-        setData('company_ids', selectedCompanies);
-    }, [selectedCompanies]);
 
     const handleSubmit = (e: FormEvent) => {
         e.preventDefault();
@@ -225,7 +228,6 @@ export default function index({
                     reset();
                     setIsOpen(false);
                     setEditingEvent(null);
-                    setSelectedCompanies([]);
                 },
                 preserveScroll: true,
             });
@@ -235,7 +237,6 @@ export default function index({
                 onSuccess: () => {
                     reset();
                     setIsOpen(false);
-                    setSelectedCompanies([]);
                 },
                 preserveScroll: true,
             });
@@ -267,25 +268,107 @@ export default function index({
     const handleCancel = () => {
         setIsOpen(false);
         setEditingEvent(null);
-        setSelectedCompanies([]);
         reset();
     };
 
     const breadcrumbs: BreadcrumbItem[] = [
         {
-            title: 'Dashboard',
-            href: dashboard().url,
-        },
-        {
             title: 'Events',
-            href: `/events`
+            href: `/events`,
         },
     ];
 
-    const eventTypes = [
-        'Online',
-        'Face to Face',
-    ];
+    const eventTypes = ['Online', 'Face to Face'];
+
+    // Custom styles for react-select to match shadcn design
+    const selectStyles = {
+        control: (base: any, state: any) => ({
+            ...base,
+            minHeight: '40px',
+            borderColor: state.isFocused
+                ? 'hsl(var(--ring))'
+                : 'hsl(var(--input))',
+            backgroundColor: 'hsl(var(--background))',
+            '&:hover': {
+                borderColor: state.isFocused
+                    ? 'hsl(var(--ring))'
+                    : 'hsl(var(--input))',
+            },
+            boxShadow: state.isFocused ? '0 0 0 2px hsl(var(--ring))' : 'none',
+            borderRadius: 'calc(var(--radius) - 2px)',
+        }),
+        menu: (base: any) => ({
+            ...base,
+            backgroundColor: 'hsl(var(--popover))',
+            border: '1px solid hsl(var(--border))',
+            borderRadius: 'calc(var(--radius) - 2px)',
+            zIndex: 50,
+        }),
+        menuList: (base: any) => ({
+            ...base,
+            padding: '4px',
+            maxHeight: '200px',
+        }),
+        option: (base: any, state: any) => ({
+            ...base,
+            backgroundColor: state.isSelected
+                ? 'hsl(var(--primary))'
+                : state.isFocused
+                  ? 'hsl(var(--accent))'
+                  : 'transparent',
+            color: state.isSelected
+                ? 'hsl(var(--primary-foreground))'
+                : 'hsl(var(--foreground))',
+            borderRadius: 'calc(var(--radius) - 4px)',
+            padding: '8px 12px',
+            cursor: 'pointer',
+            '&:active': {
+                backgroundColor: 'hsl(var(--primary))',
+            },
+        }),
+        multiValue: (base: any) => ({
+            ...base,
+            backgroundColor: 'hsl(var(--secondary))',
+            borderRadius: 'calc(var(--radius) - 2px)',
+        }),
+        multiValueLabel: (base: any) => ({
+            ...base,
+            color: 'hsl(var(--secondary-foreground))',
+            padding: '2px 6px',
+        }),
+        multiValueRemove: (base: any) => ({
+            ...base,
+            color: 'hsl(var(--muted-foreground))',
+            borderRadius:
+                '0 calc(var(--radius) - 2px) calc(var(--radius) - 2px) 0',
+            '&:hover': {
+                backgroundColor: 'hsl(var(--destructive))',
+                color: 'hsl(var(--destructive-foreground))',
+            },
+        }),
+        placeholder: (base: any) => ({
+            ...base,
+            color: 'hsl(var(--muted-foreground))',
+        }),
+        noOptionsMessage: (base: any) => ({
+            ...base,
+            color: 'hsl(var(--muted-foreground))',
+        }),
+        clearIndicator: (base: any) => ({
+            ...base,
+            color: 'hsl(var(--muted-foreground))',
+            '&:hover': {
+                color: 'hsl(var(--foreground))',
+            },
+        }),
+        dropdownIndicator: (base: any) => ({
+            ...base,
+            color: 'hsl(var(--muted-foreground))',
+            '&:hover': {
+                color: 'hsl(var(--foreground))',
+            },
+        }),
+    };
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -299,7 +382,12 @@ export default function index({
                     setIsOpen(open);
                 }}
             >
-                <DialogContent className="sm:max-w-[600px]">
+                <DialogContent
+                    className="sm:max-w-[600px]"
+                    onPointerDownOutside={(e) => {
+                        e.preventDefault();
+                    }}
+                >
                     <DialogHeader>
                         <DialogTitle>
                             {editingEvent ? 'Edit Event' : 'Add New Event'}
@@ -400,83 +488,50 @@ export default function index({
                         </div>
 
                         <div className="grid gap-2">
-                            <div className="flex items-center justify-between">
-                                <Label htmlFor="companies">Companies *</Label>
-                                <div className="flex items-center gap-2">
-                                    <Button
-                                        type="button"
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={handleSelectAll}
-                                        className="h-7 text-xs"
-                                    >
-                                        {selectedCompanies.length ===
-                                        companies.length
-                                            ? 'Deselect All'
-                                            : 'Select All'}
-                                    </Button>
-                                    {selectedCompanies.length > 0 && (
-                                        <Button
-                                            type="button"
-                                            variant="outline"
-                                            size="sm"
-                                            onClick={handleClearAll}
-                                            className="h-7 text-xs"
-                                        >
-                                            Clear All
-                                        </Button>
-                                    )}
+                            <Label htmlFor="companies">Companies *</Label>
+                            <ReactSelect
+                                id="companies"
+                                name="companies"
+                                isMulti
+                                options={companyOptions}
+                                value={selectedCompanyValues}
+                                onChange={handleCompanyChange}
+                                closeMenuOnSelect={false}
+                                placeholder="Select companies..."
+                                noOptionsMessage={() => 'No companies found'}
+                                components={animatedComponents}
+                                isDisabled={processing}
+                                className="react-select-container"
+                                classNamePrefix="react-select"
+                                classNames={{
+                                    control: (state) =>
+                                        state.isFocused
+                                            ? 'border-ring ring-2 ring-ring'
+                                            : 'border-input',
+                                    menu: () =>
+                                        'bg-popover border border-border rounded-md shadow-lg',
+                                    option: (state) =>
+                                        state.isSelected
+                                            ? 'bg-primary text-primary-foreground'
+                                            : state.isFocused
+                                              ? 'bg-accent text-accent-foreground'
+                                              : 'bg-transparent',
+                                    multiValue: () =>
+                                        'bg-secondary text-secondary-foreground',
+                                    placeholder: () => 'text-muted-foreground',
+                                }}
+                            />
+                            {selectedCompanyValues.length > 0 && (
+                                <div className="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
+                                    <Users className="h-4 w-4" />
+                                    <span>
+                                        {selectedCompanyValues.length} company
+                                        {selectedCompanyValues.length !== 1
+                                            ? 'ies'
+                                            : ''}{' '}
+                                        selected
+                                    </span>
                                 </div>
-                            </div>
-                            <div className="max-h-60 overflow-y-auto rounded-md border p-4">
-                                {companies.length === 0 ? (
-                                    <p className="py-4 text-center text-sm text-gray-500">
-                                        No companies available
-                                    </p>
-                                ) : (
-                                    <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-                                        {companies.map((company) => (
-                                            <div
-                                                key={company.id}
-                                                className="flex items-center space-x-2"
-                                            >
-                                                <Checkbox
-                                                    id={`company-${company.id}`}
-                                                    checked={selectedCompanies.includes(
-                                                        company.id.toString(),
-                                                    )}
-                                                    onCheckedChange={() =>
-                                                        handleCompanySelect(
-                                                            company.id.toString(),
-                                                        )
-                                                    }
-                                                    disabled={processing}
-                                                />
-                                                <Label
-                                                    htmlFor={`company-${company.id}`}
-                                                    className="flex-1 cursor-pointer text-sm font-normal"
-                                                >
-                                                    <div className="flex items-center gap-2">
-                                                        <Building className="h-4 w-4 text-gray-500" />
-                                                        <span>
-                                                            {company.name}
-                                                        </span>
-                                                    </div>
-                                                </Label>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
-                            {selectedCompanies.length > 0 && (
-                                <p className="text-sm text-gray-500">
-                                    <Users className="mr-1 inline h-4 w-4" />
-                                    {selectedCompanies.length} company
-                                    {selectedCompanies.length !== 1
-                                        ? 'ies'
-                                        : ''}{' '}
-                                    selected
-                                </p>
                             )}
                             {errors.company_ids && (
                                 <p className="text-sm text-red-500">
@@ -497,7 +552,7 @@ export default function index({
                             <Button
                                 type="submit"
                                 disabled={
-                                    processing || selectedCompanies.length === 0
+                                    processing || data.company_ids.length === 0
                                 }
                             >
                                 {processing
@@ -545,106 +600,113 @@ export default function index({
             </AlertDialog>
 
             <div className="px-4 py-6">
-                <div className="mb-6">
-                    <div className="mb-4 flex items-center justify-between">
-                        <div>
-                            <h1 className="text-2xl font-bold text-gray-900">
+                <div className="mb-2">
+                    <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                            <h1 className="text-lg font-semibold text-foreground">
                                 Events
                             </h1>
-                            <p className="mt-1 text-sm text-gray-500">
+                            <p className="mt-0.5 text-xs text-muted-foreground">
                                 Manage all events in your system
                             </p>
                         </div>
-                        <div>
-                            <Button
-                                onClick={() => {
-                                    setEditingEvent(null);
-                                    reset();
-                                    setSelectedCompanies([]);
-                                    setIsOpen(true);
-                                }}
-                            >
-                                <Plus className="mr-2 h-4 w-4" />
-                                Add Event
-                            </Button>
-                        </div>
+
+                        <Button
+                            size="sm"
+                            onClick={() => {
+                                setEditingEvent(null);
+                                reset();
+                                setIsOpen(true);
+                            }}
+                        >
+                            <Plus className="mr-1.5 h-4 w-4" />
+                            Add New Event
+                        </Button>
                     </div>
 
                     {/* Search Bar */}
-                    <div className="relative max-w-md">
-                        <div className="relative">
-                            <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
-                            <Input
-                                type="text"
-                                placeholder="Search events by name..."
-                                value={search}
-                                onChange={handleSearchChange}
-                                className="pr-10 pl-10"
-                            />
-                            {search && (
-                                <button
-                                    onClick={clearSearch}
-                                    className="absolute top-1/2 right-3 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                                >
-                                    <X className="h-4 w-4" />
-                                </button>
-                            )}
-                        </div>
-                        {search && (
-                            <p className="mt-2 text-sm text-gray-500">
-                                Showing results for "{search}"
+                    <div className="relative mt-4 max-w-md">
+                        <Search className="pointer-events-none absolute top-4.5 left-3 z-10 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                        <Input
+                            type="text"
+                            placeholder="Search events..."
+                            value={search}
+                            onChange={handleSearchChange}
+                            className="h-9 pr-9 pl-9"
+                        />
+                        {search ? (
+                            <button
+                                type="button"
+                                onClick={clearSearch}
+                                className="absolute top-4.5 right-2 -translate-y-1/2 rounded p-1 text-muted-foreground hover:text-foreground"
+                                aria-label="Clear search"
+                            >
+                                <X className="h-4 w-4" />
+                            </button>
+                        ) : null}
+
+                        {search ? (
+                            <p className="mt-2 text-xs text-muted-foreground">
+                                Results for{' '}
+                                <span className="font-medium text-foreground">
+                                    "{search}"
+                                </span>
                             </p>
-                        )}
+                        ) : null}
                     </div>
                 </div>
 
-                {/* Events Table */}
-                <div className="mb-4 rounded-lg border bg-white">
+                {/* Events Table - Keeping borderless design */}
+                <div className="rounded-lg bg-background">
                     <div className="overflow-x-auto">
-                        <table className="w-full">
-                            <thead>
-                                <tr className="border-b bg-gray-50">
-                                    <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
-                                        Event Name
+                        <table className="w-full text-sm">
+                            <thead className="bg-gray-100">
+                                <tr className="text-xs text-muted-foreground">
+                                    <th className="px-4 py-2 text-left font-medium">
+                                        Event
                                     </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
-                                        Date & Time
+                                    <th className="px-4 py-2 text-left font-medium">
+                                        Date
                                     </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
+                                    <th className="px-4 py-2 text-left font-medium">
                                         Type
                                     </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
+                                    <th className="px-4 py-2 text-left font-medium">
                                         Location
                                     </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
+                                    <th className="px-4 py-2 text-left font-medium">
                                         Companies
                                     </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
+                                    <th className="px-4 py-2 text-right font-medium">
                                         Actions
                                     </th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-gray-200">
+
+                            <tbody className="divide-y divide-border/60">
                                 {events.data.length === 0 ? (
                                     <tr>
                                         <td
                                             colSpan={6}
-                                            className="px-6 py-8 text-center text-gray-500"
+                                            className="px-4 py-10 text-center text-sm text-muted-foreground"
                                         >
                                             {search ? (
                                                 <>
-                                                    No events found matching "
-                                                    {search}".
+                                                    No events found for{' '}
+                                                    <span className="font-medium text-foreground">
+                                                        "{search}"
+                                                    </span>
+                                                    .
                                                     <Button
                                                         variant="link"
                                                         onClick={clearSearch}
-                                                        className="ml-1"
+                                                        className="ml-1 h-auto p-0 text-sm"
                                                     >
                                                         Clear search
                                                     </Button>
                                                 </>
                                             ) : (
-                                                'No events found. Create your first event!'
+                                                'No events found. Create your first event.'
                                             )}
                                         </td>
                                     </tr>
@@ -652,112 +714,150 @@ export default function index({
                                     events.data.map((event) => (
                                         <tr
                                             key={event.id}
-                                            className="hover:bg-gray-50"
+                                            className="even:bg-gray-50/30 hover:bg-muted/30"
                                         >
-                                            <td className="px-6 py-4">
-                                                <div className="font-medium text-gray-900">
+                                            <td className="px-4 py-2">
+                                                <div className="font-medium text-foreground">
                                                     {event.name}
                                                 </div>
                                             </td>
-                                            <td className="px-6 py-4">
-                                                <div className="text-sm text-gray-900">
+
+                                            <td className="px-4 py-2">
+                                                <div className="text-sm text-foreground">
                                                     {format(
                                                         new Date(event.date),
                                                         'PPp',
                                                     )}
                                                 </div>
                                             </td>
-                                            <td className="px-6 py-4">
+
+                                            <td className="px-4 py-2">
                                                 <Badge
                                                     variant="outline"
-                                                    className="capitalize"
+                                                    className="h-6 px-2 text-xs capitalize"
                                                 >
                                                     {event.type}
                                                 </Badge>
                                             </td>
-                                            <td className="px-6 py-4">
-                                                <div className="text-sm text-gray-900">
+
+                                            <td className="px-4 py-2">
+                                                <div className="text-sm text-foreground">
                                                     {event.location}
                                                 </div>
                                             </td>
-                                            <td className="px-6 py-4">
-                                                <div className="space-y-1">
-                                                    {event.companies &&
-                                                    event.companies.length >
-                                                        0 ? (
-                                                        <div className="flex flex-wrap gap-1">
-                                                            {event.companies
-                                                                .slice(0, 3)
-                                                                .map(
-                                                                    (
-                                                                        company,
-                                                                    ) => (
-                                                                        <Badge
-                                                                            key={
-                                                                                company.id
-                                                                            }
-                                                                            variant="secondary"
-                                                                            className="flex items-center gap-1"
-                                                                        >
-                                                                            <Building className="h-3 w-3" />
-                                                                            {
-                                                                                company.name
-                                                                            }
-                                                                        </Badge>
-                                                                    ),
-                                                                )}
-                                                            {event.companies
-                                                                .length > 3 && (
-                                                                <Badge variant="outline">
-                                                                    +
-                                                                    {event
-                                                                        .companies
-                                                                        .length -
-                                                                        3}{' '}
-                                                                    more
+
+                                            <td className="px-4 py-2">
+                                                {event.companies?.length ? (
+                                                    <div className="flex flex-wrap gap-1.5">
+                                                        {event.companies
+                                                            .slice(0, 3)
+                                                            .map((company) => (
+                                                                <Badge
+                                                                    key={
+                                                                        company.id
+                                                                    }
+                                                                    variant="secondary"
+                                                                    className="h-6 gap-1 px-2 text-xs"
+                                                                >
+                                                                    <Building className="h-3.5 w-3.5" />
+                                                                    {
+                                                                        company.name
+                                                                    }
                                                                 </Badge>
-                                                            )}
-                                                        </div>
-                                                    ) : (
-                                                        <span className="text-sm text-gray-500">
-                                                            No companies
-                                                        </span>
-                                                    )}
-                                                </div>
+                                                            ))}
+                                                        {event.companies
+                                                            .length > 3 ? (
+                                                            <Badge
+                                                                variant="outline"
+                                                                className="h-6 px-2 text-xs"
+                                                            >
+                                                                +
+                                                                {event.companies
+                                                                    .length - 3}
+                                                            </Badge>
+                                                        ) : null}
+                                                    </div>
+                                                ) : (
+                                                    <span className="text-xs text-muted-foreground">
+                                                        No companies
+                                                    </span>
+                                                )}
                                             </td>
-                                            <td className="px-6 py-4">
-                                                <div className="flex items-center space-x-2">
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="sm"
-                                                        onClick={() =>
-                                                            handleEdit(event)
-                                                        }
-                                                        className="h-8 w-8 p-0"
-                                                    >
-                                                        <Edit className="h-4 w-4" />
-                                                    </Button>
 
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="sm"
-                                                        onClick={() =>
-                                                            handleDeleteClick(
-                                                                event,
-                                                            )
-                                                        }
-                                                        className="h-8 w-8 p-0 text-red-600 hover:bg-red-50 hover:text-red-700"
-                                                    >
-                                                        <Trash2 className="h-4 w-4" />
-                                                    </Button>
+                                            <td className="px-4 py-2">
+                                                <TooltipProvider>
+                                                    <div className="flex items-center justify-end gap-1.5">
+                                                        {/* Edit */}
+                                                        <Tooltip>
+                                                            <TooltipTrigger
+                                                                asChild
+                                                            >
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    size="icon"
+                                                                    onClick={() =>
+                                                                        handleEdit(
+                                                                            event,
+                                                                        )
+                                                                    }
+                                                                    className="h-8 w-8"
+                                                                >
+                                                                    <Edit className="h-4 w-4" />
+                                                                </Button>
+                                                            </TooltipTrigger>
+                                                            <TooltipContent>
+                                                                <p>
+                                                                    Edit event
+                                                                </p>
+                                                            </TooltipContent>
+                                                        </Tooltip>
 
-                                                    <Link
-                                                        href={`/events/${event.id}`}
-                                                        className="flex h-8 w-8 items-center justify-center rounded hover:bg-slate-100"
-                                                    >
-                                                        <Eye className="h-4 w-4" />
-                                                    </Link>
-                                                </div>
+                                                        {/* Delete */}
+                                                        <Tooltip>
+                                                            <TooltipTrigger
+                                                                asChild
+                                                            >
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    size="icon"
+                                                                    onClick={() =>
+                                                                        handleDeleteClick(
+                                                                            event,
+                                                                        )
+                                                                    }
+                                                                    className="h-8 w-8 text-destructive hover:bg-destructive/10"
+                                                                >
+                                                                    <Trash2 className="h-4 w-4" />
+                                                                </Button>
+                                                            </TooltipTrigger>
+                                                            <TooltipContent>
+                                                                <p>
+                                                                    Delete event
+                                                                </p>
+                                                            </TooltipContent>
+                                                        </Tooltip>
+
+                                                        {/* View */}
+                                                        <Tooltip>
+                                                            <TooltipTrigger
+                                                                asChild
+                                                            >
+                                                                <Link
+                                                                    href={`/events/${event.id}`}
+                                                                    className="inline-flex h-8 w-8 items-center justify-center rounded-md hover:bg-muted"
+                                                                    aria-label="View event"
+                                                                >
+                                                                    <Eye className="h-4 w-4" />
+                                                                </Link>
+                                                            </TooltipTrigger>
+                                                            <TooltipContent>
+                                                                <p>
+                                                                    View event
+                                                                </p>
+                                                            </TooltipContent>
+                                                        </Tooltip>
+                                                    </div>
+                                                </TooltipProvider>
                                             </td>
                                         </tr>
                                     ))
@@ -765,52 +865,42 @@ export default function index({
                             </tbody>
                         </table>
                     </div>
-                    <div className="flex flex-col items-center justify-between gap-4 rounded-b-lg border-t bg-gray-50 p-2 text-sm sm:flex-row">
-                        {/* Pagination info */}
-                        <div className="text-sm text-gray-700">
+
+                    {/* Compact pagination footer */}
+                    <div className="mt-2 flex flex-col items-center gap-2 border-t px-1 sm:flex-row md:justify-between">
+                        <div className="text-xs text-muted-foreground">
                             Showing{' '}
-                            <span className="font-medium">
+                            <span className="font-medium text-foreground">
                                 {events.from || 0}
-                            </span>{' '}
-                            to{' '}
-                            <span className="font-medium">
+                            </span>
+                            –{' '}
+                            <span className="font-medium text-foreground">
                                 {events.to || 0}
                             </span>{' '}
                             of{' '}
-                            <span className="font-medium">{events.total}</span>{' '}
-                            results
+                            <span className="font-medium text-foreground">
+                                {events.total}
+                            </span>
                         </div>
 
-                        {/* Pagination controls */}
-                        <div className="flex items-center gap-1">
+                        <div className="mt-2 flex items-center gap-1">
                             <Button
                                 variant="outline"
-                                size="sm"
+                                size="icon"
                                 onClick={() =>
-                                    handlePageChange(events.links[0].url)
+                                    handlePageChange(
+                                        events.links[0]?.url ?? null,
+                                    )
                                 }
-                                disabled={!events.links[0].url}
-                                className="h-8 w-8 p-0"
+                                disabled={!events.links[0]?.url}
+                                className="h-8 w-8"
                             >
                                 <ChevronLeft className="h-4 w-4" />
                             </Button>
 
                             {events.links.slice(1, -1).map((link, index) => {
-                                const pageNum = link.label;
-                                const isEllipsis = pageNum === '...';
+                                const isEllipsis = link.label === '...';
                                 const isCurrent = link.active;
-                                const totalPages = events.last_page;
-                                const currentPage = events.current_page;
-                                const showPage =
-                                    index < 2 ||
-                                    index > events.links.length - 4 ||
-                                    Math.abs(parseInt(pageNum) - currentPage) <=
-                                        1 ||
-                                    isEllipsis;
-
-                                if (!showPage && !isEllipsis) {
-                                    return null;
-                                }
 
                                 return (
                                     <Button
@@ -818,31 +908,31 @@ export default function index({
                                         variant={
                                             isCurrent ? 'default' : 'outline'
                                         }
-                                        size="sm"
+                                        size="icon"
                                         onClick={() =>
                                             handlePageChange(link.url)
                                         }
                                         disabled={!link.url || isEllipsis}
-                                        className={`h-8 w-8 p-0 ${isCurrent ? 'bg-primary text-primary-foreground' : ''}`}
+                                        className="h-8 w-8 text-xs"
                                     >
-                                        {isEllipsis ? '...' : pageNum}
+                                        {isEllipsis ? '…' : link.label}
                                     </Button>
                                 );
                             })}
 
                             <Button
                                 variant="outline"
-                                size="sm"
+                                size="icon"
                                 onClick={() =>
                                     handlePageChange(
                                         events.links[events.links.length - 1]
-                                            .url,
+                                            ?.url ?? null,
                                     )
                                 }
                                 disabled={
-                                    !events.links[events.links.length - 1].url
+                                    !events.links[events.links.length - 1]?.url
                                 }
-                                className="h-8 w-8 p-0"
+                                className="h-8 w-8"
                             >
                                 <ChevronRight className="h-4 w-4" />
                             </Button>

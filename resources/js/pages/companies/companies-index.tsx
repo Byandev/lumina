@@ -12,7 +12,7 @@ import {
     Search,
     Users,
 } from 'lucide-react';
-import { useCallback, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 
 interface Company {
     id: number;
@@ -76,7 +76,7 @@ function debounce<T extends (...args: any[]) => any>(
     func: T,
     wait: number,
 ): (...args: Parameters<T>) => void {
-    let timeout: NodeJS.Timeout;
+    let timeout: ReturnType<typeof setTimeout>;
     return (...args: Parameters<T>) => {
         clearTimeout(timeout);
         timeout = setTimeout(() => func(...args), wait);
@@ -90,6 +90,7 @@ export default function CompaniesIndex({
     const getInitials = (name: string) => {
         return name
             .split(' ')
+            .filter(Boolean)
             .map((word) => word[0])
             .join('')
             .toUpperCase()
@@ -98,7 +99,11 @@ export default function CompaniesIndex({
 
     const formatStatus = (status?: string) => {
         if (!status) return 'N/A';
-        return status.charAt(0).toUpperCase() + status.slice(1);
+        return status
+            .replace(/_/g, ' ')
+            .split(' ')
+            .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+            .join(' ');
     };
 
     const getStatusColor = (status?: string) => {
@@ -106,31 +111,31 @@ export default function CompaniesIndex({
             case 'active':
             case 'completed':
             case 'done':
-                return 'bg-green-100 text-green-800';
+                return 'border-green-200 bg-green-50 text-green-700';
             case 'pending':
             case 'in_progress':
-                return 'bg-yellow-100 text-yellow-800';
+                return 'border-yellow-200 bg-yellow-50 text-yellow-700';
             case 'inactive':
             case 'failed':
             case 'terminated':
-                return 'bg-red-100 text-red-800';
+                return 'border-red-200 bg-red-50 text-red-700';
             default:
-                return 'bg-gray-100 text-gray-800';
+                return 'border-gray-200 bg-gray-50 text-gray-700';
         }
     };
 
     const getLevelColor = (level?: string) => {
         switch (level?.toLowerCase()) {
             case 'educate':
-                return 'bg-yellow-100 text-yellow-800';
+                return 'border-yellow-200 bg-yellow-50 text-yellow-700';
             case 'empowerment':
-                return 'bg-gray-100 text-gray-800';
+                return 'border-gray-200 bg-gray-50 text-gray-700';
             case 'enterprise':
-                return 'bg-blue-100 text-blue-800';
+                return 'border-blue-200 bg-blue-50 text-blue-700';
             case 'exponential':
-                return 'bg-orange-100 text-orange-800';
+                return 'border-orange-200 bg-orange-50 text-orange-700';
             default:
-                return 'bg-gray-100 text-gray-800';
+                return 'border-gray-200 bg-gray-50 text-gray-700';
         }
     };
 
@@ -140,10 +145,10 @@ export default function CompaniesIndex({
         debounce((value: string) => {
             router.get(
                 '/companies',
-                { search: value },
-                { preserveState: true, replace: true },
+                { search: value || undefined },
+                { preserveState: true, replace: true, preserveScroll: true },
             );
-        }, 500),
+        }, 450),
         [],
     );
 
@@ -157,107 +162,139 @@ export default function CompaniesIndex({
         e.preventDefault();
         router.get(
             '/companies',
-            { search: searchTerm },
-            { preserveState: true, replace: true },
+            { search: searchTerm || undefined },
+            { preserveState: true, replace: true, preserveScroll: true },
         );
     };
 
     const clearSearch = () => {
         setSearchTerm('');
-        router.get('/companies', {}, { preserveState: true, replace: true });
+        router.get(
+            '/companies',
+            {},
+            { preserveState: true, replace: true, preserveScroll: true },
+        );
     };
+
+    const hasData = companies.data.length > 0;
+
+    const pagination = useMemo(() => {
+        const prev = companies.links[0];
+        const next = companies.links[companies.links.length - 1];
+        const pages = companies.links.slice(1, -1);
+        return { prev, next, pages };
+    }, [companies.links]);
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Companies" />
 
-            <div className="px-4 py-6">
-                {/* Header */}
-                <div className="mb-6 flex items-center justify-between">
-                    <div>
-                        <h1 className="text-xl font-semibold text-gray-900">
-                            Companies
-                        </h1>
-                        <p className="mt-0.5 text-xs text-gray-500">
-                            Manage all companies in your system
-                        </p>
-                    </div>
-                    <div>
-                        <Link
-                            href="/companies/create"
-                            className="inline-flex items-center gap-1.5 rounded-lg bg-black px-3 py-2 text-xs font-medium text-white transition hover:bg-gray-800"
+            <div className="min-h-screen px-4 py-6">
+                {/* Toolbar */}
+                <div className="mb-1 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+                    <div className="flex flex-col gap-2">
+                        <form
+                            onSubmit={handleSearchSubmit}
+                            className="relative w-full sm:w-96"
                         >
-                            <Plus className="h-3.5 w-3.5" />
-                            Add Company
-                        </Link>
-                    </div>
-                </div>
-
-                {/* Search and Filter */}
-                <div className="mb-4">
-                    <form
-                        onSubmit={handleSearchSubmit}
-                        className="relative w-80"
-                    >
-                        <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                            <Search className="h-4 w-4 text-gray-400" />
-                        </div>
-                        <input
-                            type="text"
-                            value={searchTerm}
-                            onChange={handleSearchChange}
-                            placeholder="Search companies by name..."
-                            className="w-full rounded-lg border border-gray-300 py-2 pr-10 pl-9 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                        />
-                        {searchTerm && (
-                            <button
-                                type="button"
-                                onClick={clearSearch}
-                                className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600"
-                            >
-                                ×
-                            </button>
-                        )}
-                    </form>
-                    {searchTerm && (
-                        <p className="mt-2 text-xs text-gray-500">
-                            Searching for: "{searchTerm}" • {companies.total}{' '}
-                            result{companies.total !== 1 ? 's' : ''} found
-                        </p>
-                    )}
-                </div>
-
-                {/* Companies Table - Compact */}
-                <div className="overflow-hidden rounded-lg border border-gray-200 bg-white">
-                    {companies.data.length === 0 ? (
-                        <div className="px-6 py-8 text-center">
-                            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-gray-100">
-                                <Building className="h-6 w-6 text-gray-400" />
+                            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                                <Search className="h-4 w-4 text-gray-400" />
                             </div>
-                            <h3 className="mt-3 text-sm font-medium text-gray-900">
+
+                            <input
+                                type="text"
+                                value={searchTerm}
+                                onChange={handleSearchChange}
+                                placeholder="Search companies by name..."
+                                className="h-10 w-full rounded-lg border border-gray-300 bg-white py-2 pr-10 pl-9 text-sm text-gray-900 shadow-sm transition outline-none focus:border-gray-900 focus:ring-2 focus:ring-gray-900/10"
+                            />
+
+                            {searchTerm && (
+                                <button
+                                    type="button"
+                                    onClick={clearSearch}
+                                    className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 transition hover:text-gray-700"
+                                    aria-label="Clear search"
+                                >
+                                    <span className="text-lg leading-none">
+                                        ×
+                                    </span>
+                                </button>
+                            )}
+                        </form>
+                    </div>
+
+                    <Link
+                        href="/companies/create"
+                        className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-pink-300 via-violet-300 to-cyan-300 px-4 text-sm font-semibold text-white shadow-[0_0_4px_rgba(236,72,153,0.45)] transition hover:shadow-[0_0_12px_rgba(139,92,246,0.6)] sm:w-auto"
+                    >
+                        <Plus className="h-4 w-4" />
+                        Add Company
+                    </Link>
+                </div>
+
+                <p className="mb-4 text-xs text-gray-500">
+                    {searchTerm ? (
+                        <>
+                            Searching:{' '}
+                            <span className="font-medium text-gray-700">
+                                "{searchTerm}"
+                            </span>{' '}
+                            •{' '}
+                            <span className="font-medium text-gray-700">
+                                {companies.total}
+                            </span>{' '}
+                            result
+                            {companies.total !== 1 ? 's' : ''}
+                        </>
+                    ) : (
+                        <>
+                            Total companies:{' '}
+                            <span className="font-medium text-gray-700">
+                                {companies.total}
+                            </span>
+                        </>
+                    )}
+                </p>
+
+                {/* Content Card */}
+                <div className="overflow-hidden">
+                    {!hasData ? (
+                        <div className="rounded-2xl border border-transparent bg-gradient-to-r from-pink-50 via-violet-50 to-cyan-50 px-6 py-10 text-center">
+                            {/* Icon */}
+                            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-r from-pink-300 via-violet-300 to-cyan-300">
+                                <Building className="h-6 w-6 text-white" />
+                            </div>
+
+                            {/* Title */}
+                            <h3 className="mt-4 text-sm font-semibold text-gray-900">
                                 {searchTerm
                                     ? 'No companies found'
                                     : 'No companies yet'}
                             </h3>
-                            <p className="mt-1 text-xs text-gray-500">
+
+                            {/* Description */}
+                            <p className="mt-1 text-xs text-gray-600">
                                 {searchTerm
                                     ? `No companies match your search for "${searchTerm}"`
                                     : 'Get started by creating your first company.'}
                             </p>
-                            <div className="mt-4">
+
+                            {/* Action */}
+                            <div className="mt-6">
                                 {searchTerm ? (
                                     <button
                                         onClick={clearSearch}
-                                        className="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 px-3 py-1.5 text-xs font-medium text-gray-700 transition hover:bg-gray-50"
+                                        className="inline-flex items-center gap-2 rounded-lg border border-transparent bg-gradient-to-r from-pink-100 via-violet-100 to-cyan-100 px-4 py-2 text-sm font-semibold text-violet-700 transition hover:from-pink-200 hover:via-violet-200 hover:to-cyan-200"
                                     >
                                         Clear search
                                     </button>
                                 ) : (
                                     <Link
                                         href="/companies/create"
-                                        className="inline-flex items-center gap-1.5 rounded-lg bg-black px-3 py-1.5 text-xs font-medium text-white transition hover:bg-gray-800"
+                                        className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-pink-500 via-violet-500 to-cyan-500 px-4 py-2 text-sm font-semibold text-white shadow-md transition hover:opacity-90"
                                     >
-                                        <Plus className="h-3.5 w-3.5" />
+                                        <Plus className="h-4 w-4" />
                                         Add Company
                                     </Link>
                                 )}
@@ -266,56 +303,57 @@ export default function CompaniesIndex({
                     ) : (
                         <>
                             <div className="overflow-x-auto">
-                                <table className="min-w-full divide-y divide-gray-200 text-sm">
-                                    <thead className="bg-gray-50">
+                                <table className="min-w-full">
+                                    <thead className="bg-gradient-to-r from-pink-100 via-violet-100 to-cyan-100">
                                         <tr>
-                                            <th className="px-3 py-2.5 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
+                                            <th className="px-4 py-3 text-left text-xs font-semibold tracking-wider text-gray-600 uppercase">
                                                 Company
                                             </th>
-                                            <th className="px-3 py-2.5 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
+                                            <th className="px-4 py-3 text-left text-xs font-semibold tracking-wider text-gray-600 uppercase">
                                                 Owners
                                             </th>
-                                            <th className="px-3 py-2.5 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
+                                            <th className="px-4 py-3 text-left text-xs font-semibold tracking-wider text-gray-600 uppercase">
                                                 Sponsor
                                             </th>
-                                            <th className="px-3 py-2.5 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
+                                            <th className="px-4 py-3 text-left text-xs font-semibold tracking-wider text-gray-600 uppercase">
                                                 Onboarding
                                             </th>
-                                            <th className="px-3 py-2.5 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
+                                            <th className="px-4 py-3 text-left text-xs font-semibold tracking-wider text-gray-600 uppercase">
                                                 Notarization
                                             </th>
-                                            <th className="px-3 py-2.5 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
+                                            <th className="px-4 py-3 text-left text-xs font-semibold tracking-wider text-gray-600 uppercase">
                                                 ERP
                                             </th>
-                                            <th className="px-3 py-2.5 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
+                                            <th className="px-4 py-3 text-left text-xs font-semibold tracking-wider text-gray-600 uppercase">
                                                 Sales
                                             </th>
-                                            <th className="px-3 py-2.5 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
+                                            <th className="px-4 py-3 text-left text-xs font-semibold tracking-wider text-gray-600 uppercase">
                                                 Level
                                             </th>
                                         </tr>
                                     </thead>
-                                    <tbody className="divide-y divide-gray-200">
+
+                                    <tbody className="divide-y divide-gray-100">
                                         {companies.data.map((company) => (
                                             <tr
                                                 key={company.id}
-                                                className="hover:bg-gray-50"
+                                                className="align-top transition-colors even:bg-gray-50/30 hover:bg-gray-50/70"
                                             >
-                                                {/* Company Column */}
-                                                <td className="px-3 py-2.5">
-                                                    <div className="flex items-center gap-2">
-                                                        <div className="h-7 w-7 flex-shrink-0">
+                                                {/* Company */}
+                                                <td className="px-4 py-3">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="h-9 w-9 flex-shrink-0 overflow-hidden rounded-lg border border-gray-200 bg-gray-50">
                                                             {company.logo ? (
                                                                 <img
                                                                     src={`/storage/${company.logo}`}
                                                                     alt={
                                                                         company.name
                                                                     }
-                                                                    className="h-7 w-7 rounded border object-cover"
+                                                                    className="h-full w-full object-cover"
                                                                 />
                                                             ) : (
-                                                                <div className="flex h-7 w-7 items-center justify-center rounded border bg-gray-100">
-                                                                    <span className="text-xs font-medium text-gray-600">
+                                                                <div className="flex h-full w-full items-center justify-center">
+                                                                    <span className="text-xs font-semibold text-gray-700">
                                                                         {getInitials(
                                                                             company.name,
                                                                         )}
@@ -323,110 +361,97 @@ export default function CompaniesIndex({
                                                                 </div>
                                                             )}
                                                         </div>
-                                                        <div>
-                                                            <div className="text-xs font-medium text-gray-900">
+
+                                                        <div className="min-w-0">
+                                                            <div className="max-w-[240px] truncate text-sm font-semibold text-gray-900">
                                                                 <Link
                                                                     href={`/companies/${company.id}/details`}
                                                                     className="hover:underline"
                                                                 >
-                                                                    {company
-                                                                        .name
-                                                                        .length >
-                                                                    20
-                                                                        ? `${company.name.substring(0, 20)}...`
-                                                                        : company.name}
+                                                                    {
+                                                                        company.name
+                                                                    }
                                                                 </Link>
                                                             </div>
-
                                                             {company.email && (
-                                                                <div className="flex items-center text-xs text-gray-500">
-                                                                    <Mail className="mr-1 h-3 w-3" />
-                                                                    {company
-                                                                        .email
-                                                                        .length >
-                                                                    25
-                                                                        ? `${company.email.substring(0, 25)}...`
-                                                                        : company.email}
+                                                                <div className="mt-0.5 flex items-center gap-1 text-xs text-gray-500">
+                                                                    <Mail className="h-3.5 w-3.5 flex-shrink-0 text-gray-400" />
+                                                                    <span className="max-w-[260px] truncate">
+                                                                        {
+                                                                            company.email
+                                                                        }
+                                                                    </span>
                                                                 </div>
                                                             )}
                                                         </div>
                                                     </div>
                                                 </td>
 
-                                                {/* Owners Column */}
-                                                <td className="px-3 py-2.5">
-                                                    <div className="space-y-1">
+                                                {/* Owners */}
+                                                <td className="px-4 py-3">
+                                                    <div className="space-y-2">
                                                         {company.owners &&
                                                         company.owners.length >
                                                             0 ? (
-                                                            company.owners
-                                                                .slice(0, 2)
-                                                                .map(
-                                                                    (owner) => (
-                                                                        <div
-                                                                            key={
-                                                                                owner.id
-                                                                            }
-                                                                            className="flex items-center gap-1.5"
-                                                                        >
-                                                                            <div className="h-5 w-5 flex-shrink-0 overflow-hidden rounded-full border border-gray-200 bg-gray-100">
-                                                                                {owner.photo ? (
-                                                                                    <img
-                                                                                        src={`/storage/${owner.photo}`}
-                                                                                        alt={
+                                                            <>
+                                                                {company.owners
+                                                                    .slice(0, 2)
+                                                                    .map(
+                                                                        (
+                                                                            owner,
+                                                                        ) => (
+                                                                            <div
+                                                                                key={
+                                                                                    owner.id
+                                                                                }
+                                                                                className="flex items-center gap-2"
+                                                                            >
+                                                                                <div className="h-7 w-7 flex-shrink-0 overflow-hidden rounded-full border border-gray-200 bg-gray-50">
+                                                                                    {owner.photo ? (
+                                                                                        <img
+                                                                                            src={`/storage/${owner.photo}`}
+                                                                                            alt={
+                                                                                                owner.name
+                                                                                            }
+                                                                                            className="h-full w-full object-cover"
+                                                                                        />
+                                                                                    ) : (
+                                                                                        <div className="flex h-full w-full items-center justify-center">
+                                                                                            <span className="text-[10px] font-semibold text-gray-700">
+                                                                                                {getInitials(
+                                                                                                    owner.name,
+                                                                                                )}
+                                                                                            </span>
+                                                                                        </div>
+                                                                                    )}
+                                                                                </div>
+
+                                                                                <div className="min-w-0">
+                                                                                    <div className="max-w-[180px] truncate text-xs font-semibold text-gray-900">
+                                                                                        {
                                                                                             owner.name
                                                                                         }
-                                                                                        className="h-full w-full object-cover"
-                                                                                    />
-                                                                                ) : (
-                                                                                    <div className="flex h-full w-full items-center justify-center">
-                                                                                        <span className="text-[9px] font-medium text-gray-600">
-                                                                                            {getInitials(
-                                                                                                owner.name,
-                                                                                            )}
-                                                                                        </span>
                                                                                     </div>
+                                                                                    <div className="max-w-[200px] truncate text-[11px] text-gray-500">
+                                                                                        {
+                                                                                            owner.email
+                                                                                        }
+                                                                                    </div>
+                                                                                </div>
+
+                                                                                {owner.is_primary && (
+                                                                                    <span className="inline-flex items-center rounded-full bg-blue-50 px-2 py-0.5 text-[11px] font-semibold text-blue-700">
+                                                                                        Primary
+                                                                                    </span>
                                                                                 )}
                                                                             </div>
-                                                                            <div className="min-w-0">
-                                                                                <div className="truncate text-xs font-medium text-gray-900">
-                                                                                    {owner
-                                                                                        .name
-                                                                                        .length >
-                                                                                    15
-                                                                                        ? `${owner.name.substring(0, 15)}...`
-                                                                                        : owner.name}
-                                                                                </div>
-                                                                                <div className="truncate text-[10px] text-gray-500">
-                                                                                    {owner
-                                                                                        .email
-                                                                                        .length >
-                                                                                    20
-                                                                                        ? `${owner.email.substring(0, 20)}...`
-                                                                                        : owner.email}
-                                                                                </div>
-                                                                            </div>
-                                                                            {owner.is_primary && (
-                                                                                <span className="inline-flex items-center rounded-full bg-blue-50 px-1.5 py-0.5 text-[10px] font-medium text-blue-700">
-                                                                                    Primary
-                                                                                </span>
-                                                                            )}
-                                                                        </div>
-                                                                    ),
-                                                                )
-                                                        ) : (
-                                                            <div className="flex items-center gap-1.5 text-gray-400">
-                                                                <Users className="h-4 w-4" />
-                                                                <span className="text-xs">
-                                                                    No owners
-                                                                </span>
-                                                            </div>
-                                                        )}
-                                                        {company.owners &&
-                                                            company.owners
-                                                                .length > 2 && (
-                                                                <div className="pl-6">
-                                                                    <span className="text-xs text-gray-500">
+                                                                        ),
+                                                                    )}
+
+                                                                {company.owners
+                                                                    .length >
+                                                                    2 && (
+                                                                    <div className="pl-9 text-xs text-gray-500">
                                                                         +
                                                                         {company
                                                                             .owners
@@ -441,16 +466,25 @@ export default function CompaniesIndex({
                                                                         1
                                                                             ? 's'
                                                                             : ''}
-                                                                    </span>
-                                                                </div>
-                                                            )}
+                                                                    </div>
+                                                                )}
+                                                            </>
+                                                        ) : (
+                                                            <div className="flex items-center gap-2 text-gray-500">
+                                                                <Users className="h-4 w-4 text-gray-400" />
+                                                                <span className="text-xs">
+                                                                    No owners
+                                                                </span>
+                                                            </div>
+                                                        )}
                                                     </div>
                                                 </td>
 
-                                                <td className="px-3 py-2.5">
+                                                {/* Sponsor */}
+                                                <td className="px-4 py-3">
                                                     {company.sponsor ? (
-                                                        <div className="flex items-center gap-1.5">
-                                                            <div className="h-5 w-5 flex-shrink-0">
+                                                        <div className="flex items-center gap-2">
+                                                            <div className="h-7 w-7 flex-shrink-0 overflow-hidden rounded-lg border border-gray-200 bg-gray-50">
                                                                 {company.sponsor
                                                                     .logo ? (
                                                                     <img
@@ -460,11 +494,11 @@ export default function CompaniesIndex({
                                                                                 .sponsor
                                                                                 .name
                                                                         }
-                                                                        className="h-5 w-5 rounded border object-cover"
+                                                                        className="h-full w-full object-cover"
                                                                     />
                                                                 ) : (
-                                                                    <div className="flex h-5 w-5 items-center justify-center rounded border bg-gray-100">
-                                                                        <span className="text-[8px] font-medium text-gray-600">
+                                                                    <div className="flex h-full w-full items-center justify-center">
+                                                                        <span className="text-[10px] font-semibold text-gray-700">
                                                                             {getInitials(
                                                                                 company
                                                                                     .sponsor
@@ -474,114 +508,135 @@ export default function CompaniesIndex({
                                                                     </div>
                                                                 )}
                                                             </div>
+
                                                             <div className="min-w-0">
-                                                                <div className="truncate text-xs font-medium text-gray-900">
+                                                                <div className="max-w-[160px] truncate text-xs font-semibold text-gray-900">
                                                                     <Link
                                                                         href={`/companies/${company.sponsor.id}`}
-                                                                        className="hover:underline"
+                                                                        className="transition hover:text-gray-900 hover:underline"
                                                                     >
-                                                                        {company
-                                                                            .sponsor
-                                                                            .name
-                                                                            .length >
-                                                                        15
-                                                                            ? `${company.sponsor.name.substring(0, 15)}...`
-                                                                            : company
-                                                                                  .sponsor
-                                                                                  .name}
+                                                                        {
+                                                                            company
+                                                                                .sponsor
+                                                                                .name
+                                                                        }
                                                                     </Link>
                                                                 </div>
                                                             </div>
                                                         </div>
                                                     ) : (
                                                         <span className="text-xs text-gray-400">
-                                                            -
+                                                            —
                                                         </span>
                                                     )}
                                                 </td>
 
-                                                <td className="px-3 py-2.5">
-                                                    <div className="flex items-center">
-                                                        <div className="w-full">
-                                                            <div className="mb-0.5 h-1.5 w-20 overflow-hidden rounded-full bg-gray-200">
-                                                                <div
-                                                                    className={`h-full transition-all duration-300 ${
-                                                                        company.checklist_progress ===
-                                                                        100
-                                                                            ? 'bg-green-600'
-                                                                            : company.checklist_progress >=
-                                                                                70
-                                                                              ? 'bg-blue-600'
-                                                                              : company.checklist_progress >=
-                                                                                  30
-                                                                                ? 'bg-yellow-500'
-                                                                                : 'bg-red-500'
-                                                                    }`}
-                                                                    style={{
-                                                                        width: `${company.checklist_progress}%`,
-                                                                    }}
-                                                                />
-                                                            </div>
-                                                            <div className="flex items-center justify-between">
-                                                                <span
-                                                                    className={`text-xs font-medium ${
-                                                                        company.checklist_progress ===
-                                                                        100
-                                                                            ? 'text-green-700'
-                                                                            : company.checklist_progress >=
-                                                                                70
-                                                                              ? 'text-blue-700'
-                                                                              : company.checklist_progress >=
-                                                                                  30
-                                                                                ? 'text-yellow-700'
-                                                                                : 'text-red-700'
-                                                                    }`}
-                                                                >
-                                                                    {
-                                                                        company.checklist_progress
-                                                                    }
-                                                                    %
-                                                                </span>
-                                                            </div>
+                                                {/* Onboarding */}
+                                                <td className="px-4 py-3">
+                                                    <div className="w-28">
+                                                        <div className="flex items-center justify-between">
+                                                            <span
+                                                                className={`text-xs font-semibold tabular-nums ${
+                                                                    company.checklist_progress ===
+                                                                    100
+                                                                        ? 'text-green-700'
+                                                                        : company.checklist_progress >=
+                                                                            70
+                                                                          ? 'text-blue-700'
+                                                                          : company.checklist_progress >=
+                                                                              30
+                                                                            ? 'text-yellow-700'
+                                                                            : 'text-red-700'
+                                                                }`}
+                                                            >
+                                                                {
+                                                                    company.checklist_progress
+                                                                }
+                                                                %
+                                                            </span>
+                                                            <span className="text-[11px] text-gray-500 tabular-nums">
+                                                                {
+                                                                    company.completed_checklist_count
+                                                                }
+                                                                /
+                                                                {
+                                                                    company.total_checklist_count
+                                                                }
+                                                            </span>
+                                                        </div>
+
+                                                        <div className="mt-1 h-2 w-full overflow-hidden rounded-full bg-gray-200">
+                                                            <div
+                                                                className={`h-full transition-all duration-300 ${
+                                                                    company.checklist_progress ===
+                                                                    100
+                                                                        ? 'bg-green-600'
+                                                                        : company.checklist_progress >=
+                                                                            70
+                                                                          ? 'bg-blue-600'
+                                                                          : company.checklist_progress >=
+                                                                              30
+                                                                            ? 'bg-yellow-500'
+                                                                            : 'bg-red-500'
+                                                                }`}
+                                                                style={{
+                                                                    width: `${company.checklist_progress}%`,
+                                                                }}
+                                                            />
                                                         </div>
                                                     </div>
                                                 </td>
 
-                                                {/* Rest of the columns remain the same */}
-                                                <td className="px-3 py-2.5">
+                                                {/* Notarization */}
+                                                <td className="px-4 py-3">
                                                     <span
-                                                        className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${getStatusColor(company.notarization_status)}`}
+                                                        className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-semibold ${getStatusColor(
+                                                            company.notarization_status,
+                                                        )}`}
                                                     >
+                                                        <span className="h-1.5 w-1.5 rounded-full bg-current opacity-60" />
                                                         {formatStatus(
                                                             company.notarization_status,
                                                         )}
                                                     </span>
                                                 </td>
 
-                                                <td className="px-3 py-2.5">
+                                                {/* ERP */}
+                                                <td className="px-4 py-3">
                                                     <span
-                                                        className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${getStatusColor(company.erp_status)}`}
+                                                        className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-semibold ${getStatusColor(
+                                                            company.erp_status,
+                                                        )}`}
                                                     >
+                                                        <span className="h-1.5 w-1.5 rounded-full bg-current opacity-60" />
                                                         {formatStatus(
                                                             company.erp_status,
                                                         )}
                                                     </span>
                                                 </td>
 
-                                                <td className="px-3 py-2.5">
+                                                {/* Sales */}
+                                                <td className="px-4 py-3">
                                                     <span
-                                                        className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${getStatusColor(company.sales_activity)}`}
+                                                        className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-semibold ${getStatusColor(
+                                                            company.sales_activity,
+                                                        )}`}
                                                     >
+                                                        <span className="h-1.5 w-1.5 rounded-full bg-current opacity-60" />
                                                         {formatStatus(
                                                             company.sales_activity,
                                                         )}
                                                     </span>
                                                 </td>
 
-                                                <td className="px-3 py-2.5">
+                                                {/* Level */}
+                                                <td className="px-4 py-3">
                                                     <span
-                                                        className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${getLevelColor(company.level)}`}
+                                                        className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-semibold ${getLevelColor(
+                                                            company.level,
+                                                        )}`}
                                                     >
+                                                        <span className="h-1.5 w-1.5 rounded-full bg-current opacity-60" />
                                                         {formatStatus(
                                                             company.level,
                                                         )}
@@ -594,20 +649,19 @@ export default function CompaniesIndex({
                             </div>
 
                             {/* Pagination */}
-                            <div className="flex flex-col items-center justify-between gap-3 border-t border-gray-200 px-4 py-3 sm:flex-row">
-                                {/* Showing results info */}
+                            <div className="flex flex-col items-center justify-between gap-3 border-t border-gray-200 bg-white px-4 py-3 sm:flex-row">
                                 <div className="flex flex-col sm:flex-row sm:items-center sm:gap-3">
                                     <p className="text-xs text-gray-700">
                                         Showing{' '}
-                                        <span className="font-medium">
+                                        <span className="font-semibold">
                                             {companies.from}
                                         </span>{' '}
                                         to{' '}
-                                        <span className="font-medium">
+                                        <span className="font-semibold">
                                             {companies.to}
                                         </span>{' '}
                                         of{' '}
-                                        <span className="font-medium">
+                                        <span className="font-semibold">
                                             {companies.total}
                                         </span>{' '}
                                         results
@@ -621,90 +675,83 @@ export default function CompaniesIndex({
                                     )}
                                 </div>
 
-                                {/* Pagination Links */}
                                 <div className="flex items-center gap-1">
-                                    {/* Previous Page */}
+                                    {/* Prev */}
                                     <Link
-                                        href={companies.links[0].url || '#'}
-                                        className={`inline-flex items-center rounded border border-gray-300 px-2 py-1.5 text-xs font-medium ${
-                                            companies.current_page === 1
-                                                ? 'cursor-not-allowed bg-gray-100 text-gray-400'
+                                        href={pagination.prev.url || '#'}
+                                        className={`inline-flex items-center rounded-lg border border-gray-300 px-2 py-1.5 text-xs font-semibold transition ${
+                                            !pagination.prev.url
+                                                ? 'pointer-events-none opacity-50'
                                                 : 'bg-white text-gray-700 hover:bg-gray-50'
                                         }`}
                                         preserveScroll
                                         preserveState
                                     >
-                                        <ChevronLeft className="h-3.5 w-3.5" />
+                                        <ChevronLeft className="h-4 w-4" />
                                     </Link>
 
-                                    {/* Page Numbers */}
-                                    {companies.links
-                                        .slice(1, -1)
-                                        .map((link, index) => {
-                                            const pageNum = link.label;
-                                            const isCurrent = link.active;
-                                            const isNearCurrent =
-                                                Math.abs(
-                                                    parseInt(pageNum) -
-                                                        companies.current_page,
-                                                ) <= 1 ||
-                                                pageNum === '1' ||
-                                                pageNum ===
-                                                    companies.last_page.toString();
+                                    {/* Pages */}
+                                    {pagination.pages.map((link, index) => {
+                                        const label = link.label;
+                                        const isNumeric = /^\d+$/.test(label);
 
-                                            if (!isNearCurrent) {
-                                                if (
-                                                    index === 1 ||
-                                                    index ===
-                                                        companies.links.length -
-                                                            3
-                                                ) {
-                                                    return (
-                                                        <span
-                                                            key={`ellipsis-${index}`}
-                                                            className="px-2 py-1.5 text-xs text-gray-500"
-                                                        >
-                                                            <MoreHorizontal className="h-3.5 w-3.5" />
-                                                        </span>
-                                                    );
-                                                }
-                                                return null;
-                                            }
-
+                                        // Render ellipsis if paginator outputs it
+                                        if (!isNumeric) {
                                             return (
-                                                <Link
-                                                    key={index}
-                                                    href={link.url || '#'}
-                                                    className={`inline-flex items-center rounded border px-2.5 py-1.5 text-xs font-medium ${
-                                                        isCurrent
-                                                            ? 'z-10 border-blue-500 bg-blue-50 text-blue-600'
-                                                            : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
-                                                    }`}
-                                                    preserveScroll
-                                                    preserveState
+                                                <span
+                                                    key={`ellipsis-${index}-${label}`}
+                                                    className="px-2 py-1.5 text-xs text-gray-400"
                                                 >
-                                                    {link.label}
-                                                </Link>
+                                                    <MoreHorizontal className="h-4 w-4" />
+                                                </span>
                                             );
-                                        })}
-
-                                    {/* Next Page */}
-                                    <Link
-                                        href={
-                                            companies.links[
-                                                companies.links.length - 1
-                                            ].url || '#'
                                         }
-                                        className={`inline-flex items-center rounded border border-gray-300 px-2 py-1.5 text-xs font-medium ${
-                                            companies.current_page ===
-                                            companies.last_page
-                                                ? 'cursor-not-allowed bg-gray-100 text-gray-400'
+
+                                        const pageNum = parseInt(label, 10);
+                                        const isNear =
+                                            Math.abs(
+                                                pageNum -
+                                                    companies.current_page,
+                                            ) <= 1 ||
+                                            pageNum === 1 ||
+                                            pageNum === companies.last_page;
+
+                                        if (!isNear) return null;
+
+                                        return (
+                                            <Link
+                                                key={`${label}-${index}`}
+                                                href={link.url || '#'}
+                                                className={`inline-flex items-center rounded-lg border px-2.5 py-1.5 text-xs font-semibold transition ${
+                                                    link.active
+                                                        ? 'border-transparent bg-gradient-to-r from-pink-300 via-violet-300 to-cyan-300 text-white'
+                                                        : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
+                                                }`}
+                                                aria-current={
+                                                    link.active
+                                                        ? 'page'
+                                                        : undefined
+                                                }
+                                                preserveScroll
+                                                preserveState
+                                            >
+                                                {label}
+                                            </Link>
+                                        );
+                                    })}
+
+                                    {/* Next */}
+                                    <Link
+                                        href={pagination.next.url || '#'}
+                                        className={`inline-flex items-center rounded-lg border border-gray-300 px-2 py-1.5 text-xs font-semibold transition ${
+                                            !pagination.next.url
+                                                ? 'pointer-events-none opacity-50'
                                                 : 'bg-white text-gray-700 hover:bg-gray-50'
                                         }`}
                                         preserveScroll
                                         preserveState
                                     >
-                                        <ChevronRight className="h-3.5 w-3.5" />
+                                        <ChevronRight className="h-4 w-4" />
                                     </Link>
                                 </div>
                             </div>

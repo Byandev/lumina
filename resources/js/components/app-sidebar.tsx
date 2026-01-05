@@ -13,43 +13,34 @@ import {
 import { dashboard, companies, events, users } from '@/routes';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-import { BookOpen, Folder, LayoutGrid } from 'lucide-react';
+import { Gauge, Building2, LayoutGrid, Users, Calendar } from 'lucide-react';
 import AppLogo from './app-logo';
 
 const mainNavItems: NavItem[] = [
     {
         title: 'Dashboard',
         href: dashboard(),
-        icon: LayoutGrid,
+        icon: Gauge,
     },
     {
         title: 'Companies',
         href: companies(),
-        icon: LayoutGrid,
+        icon: Building2,
     },
     {
         title: 'Events',
         href: events(),
-        icon: LayoutGrid,
+        icon: Calendar,
     },
     {
         title: 'Users',
         href: users(),
-        icon: LayoutGrid,
+        icon: Users,
     },
 ];
 
 const footerNavItems: NavItem[] = [
-    {
-        title: 'Repository',
-        href: 'https://github.com/laravel/react-starter-kit',
-        icon: Folder,
-    },
-    {
-        title: 'Documentation',
-        href: 'https://laravel.com/docs/starter-kits#react',
-        icon: BookOpen,
-    },
+
 ];
 
 export function AppSidebar() {

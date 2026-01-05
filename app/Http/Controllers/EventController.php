@@ -62,15 +62,33 @@ class EventController extends Controller
 
     }
 
-    public function show(Event $event)
+    public function show(Request $request, Event $event)
     {
-        $event->load(['companies' => function ($query) {
-            $query->select('companies.id', 'companies.name', 'companies.logo')
-                ->withPivot('event_id', 'company_id', 'status');
-        }]);
+        $search = (string) $request->query('search', '');
+
+
+        $companies = $event->companies()
+            ->select('companies.id', 'companies.name', 'companies.logo')
+            ->withPivot('event_id', 'company_id', 'status')
+            ->when($search, function ($q) use ($search) {
+                $q->where('companies.name', 'like', "%{$search}%");
+            })
+            ->orderBy('companies.name')
+            ->paginate(20)
+            ->withQueryString();
 
         return Inertia::render('events/show', [
-            'event' => $event,
+            'event' => [
+                'id' => $event->id,
+                'name' => $event->name,
+                'date' => $event->date,
+                'type' => $event->type,
+                'location' => $event->location,
+            ],
+            'companies' => $companies,
+            'filters' => [
+                'search' => $search,
+            ],
         ]);
     }
 
