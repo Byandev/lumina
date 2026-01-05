@@ -15,7 +15,7 @@ class OnboardingChecklistController extends Controller
             'checklists' => function ($query) {
                 $query->with('remarks');
             }
-        ]);
+        ])->paginate(15);
 
 
 

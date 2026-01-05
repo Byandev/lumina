@@ -41,6 +41,8 @@ Route::prefix('companies/{company}')->group(function () {
     Route::get('/details', [CompanyController::class, 'show'])->name('companies.show');
     Route::put('/details', [CompanyController::class, 'update'])->name('companies.update');
     Route::post('/owners', [OwnerController::class, 'store'])->name('owners.store');
+    Route::put('/owners/{id}', [OwnerController::class, 'update'])->name('owners.update');
+    Route::delete('/owners/{id}', [OwnerController::class, 'destroy'])->name('owners.delete');
     Route::get('/onboarding', [\App\Http\Controllers\OnboardingChecklistController::class, 'index'])->name('companies.onboarding');
     Route::post('/onboarding', [ChecklistRemarkController::class, 'store'])->name('remark.store');
     Route::get('/attendance', [CompanyEventController::class, 'index'])->name('companies.attendance');

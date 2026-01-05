@@ -17,7 +17,6 @@ class ChecklistRemarkController extends Controller
             'attachment' => 'nullable|file|mimes:jpg,jpeg,png,pdf,doc,docx,xls,xlsx|max:5120',
         ]);
 
-
         // Create the remark
         $remark = ChecklistRemark::create([
             'checklist_id' => $validated['checklist_item_id'],
@@ -25,24 +24,24 @@ class ChecklistRemarkController extends Controller
             'remark' => $validated['remarks'],
         ]);
 
-        // Handle single file upload
         if ($request->hasFile('attachment')) {
             $file = $request->file('attachment');
-            $path = $file->store('remarks/attachments', 'public');
 
-            $attachment = [
-                'original_name' => $file->getClientOriginalName(),
-                'path' => $path,
-                'mime_type' => $file->getMimeType(),
-                'size' => $file->getSize(),
-            ];
+            $clientName = str_replace(' ', '_', $company->name); // Replace spaces with underscores
+            $originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+            $extension = $file->getClientOriginalExtension();
+
+            // Create filename: ClientName_OriginalName_Timestamp.Extension
+            $filename = $clientName . '_' . $originalName . '_' . time() . '.' . $extension;
+
+            $path = $file->storeAs('remarks/attachments', $filename, 'public');
+
 
             // Save as JSON in the file column
-            $remark->file = $attachment;
+            $remark->file = $path;
             $remark->save();
         }
 
-        // Update the specific checklist item to completed
         $checklist = OnboardingChecklist::find($validated['checklist_item_id']);
         if ($checklist) {
             $checklist->update(['is_completed' => true]);

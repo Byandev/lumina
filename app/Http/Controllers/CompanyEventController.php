@@ -19,6 +19,8 @@ class CompanyEventController extends Controller
     }
     public function store(Request $request, Event $event)
     {
+
+
         $validated = $request->validate([
             'event_id' => 'required|exists:events,id',
             'attendance' => 'required|array|min:1',

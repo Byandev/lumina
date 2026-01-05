@@ -14,8 +14,15 @@ class PerformanceRecordController extends Controller
 {
     public function index(Company $company)
     {
+
+        $records = PerformanceRecord::where('company_id', $company->id)
+            ->latest()
+            ->paginate(10);
+
+
         return Inertia::render('companies/company/performance-tab', [
-            'company' => $company->load('records'),
+            'records' => $records,
+            'company' => $company,
         ]);
     }
 
