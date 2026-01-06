@@ -1,4 +1,5 @@
 // app/pages/users/index.tsx
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -74,6 +75,8 @@ export default function Index({
     const [isCreateOpen, setIsCreateOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState(initialSearch || '');
     const [isSearching, setIsSearching] = useState(false);
+    const [statusFilter, setStatusFilter] = useState(initialStatus || 'all');
+    const [roleFilter, setRoleFilter] = useState(initialRole || 'all');
 
     // Create Form
     const {
@@ -128,7 +131,7 @@ export default function Index({
     const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
         setSearchTerm(value);
-        performSearch(value);
+        performSearch(value, statusFilter, roleFilter);
     };
 
     const handleClearFilters = () => {
@@ -216,12 +219,7 @@ export default function Index({
                                         <Input
                                             id="name"
                                             value={createData.name}
-                                            onChange={(e) =>
-                                                setCreateData(
-                                                    'name',
-                                                    e.target.value,
-                                                )
-                                            }
+                                            onChange={(e) => setCreateData('name', e.target.value)}
                                             placeholder="John Doe"
                                             className={
                                                 createErrors.name
@@ -247,12 +245,7 @@ export default function Index({
                                             id="email"
                                             type="email"
                                             value={createData.email}
-                                            onChange={(e) =>
-                                                setCreateData(
-                                                    'email',
-                                                    e.target.value,
-                                                )
-                                            }
+                                            onChange={(e) => setCreateData('email', e.target.value)}
                                             placeholder="john@example.com"
                                             className={
                                                 createErrors.email
