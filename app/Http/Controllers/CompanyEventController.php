@@ -28,6 +28,8 @@ class CompanyEventController extends Controller
     {
 
 
+
+
         $validated = $request->validate([
             'event_id' => 'required|exists:events,id',
             'attendance' => 'required|array|min:1',

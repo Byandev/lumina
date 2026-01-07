@@ -7,6 +7,7 @@ use App\Http\Controllers\EventController;
 use App\Http\Controllers\OwnerController;
 use App\Http\Controllers\PerformanceRecordController;
 use App\Http\Controllers\UserController;
+use App\Models\Company;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Laravel\Fortify\Features;
@@ -17,10 +18,19 @@ Route::get('/', function () {
     ]);
 })->name('home');
 
+Route::get('/submit', function () {
+    return Inertia::render('companies/welcome');
+});
+
+Route::post('/submit', [CompanyController::class, 'submit'])->name('company.submit');
+
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', function () {
+
         return Inertia::render('dashboard');
-    })->name('dashboard');
+
+    })->middleware(['auth'])->name('dashboard');
+
 
     Route::get('companies', [CompanyController::class, 'index'])->name('companies');
     Route::get('companies/create', [CompanyController::class, 'create'])->name('companies.create');

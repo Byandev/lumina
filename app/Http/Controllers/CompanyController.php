@@ -9,7 +9,10 @@ use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 
 class CompanyController extends Controller
@@ -62,8 +65,10 @@ class CompanyController extends Controller
      * @return RedirectResponse
      * @throws \Throwable
      */
-    public function store(StoreCompanyRequest $request)
+    public function store(Request $request)
     {
+
+        dd($request->toArray());
         // Start database transaction
         DB::beginTransaction();
 
@@ -315,5 +320,98 @@ class CompanyController extends Controller
             ->route('companies')
             ->with('success', 'Company deleted successfully.');
     }
+
+    public function submit(Request $request)
+    {
+
+        try {
+            $validated = $request->validate([
+                'company_name' => ['required', 'string', 'max:255'],
+                'company_email' => ['nullable', 'email', 'max:255'],
+                'company_phone' => ['nullable', 'string', 'max:20'],
+                'address' => ['nullable', 'string', 'max:500'],
+                'has_existing_ecomm_process' => ['required', 'in:yes,no'],
+
+                'company_logo' => ['nullable', 'image', 'max:5120'],
+                'company_owners_image' => ['nullable', 'image', 'max:5120'],
+                'proof_of_payment' => ['required', 'file', 'max:10240'],
+                'e_signature' => ['required', 'file', 'max:5120'],
+
+                'owners' => ['required', 'array', 'min:1'],
+                'owners.*.name' => ['required', 'string', 'max:255'],
+                'owners.*.email' => ['required', 'email', 'max:255'],
+                'owners.*.phone' => ['required', 'string', 'max:20'],
+                'owners.*.address' => ['nullable', 'string', 'max:500'],
+                'owners.*.facebook_link' => ['nullable', 'url', 'max:255'],
+                'owners.*.birthdate' => ['nullable', 'date'],
+                'owners.*.photo' => ['required', 'image', 'max:5120'],
+                'owners.*.id_with_signature' => ['required', 'file', 'max:10240'],
+            ]);
+        } catch (ValidationException $e) {
+            dd($e->errors()); // <-- THIS shows the exact failing fields + messages
+        }
+
+
+        $companyLogoPath = null;
+        $ownersImagePath = null;
+
+        if ($request->hasFile('company_logo')) {
+            $companyLogoPath = $request->file('company_logo')->store('companies/logos', 'public');
+                $storedFiles[] = $companyLogoPath;
+        }
+
+        if ($request->hasFile('company_owners_image')) {
+            $ownersImagePath = $request->file('company_owners_image')->store('companies/owners-group', 'public');
+            $storedFiles[] = $ownersImagePath;
+        }
+
+        $proofPath = $request->file('proof_of_payment')->store('companies/payments', 'public');
+        $storedFiles[] = $proofPath;
+
+        $signaturePath = $request->file('e_signature')->store('companies/signatures', 'public');
+        $storedFiles[] = $signaturePath;
+
+        // CREATE COMPANY
+        $company = Company::create([
+            'name' => $validated['company_name'],
+            'email' => $validated['company_email'] ?? null,
+            'phone' => $validated['company_phone'] ?? null,
+            'address' => $validated['address'] ?? null,
+            'has_existing_ecomm_process' => $validated['has_existing_ecomm_process'],
+            'logo' => $companyLogoPath,
+            'owner_photo' => $ownersImagePath,
+            'proof_of_payment' => $proofPath,
+            'e_signature' => $signaturePath,
+        ]);
+
+        // CREATE OWNERS
+        foreach ($validated['owners'] as $index => $ownerData) {
+            $photoPath = $request->file("owners.$index.photo")->store('owners/photos', 'public');
+            $storedFiles[] = $photoPath;
+
+            $idPath = $request->file("owners.$index.id_with_signature")->store('owners/ids', 'public');
+            $storedFiles[] = $idPath;
+
+            User::create([
+                'name' => $ownerData['name'],
+                'email' => $ownerData['email'],
+                'password' => bcrypt('password'),
+                'phone' => $ownerData['phone'],
+                'address' => $ownerData['address'] ?? null,
+                'facebook' => $ownerData['facebook_link'] ?? null,
+                'birthdate' => $ownerData['birthdate'] ?? null,
+                'photo' => $photoPath,
+                'ids' => $idPath,
+                'company_id' => $company->id,
+            ]);
+        }
+
+
+        return redirect()
+            ->route('home')
+            ->with('success', 'Company onboarding submitted successfully.');
+    }
+
+
 
 }

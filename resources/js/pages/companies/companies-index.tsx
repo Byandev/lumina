@@ -11,8 +11,11 @@ import {
     Plus,
     Search,
     Users,
+    X,
 } from 'lucide-react';
 import React, { useCallback, useMemo, useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 interface Company {
     id: number;
@@ -189,24 +192,43 @@ export default function CompaniesIndex({
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Companies" />
 
-            <div className="min-h-screen px-4 py-6">
-                {/* Toolbar */}
-                <div className="mb-1 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-                    <div className="flex flex-col gap-2">
+            <div className="px-4 py-6">
+                <div className="mb-2">
+                    <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                            <h1 className="text-lg font-semibold text-foreground">
+                                Companies
+                            </h1>
+                            <p className="mt-0.5 text-xs text-muted-foreground">
+                                Manage all companies in your system
+                            </p>
+                        </div>
+
+                        <Link
+                            href="/companies/create"
+                            className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-pink-300 via-violet-300 to-cyan-300 px-4 py-1.5 text-sm font-semibold text-white shadow-[0_0_4px_rgba(236,72,153,0.45)] transition hover:shadow-[0_0_12px_rgba(139,92,246,0.6)] sm:w-auto"
+                        >
+                            <Plus className="h-4 w-4" />
+                            Add Company
+                        </Link>
+                    </div>
+
+                    {/* Search Bar */}
+                    <div className="flex flex-col gap-2 mt-4">
                         <form
                             onSubmit={handleSearchSubmit}
                             className="relative w-full sm:w-96"
                         >
                             <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                                <Search className="h-4 w-4 text-gray-400" />
+                                <Search className="h-4 z-10 w-4 text-gray-400" />
                             </div>
 
-                            <input
+                            <Input
                                 type="text"
                                 value={searchTerm}
                                 onChange={handleSearchChange}
                                 placeholder="Search companies by name..."
-                                className="h-10 w-full rounded-lg border border-gray-300 bg-white py-2 pr-10 pl-9 text-sm text-gray-900 shadow-sm transition outline-none focus:border-gray-900 focus:ring-2 focus:ring-gray-900/10"
+                                className=" pl-8 rounded-lg text-sm text-muted-foreground hover:text-foreground"
                             />
 
                             {searchTerm && (
@@ -223,38 +245,17 @@ export default function CompaniesIndex({
                             )}
                         </form>
                     </div>
-
-                    <Link
-                        href="/companies/create"
-                        className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-pink-300 via-violet-300 to-cyan-300 px-4 text-sm font-semibold text-white shadow-[0_0_4px_rgba(236,72,153,0.45)] transition hover:shadow-[0_0_12px_rgba(139,92,246,0.6)] sm:w-auto"
-                    >
-                        <Plus className="h-4 w-4" />
-                        Add Company
-                    </Link>
                 </div>
 
-                <p className="mb-4 text-xs text-gray-500">
+                <p className="mb-2 text-xs text-gray-500">
                     {searchTerm ? (
-                        <>
-                            Searching:{' '}
-                            <span className="font-medium text-gray-700">
+                        <p className="mt-2 text-xs text-muted-foreground">
+                            Results for{' '}
+                            <span className="font-medium text-foreground">
                                 "{searchTerm}"
-                            </span>{' '}
-                            •{' '}
-                            <span className="font-medium text-gray-700">
-                                {companies.total}
-                            </span>{' '}
-                            result
-                            {companies.total !== 1 ? 's' : ''}
-                        </>
-                    ) : (
-                        <>
-                            Total companies:{' '}
-                            <span className="font-medium text-gray-700">
-                                {companies.total}
                             </span>
-                        </>
-                    )}
+                        </p>
+                    ) : null}
                 </p>
 
                 {/* Content Card */}
@@ -304,7 +305,7 @@ export default function CompaniesIndex({
                         <>
                             <div className="overflow-x-auto">
                                 <table className="min-w-full">
-                                    <thead className="bg-gradient-to-r from-pink-100 via-violet-100 to-cyan-100">
+                                    <thead className="bg-gray-100">
                                         <tr>
                                             <th className="px-4 py-3 text-left text-xs font-semibold tracking-wider text-gray-600 uppercase">
                                                 Company

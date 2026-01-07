@@ -280,7 +280,6 @@ export default function index({
 
     const eventTypes = ['Online', 'Face to Face'];
 
-    // Custom styles for react-select to match shadcn design
     const selectStyles = {
         control: (base: any, state: any) => ({
             ...base,

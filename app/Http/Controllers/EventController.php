@@ -49,6 +49,7 @@ class EventController extends Controller
                 CompanyEvent::create([
                     'company_id' => $company_id,
                     'event_id' => $event->id,
+                    'status' => 'upcoming',
                 ]);
             }
 

@@ -21,11 +21,13 @@ return new class extends Migration
             $table->string('facebook')->nullable();
             $table->date('birthdate')->nullable();
             $table->string('ids')->nullable();
+            $table->string('role')->nullable();
 
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->rememberToken();
             $table->timestamps();
+
         });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {

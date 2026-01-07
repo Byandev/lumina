@@ -77,7 +77,7 @@ export default function CompanyLayout({
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={title || `${company.name} - Company Details`} />
 
-            <div className="min-h-screen bg-gray-50 p-4">
+            <div className="min-h-screen p-4">
                 {/* Header with Background */}
                 <h1 className='text-lg font-bold mb-4'>Company Details</h1>
 

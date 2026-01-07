@@ -36,8 +36,6 @@ class ChecklistRemarkController extends Controller
 
             $path = $file->storeAs('remarks/attachments', $filename, 'public');
 
-
-            // Save as JSON in the file column
             $remark->file = $path;
             $remark->save();
         }

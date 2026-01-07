@@ -1,4 +1,4 @@
-<?php
+    <?php
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
@@ -18,6 +18,10 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->string('phone')->nullable();
             $table->text('address')->nullable();
+            $table->string('has_existing_ecomm_process')->nullable();
+            $table->string('proof_of_payment')->nullable();
+            $table->string('e_signature')->nullable();
+
 
             $table->string('logo')->nullable();
             $table->string('owner_photo')->nullable();

@@ -9,6 +9,12 @@ export default function Welcome({
 }) {
     const { auth } = usePage<SharedData>().props;
 
+    const { flash } = usePage().props as {
+        flash?: {
+            success?: string;
+        };
+    };
+
     return (
         <>
             <Head title="Welcome">
@@ -54,6 +60,15 @@ export default function Welcome({
                             <h1 className="mb-1 font-medium">
                                 Let's get started
                             </h1>
+                            <div>
+                                {flash?.success && (
+                                    <div className="mb-4 rounded bg-green-100 px-4 py-3 text-green-800">
+                                        {flash.success}
+                                    </div>
+                                )}
+
+                                {/* page content */}
+                            </div>
                             <p className="mb-2 text-[#706f6c] dark:text-[#A1A09A]">
                                 Laravel has an incredibly rich ecosystem.
                                 <br />
