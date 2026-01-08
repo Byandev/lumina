@@ -32,6 +32,7 @@ interface Company {
         id: number;
         name: string;
         logo: string | null;
+        logo_url: string | null
     };
     total_checklist_count: number;
     completed_checklist_count: number;
@@ -45,6 +46,7 @@ interface Company {
         name: string;
         email: string;
         photo: string | null;
+        photo_url: string | null;
         is_primary: boolean;
     }>;
 }
@@ -346,7 +348,7 @@ export default function CompaniesIndex({
                                                         <div className="h-9 w-9 flex-shrink-0 overflow-hidden rounded-lg border border-gray-200 bg-gray-50">
                                                             {company.logo ? (
                                                                 <img
-                                                                    src={`/storage/${company.logo}`}
+                                                                    src={`${company.logo_url}`}
                                                                     alt={
                                                                         company.name
                                                                     }
@@ -410,7 +412,7 @@ export default function CompaniesIndex({
                                                                                 <div className="h-7 w-7 flex-shrink-0 overflow-hidden rounded-full border border-gray-200 bg-gray-50">
                                                                                     {owner.photo ? (
                                                                                         <img
-                                                                                            src={`/storage/${owner.photo}`}
+                                                                                            src={`${owner.photo_url}`}
                                                                                             alt={
                                                                                                 owner.name
                                                                                             }
@@ -489,7 +491,7 @@ export default function CompaniesIndex({
                                                                 {company.sponsor
                                                                     .logo ? (
                                                                     <img
-                                                                        src={`/storage/${company.sponsor.logo}`}
+                                                                        src={`${company.sponsor.logo_url}`}
                                                                         alt={
                                                                             company
                                                                                 .sponsor

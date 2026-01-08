@@ -5,10 +5,14 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Storage;
 
 class Company extends Model
 {
     protected $guarded = [];
+
+     protected $appends = ['logo_url'];
+
 
 
     public function sponsor(): \Illuminate\Database\Eloquent\Relations\BelongsTo
@@ -82,6 +86,18 @@ class Company extends Model
     public function records()
     {
         return $this->hasMany(PerformanceRecord::class);
+    }
+
+    public function getLogoUrlAttribute(): ?string
+    {
+        if (!$this->logo) {
+            return null;
+        }
+
+        return Storage::disk('s3')->temporaryUrl(
+            $this->logo,
+            now()->addMinutes(10)
+        );
     }
 
 

@@ -8,6 +8,7 @@ use App\Models\OnboardingChecklist;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -33,6 +34,8 @@ class CompanyController extends Controller
             })
             ->latest()
             ->paginate(20);
+
+
 
         $companies->getCollection()->transform(function ($company) {
             $company->checklist_progress = $company->total_checklist_count > 0
@@ -67,33 +70,32 @@ class CompanyController extends Controller
      */
     public function store(Request $request)
     {
-
-        dd($request->toArray());
-        // Start database transaction
         DB::beginTransaction();
 
-        $uploadedFiles = []; // Track all uploaded files for cleanup if needed
+        $disk = 's3'; // switch here only
+        $uploadedFiles = []; // store paths only (for cleanup)
         $createdCompany = null;
 
         try {
-            // 1. Handle company logo upload
+            // 1) Company logo
             $logoPath = null;
             if ($request->hasFile('logo') && $request->file('logo')->isValid()) {
                 $logoFile = $request->file('logo');
                 $logoFileName = 'logo_' . uniqid() . '_' . time() . '.' . $logoFile->getClientOriginalExtension();
-                $logoPath = $logoFile->storeAs('companies/logos', $logoFileName, 'public');
+
+                $logoPath = $logoFile->storeAs('companies/logos', $logoFileName, $disk);
                 $uploadedFiles[] = $logoPath;
             }
 
-            // 2. Create the company with sponsor and coach
+            // 2) Create company
             $company = Company::create([
                 'name' => trim($request->name),
                 'email' => $request->email ? trim($request->email) : null,
                 'phone' => $request->phone ? trim($request->phone) : null,
                 'address' => $request->address ? trim($request->address) : null,
                 'logo' => $logoPath,
-                'sponsor_id' => $request->sponsor_id ?: null, // Already converted to null if 'none' in request
-                'coach_id' => $request->coach_id ?: null, // Already converted to null if 'none' in request
+                'sponsor_id' => $request->sponsor_id ?: null,
+                'coach_id' => $request->coach_id ?: null,
             ]);
 
             if ($request->has('checklists') && is_array($request->checklists)) {
@@ -106,41 +108,46 @@ class CompanyController extends Controller
                 }
             }
 
-
             $createdCompany = $company;
 
-
-
-            // 3. Process company owners
+            // 3) Owners
             if ($request->has('owners') && is_array($request->owners) && count($request->owners) > 0) {
-                $ownerIndex = 0;
-
                 foreach ($request->owners as $index => $ownerData) {
-                    // Handle owner photo upload
+
+                    // photo
                     $ownerPhotoPath = null;
-                    if (isset($ownerData['photo']) && $ownerData['photo'] instanceof \Illuminate\Http\UploadedFile && $ownerData['photo']->isValid()) {
+                    if (
+                        isset($ownerData['photo']) &&
+                        $ownerData['photo'] instanceof UploadedFile &&
+                        $ownerData['photo']->isValid()
+                    ) {
                         $photoFile = $ownerData['photo'];
                         $photoFileName = 'photo_' . uniqid() . '_' . time() . '_' . $index . '.' . $photoFile->getClientOriginalExtension();
-                        $ownerPhotoPath = $photoFile->storeAs('owners/photos', $photoFileName, 'public');
+
+                        $ownerPhotoPath = $photoFile->storeAs('owners/photos', $photoFileName, $disk);
                         $uploadedFiles[] = $ownerPhotoPath;
                     }
 
-                    // Handle ID file upload (required)
+                    // id file
                     $idFilePath = null;
                     $idFileOriginalName = null;
-                    if (isset($ownerData['id_file']) && $ownerData['id_file'] instanceof \Illuminate\Http\UploadedFile && $ownerData['id_file']->isValid()) {
+                    if (
+                        isset($ownerData['id_file']) &&
+                        $ownerData['id_file'] instanceof UploadedFile &&
+                        $ownerData['id_file']->isValid()
+                    ) {
                         $idFile = $ownerData['id_file'];
                         $idFileOriginalName = $idFile->getClientOriginalName();
                         $idFileName = 'id_' . uniqid() . '_' . time() . '_' . $index . '.' . $idFile->getClientOriginalExtension();
-                        $idFilePath = $idFile->storeAs('owners/ids', $idFileName, 'public');
+
+                        $idFilePath = $idFile->storeAs('owners/ids', $idFileName, $disk);
                         $uploadedFiles[] = $idFilePath;
                     }
 
-                    // Check if user already exists with this email
+                    // find existing owner by email
                     $owner = User::where('email', trim($ownerData['email']))->first();
 
                     if ($owner) {
-                        // Update existing user
                         $updateData = [
                             'name' => trim($ownerData['name']),
                             'phone' => isset($ownerData['phone']) ? trim($ownerData['phone']) : null,
@@ -149,29 +156,31 @@ class CompanyController extends Controller
                             'birthdate' => isset($ownerData['birthdate']) ? $ownerData['birthdate'] : null,
                         ];
 
-                        // Update photo if provided
+                        // Replace photo (delete old from S3)
                         if ($ownerPhotoPath) {
-                            // Delete old photo if exists
-                            if ($owner->photo && Storage::disk('public')->exists($owner->photo)) {
-                                Storage::disk('public')->delete($owner->photo);
+                            if ($owner->photo && Storage::disk($disk)->exists($owner->photo)) {
+                                Storage::disk($disk)->delete($owner->photo);
                             }
                             $updateData['photo'] = $ownerPhotoPath;
                         }
 
-                        // Update ID file if provided
+                        // Replace ID (delete old from S3)
                         if ($idFilePath) {
-                            // Delete old ID file if exists
-                            if ($owner->id_file_path && Storage::disk('public')->exists($owner->id_file_path)) {
-                                Storage::disk('public')->delete($owner->id_file_path);
+                            // NOTE: your code uses $owner->id_file_path, but create uses 'ids'
+                            // Make sure your User model column names are consistent.
+                            $oldIdPath = $owner->id_file_path ?? $owner->ids ?? null;
+
+                            if ($oldIdPath && Storage::disk($disk)->exists($oldIdPath)) {
+                                Storage::disk($disk)->delete($oldIdPath);
                             }
+
                             $updateData['id_file_path'] = $idFilePath;
                             $updateData['id_file_name'] = $idFileOriginalName;
                         }
 
                         $owner->update($updateData);
                     } else {
-                        // Create new user/owner
-                        $owner = User::create([
+                        User::create([
                             'name' => trim($ownerData['name']),
                             'email' => trim($ownerData['email']),
                             'password' => bcrypt('Password123`'),
@@ -184,37 +193,32 @@ class CompanyController extends Controller
                             'company_id' => $createdCompany->id,
                         ]);
                     }
-
-                    $ownerIndex++;
                 }
             }
 
-            // Commit transaction
             DB::commit();
 
             return redirect()->route('companies')
                 ->with('success', 'Company created successfully with ' . count($request->owners ?? []) . ' owner(s).');
 
-        } catch (\Illuminate\Validation\ValidationException $e) {
+        } catch (ValidationException $e) {
             DB::rollBack();
-            throw $e; // Let Laravel handle validation exceptions
-        } catch (\Exception $e) {
+            throw $e;
+        } catch (\Throwable $e) {
             DB::rollBack();
 
-            // Clean up uploaded files on failure
+            // Cleanup: delete newly uploaded S3 objects
             foreach ($uploadedFiles as $filePath) {
-                if ($filePath && Storage::disk('public')->exists($filePath)) {
-                    Storage::disk('public')->delete($filePath);
+                if ($filePath && Storage::disk($disk)->exists($filePath)) {
+                    Storage::disk($disk)->delete($filePath);
                 }
             }
 
-            // Clean up created company if it exists
             if ($createdCompany) {
                 $createdCompany->delete();
             }
 
-            // Log the error
-            \Log::error('Company creation failed: ' . $e->getMessage(), [
+            Log::error('Company creation failed: ' . $e->getMessage(), [
                 'exception' => $e,
                 'trace' => $e->getTraceAsString(),
                 'request_data' => $request->except(['logo', 'owners.*.photo', 'owners.*.id_file']),
@@ -324,51 +328,47 @@ class CompanyController extends Controller
     public function submit(Request $request)
     {
 
-        try {
-            $validated = $request->validate([
-                'company_name' => ['required', 'string', 'max:255'],
-                'company_email' => ['nullable', 'email', 'max:255'],
-                'company_phone' => ['nullable', 'string', 'max:20'],
-                'address' => ['nullable', 'string', 'max:500'],
-                'has_existing_ecomm_process' => ['required', 'in:yes,no'],
+        $validated = $request->validate([
+            'company_name' => ['required', 'string', 'max:255'],
+            'company_email' => ['nullable', 'email', 'max:255'],
+            'company_phone' => ['nullable', 'string', 'max:20'],
+            'address' => ['nullable', 'string', 'max:500'],
+            'has_existing_ecomm_process' => ['required', 'in:yes,no'],
 
-                'company_logo' => ['nullable', 'image', 'max:5120'],
-                'company_owners_image' => ['nullable', 'image', 'max:5120'],
-                'proof_of_payment' => ['required', 'file', 'max:10240'],
-                'e_signature' => ['required', 'file', 'max:5120'],
+            'company_logo' => ['nullable', 'image', 'max:5120'],
+            'company_owners_image' => ['nullable', 'image', 'max:5120'],
+            'proof_of_payment' => ['required', 'file', 'max:10240'],
+            'e_signature' => ['required', 'file', 'max:5120'],
 
-                'owners' => ['required', 'array', 'min:1'],
-                'owners.*.name' => ['required', 'string', 'max:255'],
-                'owners.*.email' => ['required', 'email', 'max:255'],
-                'owners.*.phone' => ['required', 'string', 'max:20'],
-                'owners.*.address' => ['nullable', 'string', 'max:500'],
-                'owners.*.facebook_link' => ['nullable', 'url', 'max:255'],
-                'owners.*.birthdate' => ['nullable', 'date'],
-                'owners.*.photo' => ['required', 'image', 'max:5120'],
-                'owners.*.id_with_signature' => ['required', 'file', 'max:10240'],
-            ]);
-        } catch (ValidationException $e) {
-            dd($e->errors()); // <-- THIS shows the exact failing fields + messages
-        }
+            'owners' => ['required', 'array', 'min:1'],
+            'owners.*.name' => ['required', 'string', 'max:255'],
+            'owners.*.email' => ['required', 'email', 'max:255'],
+            'owners.*.phone' => ['required', 'string', 'max:20'],
+            'owners.*.address' => ['nullable', 'string', 'max:500'],
+            'owners.*.facebook_link' => ['nullable', 'url', 'max:255'],
+            'owners.*.birthdate' => ['nullable', 'date'],
+            'owners.*.photo' => ['required', 'image', 'max:5120'],
+            'owners.*.id_with_signature' => ['required', 'file', 'max:10240'],
+        ]);
 
 
         $companyLogoPath = null;
         $ownersImagePath = null;
 
         if ($request->hasFile('company_logo')) {
-            $companyLogoPath = $request->file('company_logo')->store('companies/logos', 'public');
+            $companyLogoPath = $request->file('company_logo')->store('companies/logos', 's3');
                 $storedFiles[] = $companyLogoPath;
         }
 
         if ($request->hasFile('company_owners_image')) {
-            $ownersImagePath = $request->file('company_owners_image')->store('companies/owners-group', 'public');
+            $ownersImagePath = $request->file('company_owners_image')->store('companies/owners-group', 's3');
             $storedFiles[] = $ownersImagePath;
         }
 
-        $proofPath = $request->file('proof_of_payment')->store('companies/payments', 'public');
+        $proofPath = $request->file('proof_of_payment')->store('companies/payments', 's3');
         $storedFiles[] = $proofPath;
 
-        $signaturePath = $request->file('e_signature')->store('companies/signatures', 'public');
+        $signaturePath = $request->file('e_signature')->store('companies/signatures', 's3');
         $storedFiles[] = $signaturePath;
 
         // CREATE COMPANY
