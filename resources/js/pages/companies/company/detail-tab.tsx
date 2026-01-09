@@ -457,7 +457,7 @@ export default function DetailTab({ company, sponsors, coaches }: ShowProps) {
                                 <button
                                     type="button"
                                     onClick={() => setIsEditingCompany(true)}
-                                    className="inline-flex items-center gap-1.5 rounded-lg border border-violet-200 bg-gradient-to-r from-pink-50 via-violet-50 to-cyan-50 px-3 py-1.5 text-sm font-medium text-violet-700 transition hover:from-pink-100 hover:via-violet-100 hover:to-cyan-100"
+                                    className="inline-flex items-center gap-1.5 rounded-lg "
                                 >
                                     <Edit className="h-4 w-4" />
                                     Edit

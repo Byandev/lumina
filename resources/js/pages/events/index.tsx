@@ -42,9 +42,9 @@ import {
     ChevronRight,
     Users,
     Building,
-    Eye,
+    Eye, Loader2,
 } from 'lucide-react';
-import { FormEvent, useEffect, useState, useCallback } from 'react';
+import React, { FormEvent, useEffect, useState, useCallback } from 'react';
 import { debounce } from 'lodash';
 import { route } from 'ziggy-js';
 import {
@@ -599,7 +599,7 @@ export default function index({
             </AlertDialog>
 
             <div className="px-4 py-6">
-                <div className="mb-2">
+                <div className="mb-4">
                     <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0">
                             <h1 className="text-lg font-semibold text-foreground">
@@ -609,54 +609,53 @@ export default function index({
                                 Manage all events in your system
                             </p>
                         </div>
-
-                        <Button
-                            size="sm"
-                            onClick={() => {
-                                setEditingEvent(null);
-                                reset();
-                                setIsOpen(true);
-                            }}
-                        >
-                            <Plus className="mr-1.5 h-4 w-4" />
-                            Add New Event
-                        </Button>
-                    </div>
-
-                    {/* Search Bar */}
-                    <div className="relative mt-4 max-w-md">
-                        <Search className="pointer-events-none absolute top-4.5 left-3 z-10 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                        <Input
-                            type="text"
-                            placeholder="Search events..."
-                            value={search}
-                            onChange={handleSearchChange}
-                            className="h-9 pr-9 pl-9"
-                        />
-                        {search ? (
-                            <button
-                                type="button"
-                                onClick={clearSearch}
-                                className="absolute top-4.5 right-2 -translate-y-1/2 rounded p-1 text-muted-foreground hover:text-foreground"
-                                aria-label="Clear search"
+                        <div className="flex items-end space-x-2">
+                            <div className="relative max-w-md">
+                                <Search className="pointer-events-none absolute top-4.5 left-3 z-10 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                <Input
+                                    type="text"
+                                    placeholder="Search events..."
+                                    value={search}
+                                    onChange={handleSearchChange}
+                                    className="h-9 pr-9 pl-9"
+                                />
+                                {search ? (
+                                    <button
+                                        type="button"
+                                        onClick={clearSearch}
+                                        className="absolute top-4.5 right-2 -translate-y-1/2 rounded p-1 text-muted-foreground hover:text-foreground"
+                                        aria-label="Clear search"
+                                    >
+                                        <X className="h-4 w-4" />
+                                    </button>
+                                ) : null}
+                            </div>
+                            <Button
+                                onClick={() => {
+                                    setEditingEvent(null);
+                                    reset();
+                                    setIsOpen(true);
+                                }}
                             >
-                                <X className="h-4 w-4" />
-                            </button>
-                        ) : null}
-
-                        {search ? (
-                            <p className="mt-2 text-xs text-muted-foreground">
-                                Results for{' '}
-                                <span className="font-medium text-foreground">
-                                    "{search}"
-                                </span>
-                            </p>
-                        ) : null}
+                                <Plus className="mr-1.5 h-4 w-4" />
+                                Add New Event
+                            </Button>
+                        </div>
                     </div>
+                </div>
+                <div className='mb-2'>
+                    {search ? (
+                        <p className="mt-2 text-xs text-muted-foreground">
+                            Results for{' '}
+                            <span className="font-medium text-foreground">
+                                "{search}"
+                            </span>
+                        </p>
+                    ) : null}
                 </div>
 
                 {/* Events Table - Keeping borderless design */}
-                <div className="rounded-lg bg-background">
+                <div className="rounded-lg border">
                     <div className="overflow-x-auto">
                         <table className="w-full text-sm">
                             <thead className="bg-gray-100">
@@ -689,24 +688,32 @@ export default function index({
                                             colSpan={6}
                                             className="px-4 py-10 text-center text-sm text-muted-foreground"
                                         >
-                                            {search ? (
-                                                <>
-                                                    No events found for{' '}
-                                                    <span className="font-medium text-foreground">
-                                                        "{search}"
-                                                    </span>
-                                                    .
-                                                    <Button
-                                                        variant="link"
-                                                        onClick={clearSearch}
-                                                        className="ml-1 h-auto p-0 text-sm"
-                                                    >
-                                                        Clear search
-                                                    </Button>
-                                                </>
-                                            ) : (
-                                                'No events found. Create your first event.'
-                                            )}
+                                            {search && (
+                                                    <div className="flex flex-col items-center justify-center gap-3">
+                                                        <div className="rounded-full bg-gray-100 p-3">
+                                                            <Search className="h-6 w-6 text-gray-400" />
+                                                        </div>
+                                                        <div className="space-y-1 text-center">
+                                                            <p className="text-sm font-semibold text-gray-900">
+                                                                No events found
+                                                            </p>
+                                                            <p className="text-xs text-gray-500">
+                                                                Try adjusting
+                                                                your search
+                                                            </p>
+                                                        </div>
+                                                        <Button
+                                                            variant="outline"
+                                                            onClick={
+                                                                clearSearch
+                                                            }
+                                                            size="sm"
+                                                        >
+                                                            Clear Search
+                                                        </Button>
+                                                    </div>
+                                            )
+                                            }
                                         </td>
                                     </tr>
                                 ) : (
@@ -866,7 +873,7 @@ export default function index({
                     </div>
 
                     {/* Compact pagination footer */}
-                    <div className="mt-2 flex flex-col items-center gap-2 border-t px-1 sm:flex-row md:justify-between">
+                    <div className=" flex flex-col items-center gap-2 border-t p-2  px-4 sm:flex-row md:justify-between">
                         <div className="text-xs text-muted-foreground">
                             Showing{' '}
                             <span className="font-medium text-foreground">

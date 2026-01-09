@@ -42,7 +42,7 @@ const buttonVariants = cva(
                     "bg-gradient-to-r from-white/10 to-white/5 backdrop-blur-xl border border-white/20 text-white shadow-lg shadow-black/10 hover:shadow-xl hover:shadow-black/20 hover:bg-gradient-to-r hover:from-pink-500/20 hover:via-purple-500/20 hover:to-cyan-500/20 hover:border-pink-400/30 focus-visible:border-cyan-400/50",
             },
             size: {
-                default: "h-8 px-6 py-2 has-[>svg]:px-4 text-sm rounded-sm ",
+                default: "h-9 px-6 py-2 has-[>svg]:px-4 text-sm rounded-md ",
                 sm: "h-8 rounded-lg gap-1.5 px-3.5 has-[>svg]:px-2.5 text-xs",
                 lg: "h-12 rounded-lg px-8 has-[>svg]:px-5 text-base font-semibold",
                 xl: "h-14 rounded-xl px-10 has-[>svg]:px-6 text-base font-semibold",

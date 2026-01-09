@@ -195,8 +195,8 @@ export default function CompaniesIndex({
             <Head title="Companies" />
 
             <div className="px-4 py-6">
-                <div className="mb-2">
-                    <div className="flex items-start justify-between gap-3">
+                <div className="mb-4">
+                    <div className="flex items-center justify-between gap-3">
                         <div className="min-w-0">
                             <h1 className="text-lg font-semibold text-foreground">
                                 Companies
@@ -206,46 +206,44 @@ export default function CompaniesIndex({
                             </p>
                         </div>
 
-                        <Link
-                            href="/companies/create"
-                            className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-pink-300 via-violet-300 to-cyan-300 px-4 py-1.5 text-sm font-semibold text-white shadow-[0_0_4px_rgba(236,72,153,0.45)] transition hover:shadow-[0_0_12px_rgba(139,92,246,0.6)] sm:w-auto"
-                        >
-                            <Plus className="h-4 w-4" />
-                            Add Company
-                        </Link>
-                    </div>
+                        {/* Search + Add */}
+                        <div className="flex items-center gap-3">
+                            <form
+                                onSubmit={handleSearchSubmit}
+                                className="relative w-full sm:w-80"
+                            >
+                                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                                    <Search className="z-10 h-4 w-4 text-gray-400" />
+                                </div>
 
-                    {/* Search Bar */}
-                    <div className="flex flex-col gap-2 mt-4">
-                        <form
-                            onSubmit={handleSearchSubmit}
-                            className="relative w-full sm:w-96"
-                        >
-                            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                                <Search className="h-4 z-10 w-4 text-gray-400" />
-                            </div>
+                                <Input
+                                    type="text"
+                                    value={searchTerm}
+                                    onChange={handleSearchChange}
+                                    placeholder="Search companies..."
+                                    className="pl-8 h-9 text-sm"
+                                />
 
-                            <Input
-                                type="text"
-                                value={searchTerm}
-                                onChange={handleSearchChange}
-                                placeholder="Search companies by name..."
-                                className=" pl-8 rounded-lg text-sm text-muted-foreground hover:text-foreground"
-                            />
-
-                            {searchTerm && (
-                                <button
-                                    type="button"
-                                    onClick={clearSearch}
-                                    className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 transition hover:text-gray-700"
-                                    aria-label="Clear search"
-                                >
-                                    <span className="text-lg leading-none">
+                                {searchTerm && (
+                                    <button
+                                        type="button"
+                                        onClick={clearSearch}
+                                        className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-700"
+                                        aria-label="Clear search"
+                                    >
                                         ×
-                                    </span>
-                                </button>
-                            )}
-                        </form>
+                                    </button>
+                                )}
+                            </form>
+
+                            <Link
+                                href="/companies/create"
+                                className="inline-flex items-center gap-2 rounded-md bg-gradient-to-r from-pink-500 via-blue-500 to-cyan-500 px-4 py-2 text-sm font-semibold text-white transition hover:scale-105"
+                            >
+                                <Plus className="h-4 w-4" />
+                                Add Company
+                            </Link>
+                        </div>
                     </div>
                 </div>
 
@@ -263,10 +261,10 @@ export default function CompaniesIndex({
                 {/* Content Card */}
                 <div className="overflow-hidden">
                     {!hasData ? (
-                        <div className="rounded-2xl border border-transparent bg-gradient-to-r from-pink-50 via-violet-50 to-cyan-50 px-6 py-10 text-center">
+                        <div className="rounded-2xl border   px-6 py-10 text-center">
                             {/* Icon */}
-                            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-r from-pink-300 via-violet-300 to-cyan-300">
-                                <Building className="h-6 w-6 text-white" />
+                            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-gray-200">
+                                <Building className="h-6 w-6 text-gray-400" />
                             </div>
 
                             {/* Title */}
@@ -286,16 +284,16 @@ export default function CompaniesIndex({
                             {/* Action */}
                             <div className="mt-6">
                                 {searchTerm ? (
-                                    <button
+                                    <Button
                                         onClick={clearSearch}
-                                        className="inline-flex items-center gap-2 rounded-lg border border-transparent bg-gradient-to-r from-pink-100 via-violet-100 to-cyan-100 px-4 py-2 text-sm font-semibold text-violet-700 transition hover:from-pink-200 hover:via-violet-200 hover:to-cyan-200"
+                                        variant="outline"
                                     >
                                         Clear search
-                                    </button>
+                                    </Button>
                                 ) : (
                                     <Link
                                         href="/companies/create"
-                                        className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-pink-500 via-violet-500 to-cyan-500 px-4 py-2 text-sm font-semibold text-white shadow-md transition hover:opacity-90"
+                                        className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-pink-500 via-blue-500 to-cyan-500 px-4 py-2 text-sm font-semibold text-white shadow-md transition hover:opacity-90"
                                     >
                                         <Plus className="h-4 w-4" />
                                         Add Company
@@ -305,7 +303,7 @@ export default function CompaniesIndex({
                         </div>
                     ) : (
                         <>
-                            <div className="overflow-x-auto">
+                            <div className="overflow-x-auto rounded-xl border">
                                 <table className="min-w-full">
                                     <thead className="bg-gray-100">
                                         <tr>
@@ -369,7 +367,7 @@ export default function CompaniesIndex({
                                                             <div className="max-w-[240px] truncate text-sm font-semibold text-gray-900">
                                                                 <Link
                                                                     href={`/companies/${company.id}/details`}
-                                                                    className="hover:underline"
+                                                                    className="font-light hover:underline"
                                                                 >
                                                                     {
                                                                         company.name
@@ -430,7 +428,7 @@ export default function CompaniesIndex({
                                                                                 </div>
 
                                                                                 <div className="min-w-0">
-                                                                                    <div className="max-w-[180px] truncate text-xs font-semibold text-gray-900">
+                                                                                    <div className="max-w-[180px] truncate text-xs font-light text-gray-900">
                                                                                         {
                                                                                             owner.name
                                                                                         }
@@ -516,7 +514,7 @@ export default function CompaniesIndex({
                                                                 <div className="max-w-[160px] truncate text-xs font-semibold text-gray-900">
                                                                     <Link
                                                                         href={`/companies/${company.sponsor.id}`}
-                                                                        className="transition hover:text-gray-900 hover:underline"
+                                                                        className="font-light transition hover:text-gray-900 hover:underline"
                                                                     >
                                                                         {
                                                                             company
@@ -649,115 +647,117 @@ export default function CompaniesIndex({
                                         ))}
                                     </tbody>
                                 </table>
+                                <div className="flex flex-col items-center justify-between gap-3 border-t border-gray-200 bg-white px-4 py-3 sm:flex-row">
+                                    <div className="flex flex-col sm:flex-row sm:items-center sm:gap-3">
+                                        <p className="text-xs text-gray-700">
+                                            Showing{' '}
+                                            <span className="font-semibold">
+                                                {companies.from}
+                                            </span>{' '}
+                                            to{' '}
+                                            <span className="font-semibold">
+                                                {companies.to}
+                                            </span>{' '}
+                                            of{' '}
+                                            <span className="font-semibold">
+                                                {companies.total}
+                                            </span>{' '}
+                                            results
+                                        </p>
+                                        {searchTerm && (
+                                            <div className="mt-1 sm:mt-0">
+                                                <span className="text-xs text-gray-500">
+                                                    Search: "{searchTerm}"
+                                                </span>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    <div className="flex items-center gap-1">
+                                        {/* Prev */}
+                                        <Link
+                                            href={pagination.prev.url || '#'}
+                                            className={`inline-flex items-center rounded-lg border border-gray-300 px-2 py-1.5 text-xs font-semibold transition ${
+                                                !pagination.prev.url
+                                                    ? 'pointer-events-none opacity-50'
+                                                    : 'bg-white text-gray-700 hover:bg-gray-50'
+                                            }`}
+                                            preserveScroll
+                                            preserveState
+                                        >
+                                            <ChevronLeft className="h-4 w-4" />
+                                        </Link>
+
+                                        {/* Pages */}
+                                        {pagination.pages.map((link, index) => {
+                                            const label = link.label;
+                                            const isNumeric = /^\d+$/.test(
+                                                label,
+                                            );
+
+                                            // Render ellipsis if paginator outputs it
+                                            if (!isNumeric) {
+                                                return (
+                                                    <span
+                                                        key={`ellipsis-${index}-${label}`}
+                                                        className="px-2 py-1.5 text-xs text-gray-400"
+                                                    >
+                                                        <MoreHorizontal className="h-4 w-4" />
+                                                    </span>
+                                                );
+                                            }
+
+                                            const pageNum = parseInt(label, 10);
+                                            const isNear =
+                                                Math.abs(
+                                                    pageNum -
+                                                        companies.current_page,
+                                                ) <= 1 ||
+                                                pageNum === 1 ||
+                                                pageNum === companies.last_page;
+
+                                            if (!isNear) return null;
+
+                                            return (
+                                                <Link
+                                                    key={`${label}-${index}`}
+                                                    href={link.url || '#'}
+                                                    className={`inline-flex items-center rounded-lg border px-2.5 py-1.5 text-xs font-semibold transition ${
+                                                        link.active
+                                                            ? ' bg-gradient-to-r from-pink-500 via-blue-500 to-cyan-500 text-white'
+                                                            : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
+                                                    }`}
+                                                    aria-current={
+                                                        link.active
+                                                            ? 'page'
+                                                            : undefined
+                                                    }
+                                                    preserveScroll
+                                                    preserveState
+                                                >
+                                                    {label}
+                                                </Link>
+                                            );
+                                        })}
+
+                                        {/* Next */}
+                                        <Link
+                                            href={pagination.next.url || '#'}
+                                            className={`inline-flex items-center rounded-lg border border-gray-300 px-2 py-1.5 text-xs font-semibold transition ${
+                                                !pagination.next.url
+                                                    ? 'pointer-events-none opacity-50'
+                                                    : 'bg-white text-gray-700 hover:bg-gray-50'
+                                            }`}
+                                            preserveScroll
+                                            preserveState
+                                        >
+                                            <ChevronRight className="h-4 w-4" />
+                                        </Link>
+                                    </div>
+                                </div>
                             </div>
 
                             {/* Pagination */}
-                            <div className="flex flex-col items-center justify-between gap-3 border-t border-gray-200 bg-white px-4 py-3 sm:flex-row">
-                                <div className="flex flex-col sm:flex-row sm:items-center sm:gap-3">
-                                    <p className="text-xs text-gray-700">
-                                        Showing{' '}
-                                        <span className="font-semibold">
-                                            {companies.from}
-                                        </span>{' '}
-                                        to{' '}
-                                        <span className="font-semibold">
-                                            {companies.to}
-                                        </span>{' '}
-                                        of{' '}
-                                        <span className="font-semibold">
-                                            {companies.total}
-                                        </span>{' '}
-                                        results
-                                    </p>
-                                    {searchTerm && (
-                                        <div className="mt-1 sm:mt-0">
-                                            <span className="text-xs text-gray-500">
-                                                Search: "{searchTerm}"
-                                            </span>
-                                        </div>
-                                    )}
-                                </div>
-
-                                <div className="flex items-center gap-1">
-                                    {/* Prev */}
-                                    <Link
-                                        href={pagination.prev.url || '#'}
-                                        className={`inline-flex items-center rounded-lg border border-gray-300 px-2 py-1.5 text-xs font-semibold transition ${
-                                            !pagination.prev.url
-                                                ? 'pointer-events-none opacity-50'
-                                                : 'bg-white text-gray-700 hover:bg-gray-50'
-                                        }`}
-                                        preserveScroll
-                                        preserveState
-                                    >
-                                        <ChevronLeft className="h-4 w-4" />
-                                    </Link>
-
-                                    {/* Pages */}
-                                    {pagination.pages.map((link, index) => {
-                                        const label = link.label;
-                                        const isNumeric = /^\d+$/.test(label);
-
-                                        // Render ellipsis if paginator outputs it
-                                        if (!isNumeric) {
-                                            return (
-                                                <span
-                                                    key={`ellipsis-${index}-${label}`}
-                                                    className="px-2 py-1.5 text-xs text-gray-400"
-                                                >
-                                                    <MoreHorizontal className="h-4 w-4" />
-                                                </span>
-                                            );
-                                        }
-
-                                        const pageNum = parseInt(label, 10);
-                                        const isNear =
-                                            Math.abs(
-                                                pageNum -
-                                                    companies.current_page,
-                                            ) <= 1 ||
-                                            pageNum === 1 ||
-                                            pageNum === companies.last_page;
-
-                                        if (!isNear) return null;
-
-                                        return (
-                                            <Link
-                                                key={`${label}-${index}`}
-                                                href={link.url || '#'}
-                                                className={`inline-flex items-center rounded-lg border px-2.5 py-1.5 text-xs font-semibold transition ${
-                                                    link.active
-                                                        ? 'border-transparent bg-gradient-to-r from-pink-300 via-violet-300 to-cyan-300 text-white'
-                                                        : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
-                                                }`}
-                                                aria-current={
-                                                    link.active
-                                                        ? 'page'
-                                                        : undefined
-                                                }
-                                                preserveScroll
-                                                preserveState
-                                            >
-                                                {label}
-                                            </Link>
-                                        );
-                                    })}
-
-                                    {/* Next */}
-                                    <Link
-                                        href={pagination.next.url || '#'}
-                                        className={`inline-flex items-center rounded-lg border border-gray-300 px-2 py-1.5 text-xs font-semibold transition ${
-                                            !pagination.next.url
-                                                ? 'pointer-events-none opacity-50'
-                                                : 'bg-white text-gray-700 hover:bg-gray-50'
-                                        }`}
-                                        preserveScroll
-                                        preserveState
-                                    >
-                                        <ChevronRight className="h-4 w-4" />
-                                    </Link>
-                                </div>
-                            </div>
                         </>
                     )}
                 </div>

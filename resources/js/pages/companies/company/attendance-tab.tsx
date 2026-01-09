@@ -2,6 +2,7 @@ import CompanyLayout from '@/pages/companies/company/company-layout';
 import { Link } from '@inertiajs/react';
 import { ChevronLeft, ChevronRight, MoreHorizontal } from 'lucide-react';
 import { Company } from '@/pages/companies/company/types';
+import React from 'react';
 
 interface Event {
     id: number;
@@ -83,111 +84,113 @@ export default function AttendanceTab({ attendances, company }: AttendanceProps)
     return (
         <CompanyLayout company={company}>
             <div className="">
-                <div className="mb-6">
-                    <h3 className="text-lg font-semibold text-gray-900">
+                <div className="min-w-0 mb-4">
+                    <h3 className="text-base font-semibold text-gray-900">
                         Attendance
                     </h3>
+                    <p className="text-xs text-gray-500">
+                        Shows all events the company has attended
+                    </p>
                 </div>
-
                 <div className="overflow-hidden">
                     <table className="w-full">
                         <thead>
-                        <tr className="bg-gray-100 border-b border-gray-200">
-                            <th className="px-3 py-2 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
-                                Event
-                            </th>
-                            <th className="px-3 py-2 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
-                                Date
-                            </th>
-                            <th className="px-3 py-2 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
-                                Type
-                            </th>
-                            <th className="px-3 py-2 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
-                                Location
-                            </th>
-                            <th className="px-3 py-2 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
-                                Status
-                            </th>
-                        </tr>
+                            <tr className="border-b border-gray-200 bg-gray-100">
+                                <th className="px-3 py-2 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
+                                    Event
+                                </th>
+                                <th className="px-3 py-2 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
+                                    Date
+                                </th>
+                                <th className="px-3 py-2 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
+                                    Type
+                                </th>
+                                <th className="px-3 py-2 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
+                                    Location
+                                </th>
+                                <th className="px-3 py-2 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
+                                    Status
+                                </th>
+                            </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100">
-                        {attendances.data.length === 0 ? (
-                            <tr>
-                                <td
-                                    colSpan={5}
-                                    className="px-3 py-8 text-center"
-                                >
-                                    <div className="flex flex-col items-center justify-center">
-                                        <div className="mb-2 rounded-full bg-gray-100 p-2">
-                                            <svg
-                                                className="h-5 w-5 text-gray-400"
-                                                fill="none"
-                                                stroke="currentColor"
-                                                viewBox="0 0 24 24"
-                                            >
-                                                <path
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    strokeWidth="2"
-                                                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
-                                                />
-                                            </svg>
-                                        </div>
-                                        <p className="text-sm text-gray-900">
-                                            No attendance records
-                                        </p>
-                                        <p className="text-xs text-gray-500">
-                                            No events attended yet
-                                        </p>
-                                    </div>
-                                </td>
-                            </tr>
-                        ) : (
-                            attendances.data.map((attendance) => (
-                                <tr
-                                    key={`${attendance.event_id}-${attendance.company_id}`}
-                                    className="hover:bg-gray-50"
-                                >
-                                    <td className="px-3 py-3">
-                                        <div className="text-sm font-medium text-gray-900">
-                                            {attendance.event?.name ||
-                                                'N/A'}
+                            {attendances.data.length === 0 ? (
+                                <tr>
+                                    <td
+                                        colSpan={5}
+                                        className="px-3 py-8 text-center"
+                                    >
+                                        <div className="flex flex-col items-center justify-center">
+                                            <div className="mb-2 rounded-full bg-gray-100 p-2">
+                                                <svg
+                                                    className="h-5 w-5 text-gray-400"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    viewBox="0 0 24 24"
+                                                >
+                                                    <path
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                        strokeWidth="2"
+                                                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                                                    />
+                                                </svg>
+                                            </div>
+                                            <p className="text-sm text-gray-900">
+                                                No attendance records
+                                            </p>
+                                            <p className="text-xs text-gray-500">
+                                                No events attended yet
+                                            </p>
                                         </div>
                                     </td>
-                                    <td className="px-3 py-3 whitespace-nowrap">
-                                        <div className="text-sm text-gray-700">
-                                            {attendance.event?.date
-                                                ? formatDate(
-                                                    attendance.event.date,
-                                                )
-                                                : 'N/A'}
-                                        </div>
-                                    </td>
-                                    <td className="px-3 py-3">
-                                        <div className="text-sm text-gray-700">
-                                            {attendance.event?.type ||
-                                                'N/A'}
-                                        </div>
-                                    </td>
-                                    <td className="px-3 py-3">
-                                        <div className="max-w-[120px] truncate text-sm text-gray-700">
-                                            {attendance.event?.location ||
-                                                'N/A'}
-                                        </div>
-                                    </td>
-                                    <td className="px-3 py-3">
+                                </tr>
+                            ) : (
+                                attendances.data.map((attendance) => (
+                                    <tr
+                                        key={`${attendance.event_id}-${attendance.company_id}`}
+                                        className="hover:bg-gray-50"
+                                    >
+                                        <td className="px-3 py-3">
+                                            <div className="text-sm font-medium text-gray-900">
+                                                {attendance.event?.name ||
+                                                    'N/A'}
+                                            </div>
+                                        </td>
+                                        <td className="px-3 py-3 whitespace-nowrap">
+                                            <div className="text-sm text-gray-700">
+                                                {attendance.event?.date
+                                                    ? formatDate(
+                                                          attendance.event.date,
+                                                      )
+                                                    : 'N/A'}
+                                            </div>
+                                        </td>
+                                        <td className="px-3 py-3">
+                                            <div className="text-sm text-gray-700">
+                                                {attendance.event?.type ||
+                                                    'N/A'}
+                                            </div>
+                                        </td>
+                                        <td className="px-3 py-3">
+                                            <div className="max-w-[120px] truncate text-sm text-gray-700">
+                                                {attendance.event?.location ||
+                                                    'N/A'}
+                                            </div>
+                                        </td>
+                                        <td className="px-3 py-3">
                                             <span
                                                 className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${getStatusColor(attendance.status)}`}
                                             >
                                                 {attendance.status
-                                                        .charAt(0)
-                                                        .toUpperCase() +
+                                                    .charAt(0)
+                                                    .toUpperCase() +
                                                     attendance.status.slice(1)}
                                             </span>
-                                    </td>
-                                </tr>
-                            ))
-                        )}
+                                        </td>
+                                    </tr>
+                                ))
+                            )}
                         </tbody>
                     </table>
 
@@ -195,7 +198,8 @@ export default function AttendanceTab({ attendances, company }: AttendanceProps)
                     {attendances.data.length > 0 && (
                         <div className="flex items-center justify-between border-t border-gray-200 px-3 py-3">
                             <div className="text-sm text-gray-700">
-                                Showing {attendances.from} to {attendances.to} of {attendances.total} results
+                                Showing {attendances.from} to {attendances.to}{' '}
+                                of {attendances.total} results
                             </div>
 
                             <div className="flex items-center gap-1">
@@ -231,7 +235,9 @@ export default function AttendanceTab({ attendances, company }: AttendanceProps)
 
                                     const pageNum = parseInt(label, 10);
                                     const isNear =
-                                        Math.abs(pageNum - attendances.current_page) <= 1 ||
+                                        Math.abs(
+                                            pageNum - attendances.current_page,
+                                        ) <= 1 ||
                                         pageNum === 1 ||
                                         pageNum === attendances.last_page;
 
@@ -248,7 +254,9 @@ export default function AttendanceTab({ attendances, company }: AttendanceProps)
                                             }`}
                                             preserveScroll
                                             preserveState
-                                            aria-current={link.active ? 'page' : undefined}
+                                            aria-current={
+                                                link.active ? 'page' : undefined
+                                            }
                                         >
                                             {label}
                                         </Link>
