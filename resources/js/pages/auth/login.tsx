@@ -31,6 +31,7 @@ export default function Login({
 
             <Form
                 {...store.form()}
+                {...store.form()}
                 resetOnSuccess={['password']}
                 className="flex flex-col gap-6"
             >
@@ -76,7 +77,7 @@ export default function Login({
                                         {canResetPassword && (
                                             <TextLink
                                                 href={request()}
-                                                className="ml-auto bg-gradient-to-r from-cyan-500 to-pink-500 bg-clip-text text-sm text-transparent transition-all duration-300 hover:from-cyan-400 hover:to-pink-400"
+                                                className="ml-auto bg-gradient-to-r from-pink-500 via-blue-500 to-sky-500 bg-clip-text text-sm text-transparent transition-all duration-300 hover:from-cyan-400 hover:to-pink-400"
                                                 tabIndex={5}
                                             >
                                                 Forgot password?
@@ -114,8 +115,7 @@ export default function Login({
 
                             <Button
                                 type="submit"
-                                variant="gradient"
-                                size="lg"
+                                    size="lg"
                                 className="group relative w-full overflow-hidden"
                                 tabIndex={4}
                                 disabled={processing}
@@ -173,7 +173,6 @@ export default function Login({
                                 </TextLink>
                             </div>
                         )}
-
                     </>
                 )}
             </Form>

@@ -14,12 +14,7 @@ import { companies } from '@/routes';
 import { type BreadcrumbItem } from '@/types';
 import { Head, useForm } from '@inertiajs/react';
 import {
-    CalendarIcon,
     Camera,
-    Check,
-    FileText,
-    Link as LinkIcon,
-    Loader2,
     Mail,
     MapPin,
     Phone,
@@ -28,6 +23,10 @@ import {
     Upload,
     User,
     X,
+    CalendarIcon,
+    Link as LinkIcon,
+    Loader2,
+    FileText,
 } from 'lucide-react';
 import React, { useRef, useState } from 'react';
 
@@ -51,12 +50,6 @@ type Owner = {
     facebook: string;
     birthdate: string;
     id_file: File | null;
-};
-
-type ChecklistItem = {
-    id?: number; // For existing items
-    title: string;
-    is_completed: boolean;
 };
 
 interface Company {
@@ -85,7 +78,6 @@ type FormData = {
     owners: Owner[];
     sponsor_id: string;
     coach_id: string;
-    checklists: ChecklistItem[];
 };
 
 export default function CompaniesCreate({ companies, users }: CompaniesProps) {
@@ -106,7 +98,6 @@ export default function CompaniesCreate({ companies, users }: CompaniesProps) {
             owners: [] as Owner[],
             sponsor_id: '',
             coach_id: '',
-            checklists: [] as ChecklistItem[],
         });
 
     function submit(e: React.FormEvent) {
@@ -319,40 +310,6 @@ export default function CompaniesCreate({ companies, users }: CompaniesProps) {
             delete newNames[index];
             return newNames;
         });
-    }
-
-    // Checklist functions
-    function addChecklistItem() {
-        setData('checklists', [
-            ...data.checklists,
-            {
-                title: '',
-                is_completed: false,
-            },
-        ]);
-    }
-
-    function removeChecklistItem(index: number) {
-        const updatedChecklists = data.checklists.filter((_, i) => i !== index);
-        setData('checklists', updatedChecklists);
-    }
-
-    function handleChecklistChange(index: number, value: string) {
-        const updatedChecklists = [...data.checklists];
-        updatedChecklists[index] = {
-            ...updatedChecklists[index],
-            title: value,
-        };
-        setData('checklists', updatedChecklists);
-    }
-
-    function handleChecklistToggle(index: number) {
-        const updatedChecklists = [...data.checklists];
-        updatedChecklists[index] = {
-            ...updatedChecklists[index],
-            is_completed: !updatedChecklists[index].is_completed,
-        };
-        setData('checklists', updatedChecklists);
     }
 
     function handleReset() {
@@ -609,93 +566,6 @@ export default function CompaniesCreate({ companies, users }: CompaniesProps) {
                         </div>
                     </div>
 
-                    {/* Onboarding Checklist */}
-                    <div className="rounded-lg border border-gray-200 bg-white p-6">
-                        <div className="mb-6 flex items-center justify-between">
-                            <h2 className="flex items-center gap-2 text-lg font-semibold text-gray-900">
-                                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-100">
-                                    <Check className="h-4 w-4 text-green-600" />
-                                </div>
-                                Onboarding Checklist
-                            </h2>
-                            <Button
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                onClick={addChecklistItem}
-                                disabled={processing}
-                            >
-                                <Plus className="mr-2 h-4 w-4" />
-                                Add Checklist Item
-                            </Button>
-                        </div>
-
-                        {data.checklists.length === 0 ? (
-                            <div className="rounded-lg border-2 border-dashed border-gray-300 p-8 text-center">
-                                <Check className="mx-auto h-12 w-12 text-gray-400" />
-                                <p className="mt-2 text-sm font-medium text-gray-900">
-                                    No checklist items added
-                                </p>
-                                <p className="mt-1 text-sm text-gray-500">
-                                    Add onboarding checklist items for the company
-                                </p>
-                            </div>
-                        ) : (
-                            <div className="space-y-4">
-                                {data.checklists.map((item, index) => (
-                                    <div
-                                        key={index}
-                                        className="flex items-center justify-between rounded-lg border border-gray-200 p-4"
-                                    >
-                                        <div className="flex items-center gap-3 flex-1">
-                                            <button
-                                                type="button"
-                                                onClick={() => handleChecklistToggle(index)}
-                                                className={`flex h-6 w-6 items-center justify-center rounded-full border ${
-                                                    item.is_completed
-                                                        ? 'bg-green-100 border-green-300'
-                                                        : 'bg-gray-100 border-gray-300'
-                                                }`}
-                                                disabled={processing}
-                                            >
-                                                {item.is_completed && (
-                                                    <Check className="h-3 w-3 text-green-600" />
-                                                )}
-                                            </button>
-                                            <div className="flex-1">
-                                                <Input
-                                                    value={item.title}
-                                                    onChange={(e) =>
-                                                        handleChecklistChange(index, e.target.value)
-                                                    }
-                                                    placeholder="Enter checklist item title"
-                                                    className="border px-2 focus:ring-0 focus-visible:ring-0"
-                                                    disabled={processing}
-                                                />
-                                            </div>
-                                        </div>
-                                        <Button
-                                            type="button"
-                                            variant="ghost"
-                                            size="sm"
-                                            onClick={() => removeChecklistItem(index)}
-                                            disabled={processing}
-                                            className="ml-2 text-gray-500 hover:text-red-600"
-                                        >
-                                            <Trash2 className="h-4 w-4" />
-                                        </Button>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-
-                        <div className="mt-4 text-sm text-gray-500">
-                            <p>• Checklist items will be created for the company</p>
-                            <p>• You can mark items as completed during company onboarding</p>
-                            <p>• Progress will be tracked automatically</p>
-                        </div>
-                    </div>
-
                     {/* Company Owners */}
                     <div className="rounded-lg border border-gray-200 bg-white p-6">
                         <div className="mb-6 flex items-center justify-between">
@@ -884,7 +754,7 @@ export default function CompaniesCreate({ companies, users }: CompaniesProps) {
                                             </div>
 
                                             {/* Second Row: Facebook, Birthdate, Address */}
-                                             <div className="grid gap-4 md:grid-cols-3">
+                                            <div className="grid gap-4 md:grid-cols-3">
                                                 <div className="space-y-2">
                                                     <Label
                                                         htmlFor={`owner-facebook-${index}`}

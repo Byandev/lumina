@@ -100,9 +100,6 @@ class StoreCompanyRequest extends FormRequest
                 'mimes:jpeg,png,jpg,pdf',
                 'max:10240', // 10MB for ID files
             ],
-            'checklists' => 'required|array',
-            'checklists.*.title' => 'required|string|max:255',
-            'checklists.*.is_completed' => 'boolean',
         ];
     }
 

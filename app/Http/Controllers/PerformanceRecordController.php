@@ -154,13 +154,13 @@ class PerformanceRecordController extends Controller
             $file->getClientOriginalExtension()
         );
 
-        return $file->storeAs('performance_records', $filename, 'public');
+        return $file->storeAs('performance_records', $filename, 's3');
     }
 
     private function deleteAttachment(string $path): void
     {
-        if (Storage::disk('public')->exists($path)) {
-            Storage::disk('public')->delete($path);
+        if (Storage::disk('s3')->exists($path)) {
+            Storage::disk('s3')->delete($path);
         }
     }
 }

@@ -11,7 +11,7 @@ const buttonVariants = cva(
             variant: {
                 // Main pink-cyan gradient
                 default:
-                    "bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-500 text-white shadow-lg shadow-pink-500/25 hover:shadow-xl hover:shadow-cyan-500/35 hover:scale-[1.02] active:scale-[0.98] focus-visible:shadow-2xl focus-visible:shadow-cyan-500/50 focus-visible:ring-2 focus-visible:ring-white/70",
+                    "bg-gradient-to-r from-pink-500 via-blue-500 to-sky-500 text-white shadow-lg shadow-pink-500/25 hover:shadow-xl hover:shadow-cyan-500/35 hover:scale-[1.02] active:scale-[0.98] focus-visible:shadow-2xl focus-visible:shadow-cyan-500/50 focus-visible:ring-2 focus-visible:ring-white/70",
 
                 // Glowing outline variant
                 outline:

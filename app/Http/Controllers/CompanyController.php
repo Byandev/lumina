@@ -68,12 +68,12 @@ class CompanyController extends Controller
      * @return RedirectResponse
      * @throws \Throwable
      */
-    public function store(Request $request)
+    public function store(StoreCompanyRequest $request)
     {
         DB::beginTransaction();
 
         $disk = 's3'; // switch here only
-        $uploadedFiles = []; // store paths only (for cleanup)
+        $uploadedFiles = [];
         $createdCompany = null;
 
         try {
@@ -98,14 +98,15 @@ class CompanyController extends Controller
                 'coach_id' => $request->coach_id ?: null,
             ]);
 
-            if ($request->has('checklists') && is_array($request->checklists)) {
-                foreach ($request->checklists as $checklistData) {
-                    OnboardingChecklist::create([
-                        'company_id' => $company->id,
-                        'title' => $checklistData['title'],
-                        'is_completed' => $checklistData['is_completed'] ?? false,
-                    ]);
-                }
+            // ATTACH CHECKLIST ITEMS TO COMPANY
+            $checklistItems = OnboardingChecklist::all();
+
+            foreach ($checklistItems as $checklistItem) {
+                $company->checklists()->attach($checklistItem->id, [
+                    'remark' => '',
+                    'is_completed' => false,
+                    'file' => null
+                ]);
             }
 
             $createdCompany = $company;

@@ -1,18 +1,42 @@
 import { router } from '@inertiajs/react';
 import {
     AlertTriangle,
+    Calendar,
     CheckCircle,
     Download,
     File,
     Plus,
     Target,
+    Upload,
+    X,
 } from 'lucide-react';
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from '@/components/ui/dialog';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
+import InputError from '@/components/input-error';
 
 import CompanyLayout from '@/pages/companies/company/company-layout';
 import { Company } from '@/pages/companies/company/types';
+import { useForm } from '@inertiajs/react';
+import { Textarea } from '@headlessui/react';
 
 export interface PerformanceRecord {
     id: number;
@@ -28,6 +52,7 @@ export interface PerformanceRecord {
     challenges: string;
     action_plan: string;
     attachment_path: string | null;
+    attachment_path_url: string | null; // Added URL field
     attachment_name: string | null;
     created_at: string;
     updated_at: string;
@@ -76,20 +101,83 @@ type FormData = {
 };
 
 export default function PerformanceTab({ company, records }: Props) {
-    const [isOpen, setIsOpen] = useState(false);
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const [attachmentFile, setAttachmentFile] = useState<File | null>(null);
+    const [attachmentName, setAttachmentName] = useState<string>('');
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
-    // Helper function to get the full attachment URL
-    const getAttachmentUrl = (path: string | null): string | null => {
-        if (!path) return null;
+    const { data, setData, post, processing, errors, reset } = useForm<FormData>({
+        start_date: '',
+        end_date: '',
+        phase: '',
+        no_of_items: '',
+        avg_ads_spent: '',
+        roas: '',
+        rts: '',
+        highlights: '',
+        challenges: '',
+        action_plan: '',
+        attachment: null,
+    });
 
-        // If path already starts with /storage/, return as is
-        if (path.startsWith('/storage/')) {
-            return path;
+    const submit = (e: React.FormEvent) => {
+        e.preventDefault();
+
+        post(`/companies/${company.id}/performance-records`, {
+            forceFormData: true,
+            preserveScroll: true,
+            onSuccess: () => {
+                reset();
+                setAttachmentFile(null);
+                setAttachmentName('');
+                setIsDialogOpen(false);
+            },
+        });
+    };
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        const { name, value } = e.target;
+        setData(name as keyof FormData, value);
+    };
+
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            // Validate file type
+            const validTypes = [
+                'image/jpeg', 'image/png', 'image/gif', 'image/webp',
+                'application/pdf',
+                'application/msword',
+                'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                'application/vnd.ms-excel',
+                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            ];
+
+            if (!validTypes.includes(file.type)) {
+                alert('Please upload a valid file (images, PDF, Word, Excel)');
+                return;
+            }
+
+            // Validate file size (10MB max)
+            const maxSize = 10 * 1024 * 1024;
+            if (file.size > maxSize) {
+                alert('File size should not exceed 10MB');
+                return;
+            }
+
+            setAttachmentFile(file);
+            setAttachmentName(file.name);
+            setData('attachment', file);
         }
+    };
 
-        // If path is a filename only or relative path, prepend /storage/
-        // This handles cases where you might store just the filename in the database
-        return `/storage/${path.replace(/^storage\//, '').replace(/^public\//, '')}`;
+    const removeAttachment = () => {
+        setAttachmentFile(null);
+        setAttachmentName('');
+        setData('attachment', null);
+        if (fileInputRef.current) {
+            fileInputRef.current.value = '';
+        }
     };
 
     // Helper function to get attachment display name
@@ -107,10 +195,6 @@ export default function PerformanceTab({ company, records }: Props) {
         }
 
         return 'Attachment';
-    };
-
-    const closeFormModal = () => {
-        setIsOpen(false);
     };
 
     const loadPage = (page: number) => {
@@ -146,14 +230,13 @@ export default function PerformanceTab({ company, records }: Props) {
     };
 
     const NotePill = ({
-        type,
-        children,
-    }: {
+                          type,
+                          children,
+                      }: {
         type: 'Highlights' | 'Challenges' | 'Actions';
         children: string;
     }) => {
-        const base =
-            'inline-flex items-center gap-1 rounded border px-1.5 py-0.5 text-[11px]';
+        const base = 'inline-flex items-center gap-1 rounded border px-1.5 py-0.5 text-[11px]';
         const map = {
             Highlights: 'bg-green-50 text-green-700 border-green-200',
             Challenges: 'bg-yellow-50 text-yellow-800 border-yellow-200',
@@ -191,6 +274,359 @@ export default function PerformanceTab({ company, records }: Props) {
                             Period tracking for items, spend, ROAS, and RTS
                         </p>
                     </div>
+
+                    {/* Add Record Button with Dialog */}
+                    <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                        <DialogTrigger asChild>
+                            <Button size="sm" className="h-8">
+                                <Plus className="mr-1.5 h-3.5 w-3.5" />
+                                Add Record
+                            </Button>
+                        </DialogTrigger>
+
+                        <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
+                            <DialogHeader>
+                                <DialogTitle>
+                                    Add Performance Record
+                                </DialogTitle>
+                                <DialogDescription>
+                                    Add a new performance record for{' '}
+                                    {company.name}
+                                </DialogDescription>
+                            </DialogHeader>
+
+                            <form onSubmit={submit} className="space-y-4">
+                                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                                    {/* Period Section */}
+                                    <div>
+                                        <Label
+                                            htmlFor="start_date"
+                                            className="text-sm font-medium"
+                                        >
+                                            Start Date *
+                                        </Label>
+                                        <div className="relative mt-1">
+                                            <Calendar className="absolute top-1/2 left-3 z-10 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                                            <Input
+                                                id="start_date"
+                                                name="start_date"
+                                                type="date"
+                                                required
+                                                value={data.start_date}
+                                                onChange={handleChange}
+                                                disabled={processing}
+                                                className="pl-10"
+                                            />
+                                        </div>
+                                        <InputError
+                                            message={errors.start_date}
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <Label
+                                            htmlFor="end_date"
+                                            className="text-sm font-medium"
+                                        >
+                                            End Date *
+                                        </Label>
+                                        <div className="relative mt-1">
+                                            <Calendar className="absolute top-1/2 left-3 z-10 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                                            <Input
+                                                id="end_date"
+                                                name="end_date"
+                                                type="date"
+                                                required
+                                                value={data.end_date}
+                                                onChange={handleChange}
+                                                disabled={processing}
+                                                className="pl-10"
+                                            />
+                                        </div>
+                                        <InputError message={errors.end_date} />
+                                    </div>
+
+                                    <div>
+                                        <Label
+                                            htmlFor="phase"
+                                            className="text-sm font-medium"
+                                        >
+                                            Phase *
+                                        </Label>
+                                        <Select
+                                            value={data.phase}
+                                            onValueChange={(value) =>
+                                                setData('phase', value as Phase)
+                                            }
+                                        >
+                                            <SelectTrigger className="mt-1">
+                                                <SelectValue placeholder="Select phase" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {phases.map((phase) => (
+                                                    <SelectItem
+                                                        key={phase}
+                                                        value={phase}
+                                                    >
+                                                        {phase}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                        <InputError message={errors.phase} />
+                                    </div>
+
+                                    <div>
+                                        <Label
+                                            htmlFor="no_of_items"
+                                            className="text-sm font-medium"
+                                        >
+                                            Number of Items *
+                                        </Label>
+                                        <Input
+                                            id="no_of_items"
+                                            name="no_of_items"
+                                            type="number"
+                                            required
+                                            min="0"
+                                            step="1"
+                                            value={data.no_of_items}
+                                            onChange={handleChange}
+                                            disabled={processing}
+                                            className="mt-1"
+                                            placeholder="0"
+                                        />
+                                        <InputError
+                                            message={errors.no_of_items}
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* Metrics Section */}
+                                <div className="grid gap-4 md:grid-cols-3">
+                                    <div>
+                                        <Label
+                                            htmlFor="avg_ads_spent"
+                                            className="text-sm font-medium"
+                                        >
+                                            Average Ads Spent *
+                                        </Label>
+                                        <Input
+                                            id="avg_ads_spent"
+                                            name="avg_ads_spent"
+                                            type="number"
+                                            required
+                                            min="0"
+                                            step="0.01"
+                                            value={data.avg_ads_spent}
+                                            onChange={handleChange}
+                                            disabled={processing}
+                                            className="mt-1"
+                                            placeholder="0.00"
+                                        />
+                                        <InputError
+                                            message={errors.avg_ads_spent}
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <Label
+                                            htmlFor="roas"
+                                            className="text-sm font-medium"
+                                        >
+                                            ROAS (Return on Ad Spend) *
+                                        </Label>
+                                        <Input
+                                            id="roas"
+                                            name="roas"
+                                            type="number"
+                                            required
+                                            min="0"
+                                            step="0.1"
+                                            value={data.roas}
+                                            onChange={handleChange}
+                                            disabled={processing}
+                                            className="mt-1"
+                                            placeholder="0.0"
+                                        />
+                                        <InputError message={errors.roas} />
+                                    </div>
+
+                                    <div>
+                                        <Label
+                                            htmlFor="rts"
+                                            className="text-sm font-medium"
+                                        >
+                                            RTS (Return to Spend) *
+                                        </Label>
+                                        <Input
+                                            id="rts"
+                                            name="rts"
+                                            type="number"
+                                            required
+                                            min="0"
+                                            max="100"
+                                            step="0.1"
+                                            value={data.rts}
+                                            onChange={handleChange}
+                                            disabled={processing}
+                                            className="mt-1"
+                                            placeholder="0.0"
+                                        />
+                                        <InputError message={errors.rts} />
+                                    </div>
+                                </div>
+
+                                {/* Notes Section */}
+                                <div className="space-y-3">
+                                    <div>
+                                        <Label
+                                            htmlFor="highlights"
+                                            className="text-sm font-medium"
+                                        >
+                                            Highlights
+                                        </Label>
+                                        <Textarea
+                                            id="highlights"
+                                            name="highlights"
+                                            value={data.highlights}
+                                            onChange={handleChange}
+                                            disabled={processing}
+                                            className="mt-1 min-h-[80px] w-full rounded-lg border p-2"
+                                            placeholder="Key achievements and successes..."
+                                        />
+                                        <InputError
+                                            message={errors.highlights}
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <Label
+                                            htmlFor="challenges"
+                                            className="text-sm font-medium"
+                                        >
+                                            Challenges
+                                        </Label>
+                                        <Textarea
+                                            id="challenges"
+                                            name="challenges"
+                                            value={data.challenges}
+                                            onChange={handleChange}
+                                            disabled={processing}
+                                            className="mt-1 min-h-[80px] w-full rounded-lg border p-2"
+                                            placeholder="Difficulties encountered..."
+                                        />
+                                        <InputError
+                                            message={errors.challenges}
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <Label
+                                            htmlFor="action_plan"
+                                            className="text-sm font-medium"
+                                        >
+                                            Action Plan
+                                        </Label>
+                                        <Textarea
+                                            id="action_plan"
+                                            name="action_plan"
+                                            value={data.action_plan}
+                                            onChange={handleChange}
+                                            disabled={processing}
+                                            className="mt-1 min-h-[80px] w-full rounded-lg border p-2"
+                                            placeholder="Next steps and improvements..."
+                                        />
+                                        <InputError
+                                            message={errors.action_plan}
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* Attachment Section */}
+                                <div>
+                                    <Label className="text-sm font-medium">
+                                        Attachment (Optional)
+                                    </Label>
+                                    <div className="mt-2">
+                                        {attachmentFile ? (
+                                            <div className="rounded-lg border border-green-200 bg-green-50 p-3">
+                                                <div className="flex items-center justify-between">
+                                                    <div className="flex items-center gap-3">
+                                                        <File className="h-4 w-4 text-green-600" />
+                                                        <div className="min-w-0">
+                                                            <p className="truncate text-sm font-medium text-gray-900">
+                                                                {attachmentName}
+                                                            </p>
+                                                            <p className="text-xs text-gray-500">
+                                                                {(
+                                                                    attachmentFile.size /
+                                                                    1024 /
+                                                                    1024
+                                                                ).toFixed(
+                                                                    2,
+                                                                )}{' '}
+                                                                MB
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                    <button
+                                                        type="button"
+                                                        onClick={
+                                                            removeAttachment
+                                                        }
+                                                        className="text-gray-400 hover:text-gray-600"
+                                                    >
+                                                        <X className="h-4 w-4" />
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <div
+                                                onClick={() =>
+                                                    fileInputRef.current?.click()
+                                                }
+                                                className="cursor-pointer rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 p-4 text-center transition-colors hover:border-gray-400 hover:bg-gray-100"
+                                            >
+                                                <Upload className="mx-auto h-6 w-6 text-gray-400" />
+                                                <p className="mt-2 text-sm text-gray-600">
+                                                    Click to upload file
+                                                </p>
+                                                <p className="mt-1 text-xs text-gray-400">
+                                                    Images, PDF, Word, Excel
+                                                    (Max 10MB)
+                                                </p>
+                                            </div>
+                                        )}
+                                        <input
+                                            ref={fileInputRef}
+                                            type="file"
+                                            className="hidden"
+                                            accept="image/*,.pdf,.doc,.docx,.xls,.xlsx"
+                                            onChange={handleFileChange}
+                                        />
+                                    </div>
+                                    <InputError message={errors.attachment} />
+                                </div>
+
+                                <DialogFooter>
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        onClick={() => setIsDialogOpen(false)}
+                                        disabled={processing}
+                                    >
+                                        Cancel
+                                    </Button>
+                                    <Button type="submit" disabled={processing}>
+                                        {processing
+                                            ? 'Saving...'
+                                            : 'Save Record'}
+                                    </Button>
+                                </DialogFooter>
+                            </form>
+                        </DialogContent>
+                    </Dialog>
                 </div>
 
                 {/* Empty state (compact) */}
@@ -203,7 +639,7 @@ export default function PerformanceTab({ company, records }: Props) {
                             No records yet
                         </div>
                         <div className="mt-1 text-xs text-gray-500">
-                            No performance records available.
+                            Add your first performance record to start tracking.
                         </div>
                     </div>
                 ) : (
@@ -230,7 +666,7 @@ export default function PerformanceTab({ company, records }: Props) {
                                         <th className="px-3 py-2 text-right font-medium">
                                             RTS
                                         </th>
-                                        <th className="px-3 py-2 text-left font-medium border">
+                                        <th className="px-3 py-2 text-left font-medium">
                                             Notes
                                         </th>
                                     </tr>
@@ -238,9 +674,6 @@ export default function PerformanceTab({ company, records }: Props) {
 
                                 <tbody className="divide-y divide-gray-100">
                                     {records.data.map((record) => {
-                                        const attachmentUrl = getAttachmentUrl(
-                                            record.attachment_path,
-                                        );
                                         const attachmentName =
                                             getAttachmentDisplayName(record);
 
@@ -316,14 +749,14 @@ export default function PerformanceTab({ company, records }: Props) {
                                                         ) : null}
 
                                                         {/* Attachment shown at the bottom */}
-                                                        {attachmentUrl && (
+                                                        {record.attachment_path_url && (
                                                             <div
                                                                 className={`flex items-center gap-1.5 ${record.action_plan ? 'mt-1' : ''}`}
                                                             >
                                                                 <File className="h-3.5 w-3.5 flex-shrink-0 text-gray-400" />
                                                                 <a
                                                                     href={
-                                                                        attachmentUrl
+                                                                        record.attachment_path_url
                                                                     }
                                                                     target="_blank"
                                                                     rel="noopener noreferrer"
@@ -346,14 +779,13 @@ export default function PerformanceTab({ company, records }: Props) {
                                                                           '...'
                                                                         : attachmentName}
                                                                 </a>
-                                                                <Download className="h-3.5 w-3.5 flex-shrink-0 text-gray-400" />
                                                             </div>
                                                         )}
 
                                                         {!record.highlights &&
                                                         !record.challenges &&
                                                         !record.action_plan &&
-                                                        !attachmentUrl ? (
+                                                        !record.attachment_path_url ? (
                                                             <span className="text-[11px] text-gray-400 italic">
                                                                 No notes
                                                             </span>

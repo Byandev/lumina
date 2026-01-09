@@ -33,6 +33,7 @@ interface User {
     name: string;
     email: string;
     photo?: string | null;
+    photo_url?: string | null; // Added photo_url field
     created_at?: string;
     updated_at?: string;
     email_verified_at?: string;
@@ -383,139 +384,139 @@ export default function Index({
                     <div className="overflow-x-auto">
                         <table className="w-full">
                             <thead>
-                                <tr className="bg-gray-100">
-                                    <th className="px-4 py-2 text-left text-xs font-semibold tracking-wider text-gray-600 uppercase">
-                                        User
-                                    </th>
-                                    <th className="px-4 py-2 text-left text-xs font-semibold tracking-wider text-gray-600 uppercase">
-                                        Email
-                                    </th>
-                                    <th className="px-4 py-2 text-left text-xs font-semibold tracking-wider text-gray-600 uppercase">
-                                        Created
-                                    </th>
-                                </tr>
+                            <tr className="bg-gray-100">
+                                <th className="px-4 py-2 text-left text-xs font-semibold tracking-wider text-gray-600 uppercase">
+                                    User
+                                </th>
+                                <th className="px-4 py-2 text-left text-xs font-semibold tracking-wider text-gray-600 uppercase">
+                                    Email
+                                </th>
+                                <th className="px-4 py-2 text-left text-xs font-semibold tracking-wider text-gray-600 uppercase">
+                                    Created
+                                </th>
+                            </tr>
                             </thead>
 
                             <tbody className="divide-y divide-gray-100">
-                                {!hasData ? (
-                                    <tr>
-                                        <td
-                                            colSpan={3}
-                                            className="px-4 py-10 text-center"
-                                        >
-                                            <div className="mx-auto max-w-md">
-                                                {isSearching ? (
-                                                    <div className="flex flex-col items-center justify-center gap-3">
-                                                        <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+                            {!hasData ? (
+                                <tr>
+                                    <td
+                                        colSpan={3}
+                                        className="px-4 py-10 text-center"
+                                    >
+                                        <div className="mx-auto max-w-md">
+                                            {isSearching ? (
+                                                <div className="flex flex-col items-center justify-center gap-3">
+                                                    <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+                                                    <p className="text-sm font-semibold text-gray-900">
+                                                        Searching users...
+                                                    </p>
+                                                </div>
+                                            ) : hasActiveFilters ? (
+                                                <div className="flex flex-col items-center justify-center gap-3">
+                                                    <div className="rounded-full bg-gray-100 p-3">
+                                                        <Search className="h-6 w-6 text-gray-400" />
+                                                    </div>
+                                                    <div className="space-y-1 text-center">
                                                         <p className="text-sm font-semibold text-gray-900">
-                                                            Searching users...
+                                                            No users found
+                                                        </p>
+                                                        <p className="text-xs text-gray-500">
+                                                            Try adjusting
+                                                            your search
                                                         </p>
                                                     </div>
-                                                ) : hasActiveFilters ? (
-                                                    <div className="flex flex-col items-center justify-center gap-3">
-                                                        <div className="rounded-full bg-gray-100 p-3">
-                                                            <Search className="h-6 w-6 text-gray-400" />
-                                                        </div>
-                                                        <div className="space-y-1 text-center">
-                                                            <p className="text-sm font-semibold text-gray-900">
-                                                                No users found
-                                                            </p>
-                                                            <p className="text-xs text-gray-500">
-                                                                Try adjusting
-                                                                your search
-                                                            </p>
-                                                        </div>
-                                                        <Button
-                                                            variant="outline"
-                                                            onClick={
-                                                                handleClearFilters
-                                                            }
-                                                            size="sm"
-                                                        >
-                                                            Clear Search
-                                                        </Button>
+                                                    <Button
+                                                        variant="outline"
+                                                        onClick={
+                                                            handleClearFilters
+                                                        }
+                                                        size="sm"
+                                                    >
+                                                        Clear Search
+                                                    </Button>
+                                                </div>
+                                            ) : (
+                                                <div className="flex flex-col items-center justify-center gap-3">
+                                                    <div className="rounded-full bg-blue-50 p-3">
+                                                        <User className="h-6 w-6 text-blue-500" />
                                                     </div>
-                                                ) : (
-                                                    <div className="flex flex-col items-center justify-center gap-3">
-                                                        <div className="rounded-full bg-blue-50 p-3">
-                                                            <User className="h-6 w-6 text-blue-500" />
-                                                        </div>
-                                                        <div className="space-y-1 text-center">
-                                                            <p className="text-sm font-semibold text-gray-900">
-                                                                No users yet
-                                                            </p>
-                                                            <p className="text-xs text-gray-500">
-                                                                Get started by
-                                                                creating your
-                                                                first user
-                                                            </p>
-                                                        </div>
-                                                        <Button
-                                                            onClick={() =>
-                                                                setIsCreateOpen(
-                                                                    true,
-                                                                )
-                                                            }
-                                                            size="sm"
-                                                        >
-                                                            <Plus className="mr-1.5 h-3.5 w-3.5" />
-                                                            Add User
-                                                        </Button>
+                                                    <div className="space-y-1 text-center">
+                                                        <p className="text-sm font-semibold text-gray-900">
+                                                            No users yet
+                                                        </p>
+                                                        <p className="text-xs text-gray-500">
+                                                            Get started by
+                                                            creating your
+                                                            first user
+                                                        </p>
                                                     </div>
-                                                )}
+                                                    <Button
+                                                        onClick={() =>
+                                                            setIsCreateOpen(
+                                                                true,
+                                                            )
+                                                        }
+                                                        size="sm"
+                                                    >
+                                                        <Plus className="mr-1.5 h-3.5 w-3.5" />
+                                                        Add User
+                                                    </Button>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </td>
+                                </tr>
+                            ) : (
+                                users.data.map((user) => (
+                                    <tr
+                                        key={user.id}
+                                        className="transition-colors even:bg-gray-50/30 hover:bg-gray-50/70"
+                                    >
+                                        <td className="px-4 py-3">
+                                            <div className="flex items-center gap-3">
+                                                <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-[#FF8AC4] to-[#6AA7FF] shadow-sm ring-1 ring-white">
+                                                    {user?.photo_url ? (
+                                                        <img
+                                                            src={user.photo_url}
+                                                            alt={user.name}
+                                                            className="h-full w-full object-cover"
+                                                        />
+                                                    ) : (
+                                                        <User className="h-4 w-4 text-white" />
+                                                    )}
+                                                </div>
+
+                                                <div className="min-w-0">
+                                                    <div className="max-w-[260px] truncate text-sm font-semibold text-gray-900">
+                                                        {user.name}
+                                                    </div>
+                                                    <div className="max-w-[260px] truncate text-xs text-gray-500">
+                                                        ID: {user.id}
+                                                    </div>
+                                                </div>
                                             </div>
                                         </td>
-                                    </tr>
-                                ) : (
-                                    users.data.map((user) => (
-                                        <tr
-                                            key={user.id}
-                                            className="transition-colors even:bg-gray-50/30 hover:bg-gray-50/70"
-                                        >
-                                            <td className="px-4 py-3">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-[#FF8AC4] to-[#6AA7FF] shadow-sm ring-1 ring-white">
-                                                        {user?.photo ? (
-                                                            <img
-                                                                src={`/storage/${user.photo}`}
-                                                                alt=""
-                                                                className="h-full w-full object-cover"
-                                                            />
-                                                        ) : (
-                                                            <User className="h-4 w-4 text-white" />
-                                                        )}
-                                                    </div>
 
-                                                    <div className="min-w-0">
-                                                        <div className="max-w-[260px] truncate text-sm font-semibold text-gray-900">
-                                                            {user.name}
-                                                        </div>
-                                                        <div className="max-w-[260px] truncate text-xs text-gray-500">
-                                                            ID: {user.id}
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </td>
+                                        <td className="px-4 py-3">
+                                            <div className="text-sm text-gray-700">
+                                                {user.email}
+                                            </div>
+                                        </td>
 
-                                            <td className="px-4 py-3">
-                                                <div className="text-sm text-gray-700">
-                                                    {user.email}
-                                                </div>
-                                            </td>
-
-                                            <td className="px-4 py-3">
-                                                <div className="flex items-center gap-1.5">
-                                                    <Calendar className="h-3.5 w-3.5 text-gray-400" />
-                                                    <span className="text-xs text-gray-600">
+                                        <td className="px-4 py-3">
+                                            <div className="flex items-center gap-1.5">
+                                                <Calendar className="h-3.5 w-3.5 text-gray-400" />
+                                                <span className="text-xs text-gray-600">
                                                         {formatDate(
                                                             user.created_at,
                                                         )}
                                                     </span>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    ))
-                                )}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))
+                            )}
                             </tbody>
                         </table>
                     </div>
@@ -579,7 +580,7 @@ export default function Index({
                                 const pageNum = parseInt(label, 10);
                                 const isNear =
                                     Math.abs(pageNum - users.current_page) <=
-                                        1 ||
+                                    1 ||
                                     pageNum === 1 ||
                                     pageNum === users.last_page;
 

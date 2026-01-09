@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 
 class PerformanceRecord extends Model
 {
@@ -39,8 +40,24 @@ class PerformanceRecord extends Model
     ];
 
 
+    protected $appends = [
+        'attachment_path_url'
+    ];
+
     public function company()
     {
         return $this->belongsTo(Company::class);
+    }
+
+    public function getAttachmentPathUrlAttribute(): ?string
+    {
+        if (!$this->attachment_path) {
+            return null;
+        }
+
+        return Storage::disk('s3')->temporaryUrl(
+            $this->attachment_path,
+            now()->addMinutes(10)
+        );
     }
 }
