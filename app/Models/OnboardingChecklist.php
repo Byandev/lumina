@@ -22,8 +22,11 @@ class OnboardingChecklist extends Model
         return $this->belongsTo(Company::class);
     }
 
-    public function remarks(){
-        return $this->hasMany(ChecklistRemark::class, 'checklist_id');
+    public function companies()
+    {
+        return $this->belongsToMany(Company::class, 'company_checklists', 'checklist_id', 'company_id')
+            ->withPivot('remark', 'file', 'is_completed')
+            ->withTimestamps();
     }
 
 

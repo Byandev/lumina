@@ -327,7 +327,6 @@ class CompanyController extends Controller
 
     public function submit(Request $request)
     {
-
         $validated = $request->validate([
             'company_name' => ['required', 'string', 'max:255'],
             'company_email' => ['nullable', 'email', 'max:255'],
@@ -351,13 +350,13 @@ class CompanyController extends Controller
             'owners.*.id_with_signature' => ['required', 'file', 'max:10240'],
         ]);
 
-
+        $storedFiles = [];
         $companyLogoPath = null;
         $ownersImagePath = null;
 
         if ($request->hasFile('company_logo')) {
             $companyLogoPath = $request->file('company_logo')->store('companies/logos', 's3');
-                $storedFiles[] = $companyLogoPath;
+            $storedFiles[] = $companyLogoPath;
         }
 
         if ($request->hasFile('company_owners_image')) {
@@ -371,45 +370,72 @@ class CompanyController extends Controller
         $signaturePath = $request->file('e_signature')->store('companies/signatures', 's3');
         $storedFiles[] = $signaturePath;
 
-        // CREATE COMPANY
-        $company = Company::create([
-            'name' => $validated['company_name'],
-            'email' => $validated['company_email'] ?? null,
-            'phone' => $validated['company_phone'] ?? null,
-            'address' => $validated['address'] ?? null,
-            'has_existing_ecomm_process' => $validated['has_existing_ecomm_process'],
-            'logo' => $companyLogoPath,
-            'owner_photo' => $ownersImagePath,
-            'proof_of_payment' => $proofPath,
-            'e_signature' => $signaturePath,
-        ]);
-
-        // CREATE OWNERS
-        foreach ($validated['owners'] as $index => $ownerData) {
-            $photoPath = $request->file("owners.$index.photo")->store('owners/photos', 'public');
-            $storedFiles[] = $photoPath;
-
-            $idPath = $request->file("owners.$index.id_with_signature")->store('owners/ids', 'public');
-            $storedFiles[] = $idPath;
-
-            User::create([
-                'name' => $ownerData['name'],
-                'email' => $ownerData['email'],
-                'password' => bcrypt('password'),
-                'phone' => $ownerData['phone'],
-                'address' => $ownerData['address'] ?? null,
-                'facebook' => $ownerData['facebook_link'] ?? null,
-                'birthdate' => $ownerData['birthdate'] ?? null,
-                'photo' => $photoPath,
-                'ids' => $idPath,
-                'company_id' => $company->id,
+        try {
+            // CREATE COMPANY
+            $company = Company::create([
+                'name' => $validated['company_name'],
+                'email' => $validated['company_email'] ?? null,
+                'phone' => $validated['company_phone'] ?? null,
+                'address' => $validated['address'] ?? null,
+                'has_existing_ecomm_process' => $validated['has_existing_ecomm_process'],
+                'logo' => $companyLogoPath,
+                'owner_photo' => $ownersImagePath,
+                'proof_of_payment' => $proofPath,
+                'e_signature' => $signaturePath,
             ]);
+
+            // CREATE OWNERS
+            foreach ($validated['owners'] as $index => $ownerData) {
+                $photoPath = $request->file("owners.$index.photo")->store('owners/photos', 's3');
+                $storedFiles[] = $photoPath;
+
+                $idPath = $request->file("owners.$index.id_with_signature")->store('owners/ids', 's3');
+                $storedFiles[] = $idPath;
+
+                User::create([
+                    'name' => $ownerData['name'],
+                    'email' => $ownerData['email'],
+                    'password' => bcrypt('password'),
+                    'phone' => $ownerData['phone'],
+                    'address' => $ownerData['address'] ?? null,
+                    'facebook' => $ownerData['facebook_link'] ?? null,
+                    'birthdate' => $ownerData['birthdate'] ?? null,
+                    'photo' => $photoPath,
+                    'ids' => $idPath,
+                    'company_id' => $company->id,
+                ]);
+            }
+
+            // ATTACH CHECKLIST ITEMS TO COMPANY
+            $checklistItems = OnboardingChecklist::all();
+
+            foreach ($checklistItems as $checklistItem) {
+                $company->checklists()->attach($checklistItem->id, [
+                    'remark' => '',
+                    'is_completed' => false,
+                    'file' => null
+                ]);
+            }
+
+            return redirect()
+                ->route('home')
+                ->with('success', 'Company onboarding submitted successfully.');
+
+        } catch (\Exception $e) {
+
+
+            foreach ($storedFiles as $filePath) {
+                if (Storage::disk('s3')->exists($filePath)) {
+                    Storage::disk('s3')->delete($filePath);
+                }
+            }
+
+
+            return redirect()
+                ->back()
+                ->withInput()
+                ->withErrors(['error' => 'An error occurred while submitting the form. Please try again.']);
         }
-
-
-        return redirect()
-            ->route('home')
-            ->with('success', 'Company onboarding submitted successfully.');
     }
 
 

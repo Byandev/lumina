@@ -73,6 +73,7 @@ interface SelectOption {
     value: string;
     label: string;
     photo?: string | null;
+    photo_url?: string | null;
     specialization?: string | null;
 }
 
@@ -490,7 +491,7 @@ export default function DetailTab({ company, sponsors, coaches }: ShowProps) {
                                 {company.logo ? (
                                     <div className="relative">
                                         <img
-                                            src={getFileUrl(company.logo)}
+                                            src={company.logo_url}
                                             alt={company.name}
                                             className="h-16 w-16 rounded-xl object-cover ring-2 ring-white"
                                         />
@@ -562,7 +563,7 @@ export default function DetailTab({ company, sponsors, coaches }: ShowProps) {
                                                     <div className="flex items-center gap-3 py-1">
                                                         {option.photo ? (
                                                             <img
-                                                                src={getFileUrl(option.photo)}
+                                                                src={option?.photo_url}
                                                                 alt={option.label}
                                                                 className="h-8 w-8 rounded-full object-cover"
                                                             />
@@ -571,14 +572,7 @@ export default function DetailTab({ company, sponsors, coaches }: ShowProps) {
                                                                 <User className="h-4 w-4 text-violet-600" />
                                                             </div>
                                                         )}
-                                                        <div className="min-w-0 flex-1">
-                                                            <div className="truncate font-medium">{option.label}</div>
-                                                            {option.specialization && (
-                                                                <div className="truncate text-xs text-gray-500">
-                                                                    {option.specialization}
-                                                                </div>
-                                                            )}
-                                                        </div>
+
                                                     </div>
                                                 )}
                                             />
@@ -588,9 +582,7 @@ export default function DetailTab({ company, sponsors, coaches }: ShowProps) {
                                         <div className="flex items-center gap-4">
                                             {(company.coach as any).photo_url || (company.coach as any).photo ? (
                                                 <img
-                                                    src={getFileUrl(
-                                                        (company.coach as any).photo_url ?? (company.coach as any).photo,
-                                                    )}
+                                                    src={company.coach.photo_url}
                                                     alt={company.coach.name}
                                                     className="h-12 w-12 rounded-full object-cover"
                                                 />
@@ -848,7 +840,7 @@ export default function DetailTab({ company, sponsors, coaches }: ShowProps) {
                                         ) : (editingOwner as any)?.photo_url ? (
                                             <div className="relative">
                                                 <img
-                                                    src={getFileUrl((editingOwner as any).photo_url)}
+                                                    src={editingOwner.photo_url}
                                                     alt={editingOwner?.name ?? 'Owner'}
                                                     className="h-28 w-28 rounded-xl border-2 border-violet-100 object-cover"
                                                 />
@@ -1259,7 +1251,7 @@ function OwnerCardCompact({ owner, formatDate, getFileUrl, onEdit, onDelete }: O
             <div className="flex items-start gap-3">
                 <div className="flex-shrink-0">
                     {owner.photo ? (
-                        <img src={getFileUrl((owner as any).photo)} alt={owner.name} className="h-12 w-12 rounded-lg object-cover" />
+                        <img src={owner.photo_url} alt={owner.name} className="h-12 w-12 rounded-lg object-cover" />
                     ) : (
                         <div className="h-12 w-12 rounded-lg bg-gradient-to-br from-pink-500 to-violet-500 flex items-center justify-center">
                             <span className="text-sm font-bold text-white">{initials}</span>

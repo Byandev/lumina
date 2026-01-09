@@ -25,7 +25,8 @@ export interface Owner {
 export interface Coach {
     id: number;
     name: string;
-    photo: string;
+    photo?: string | null;
+    photo_url?: string | null;
 }
 
 export interface Sponsor {

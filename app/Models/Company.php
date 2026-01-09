@@ -35,9 +35,28 @@ class Company extends Model
         return $this->hasMany(User::class);
     }
 
+    // In Company model
     public function checklists()
     {
-        return $this->hasMany(OnboardingChecklist::class);
+        return $this->belongsToMany(
+            OnboardingChecklist::class,
+            'company_checklists',
+            'company_id',
+            'checklist_id'
+        )
+            ->using(CompanyChecklist::class) // ✅ THIS IS THE MISSING PIECE
+            ->withPivot(['is_completed', 'remark', 'file'])
+            ->withTimestamps();
+    }
+
+
+    /**
+     * Get completed checklists
+     */
+    public function completedChecklists(): BelongsToMany
+    {
+        return $this->checklists()
+            ->wherePivot('is_completed', true);
     }
 
 
@@ -99,6 +118,8 @@ class Company extends Model
             now()->addMinutes(10)
         );
     }
+
+
 
 
 

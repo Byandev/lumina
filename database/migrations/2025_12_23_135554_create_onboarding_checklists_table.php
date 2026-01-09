@@ -13,10 +13,7 @@ return new class extends Migration
     {
         Schema::create('onboarding_checklists', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('company_id');
             $table->string('title');
-            $table->boolean('is_completed')->default(false);
-            $table->foreign('company_id')->references('id')->on('companies')->onDelete('cascade');
             $table->timestamps();
         });
     }

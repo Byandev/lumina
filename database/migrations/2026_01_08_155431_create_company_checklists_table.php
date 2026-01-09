@@ -11,13 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('checklist_remarks', function (Blueprint $table) {
-            $table->id();
+        Schema::create('company_checklists', function (Blueprint $table) {
             $table->unsignedBigInteger('company_id');
             $table->unsignedBigInteger('checklist_id');
+            $table->boolean('is_completed')->default(false);
             $table->string('remark');
             $table->string('file')->nullable();
-
             $table->foreign('company_id')->references('id')->on('companies')->onDelete('cascade');
             $table->foreign('checklist_id')->references('id')->on('onboarding_checklists')->onDelete('cascade');
             $table->timestamps();
@@ -29,6 +28,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('checklist_remarks');
+        Schema::dropIfExists('company_checklists');
     }
 };
+

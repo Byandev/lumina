@@ -34,27 +34,53 @@ import React, { useRef, useState } from 'react';
 
 interface OnboardingProps {
     company: Company;
+    checklists?: Array<{
+        id: number;
+        title: string;
+        created_at: string | null;
+        updated_at: string | null;
+        pivot: {
+            company_id: number;
+            checklist_id: number;
+            is_completed: boolean;
+            remark: string | null;
+            file: string | null;
+            file_url: string | null; // Added for S3 URLs
+            created_at: string;
+            updated_at: string;
+        };
+    }>;
 }
 
 interface ChecklistRemark {
     id: number;
     remark: string;
     file: string | null;
+    file_url: string | null; // Added for S3 URLs
     file_name?: string;
     file_size?: number;
     mime_type?: string;
     created_at: string;
 }
 
-interface Checklist {
+interface ChecklistWithPivot {
     id: number;
     title: string;
-    is_completed: boolean;
-    remarks: ChecklistRemark[];
-}
-
-interface CompanyWithChecklists extends Company {
-    checklists?: Checklist[];
+    created_at: string | null;
+    updated_at: string | null;
+    pivot: {
+        company_id: number;
+        checklist_id: number;
+        is_completed: boolean;
+        remark: string | null;
+        file: string | null;
+        file_url: string | null; // Added for S3 URLs
+        created_at: string;
+        updated_at: string;
+    };
+    // For compatibility with existing code
+    is_completed?: boolean;
+    remarks?: ChecklistRemark[];
 }
 
 interface FormData {
@@ -183,9 +209,12 @@ const formatDate = (dateString: string): string => {
 };
 
 const getAttachmentUrl = (path: string): string => {
-    return path.startsWith('http')
-        ? path
-        : `${window.location.origin}/storage/${path.replace(/^\/storage\//, '')}`;
+    // If it's already a full URL (S3 or external), return as-is
+    if (path.startsWith('http://') || path.startsWith('https://')) {
+        return path;
+    }
+    // For local storage paths, convert to storage URL
+    return `${window.location.origin}/storage/${path.replace(/^\/storage\//, '')}`;
 };
 
 /* =======================
@@ -200,12 +229,12 @@ interface PreviewModalProps {
 }
 
 const PreviewModal = ({
-    file,
-    fileName,
-    fileType,
-    onClose,
-}: PreviewModalProps) => {
-    const url = getAttachmentUrl(file);
+                          file,
+                          fileName,
+                          fileType,
+                          onClose,
+                      }: PreviewModalProps) => {
+    const url = file; // Already a full URL from S3 or local
 
     const renderPreview = () => {
         if (fileType === 'image') {
@@ -232,7 +261,6 @@ const PreviewModal = ({
             );
         }
 
-        // For non-previewable files, show download option
         return (
             <div className="flex h-full flex-col items-center justify-center p-8">
                 <File className="h-16 w-16 text-gray-400" />
@@ -254,7 +282,7 @@ const PreviewModal = ({
     };
 
     const fileInfo = getFileInfo(fileName);
-    const fileSize = 0; // File size not available in this context
+    const fileSize = 0;
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
@@ -380,35 +408,38 @@ const ProgressBar = ({ completed, total }: ProgressBarProps) => {
 
 interface FilePreviewProps {
     file: string;
+    file_url?: string; // S3 URL
     fileName?: string;
     fileSize?: number;
     mimeType?: string;
 }
 
 const FilePreview = ({
-    file,
-    fileName,
-    fileSize,
-    mimeType,
-}: FilePreviewProps) => {
+                         file,
+                         file_url,
+                         fileName,
+                         fileSize,
+                         mimeType,
+                     }: FilePreviewProps) => {
     const [showPreview, setShowPreview] = useState(false);
     const fileInfo = getFileInfo(fileName, mimeType);
     const Icon = fileInfo.Icon;
     const displayName = fileName || file.split('/').pop() || 'File';
+
+    // Use file_url if available (S3), otherwise use local storage URL
+    const url = file_url || getAttachmentUrl(file);
 
     const handleClick = (e: React.MouseEvent) => {
         e.stopPropagation();
         if (fileInfo.canPreview) {
             setShowPreview(true);
         } else {
-            // For non-previewable files, open in new tab
-            window.open(getAttachmentUrl(file), '_blank');
+            window.open(url, '_blank');
         }
     };
 
     const handleDownload = (e: React.MouseEvent) => {
         e.stopPropagation();
-        const url = getAttachmentUrl(file);
         const a = document.createElement('a');
         a.href = url;
         a.download = fileName || 'download';
@@ -473,7 +504,7 @@ const FilePreview = ({
 
             {showPreview && fileInfo.canPreview && (
                 <PreviewModal
-                    file={file}
+                    file={url}  // Use the URL (S3 or local)
                     fileName={fileName}
                     fileType={fileInfo.previewType}
                     onClose={() => setShowPreview(false)}
@@ -503,6 +534,7 @@ const RemarkItem = ({ remark }: RemarkItemProps) => {
             {remark.file && (
                 <FilePreview
                     file={remark.file}
+                    file_url={remark.file_url}  // Pass S3 URL
                     fileName={remark.file_name}
                     fileSize={remark.file_size}
                     mimeType={remark.mime_type}
@@ -516,11 +548,24 @@ const RemarkItem = ({ remark }: RemarkItemProps) => {
    Main Tab Component
 ======================= */
 
-export default function OnboardingTab({ company }: OnboardingProps) {
-    const data = company as CompanyWithChecklists;
-    const total = data.checklists?.length ?? 0;
-    const completed =
-        data.checklists?.filter((c) => c.is_completed).length ?? 0;
+export default function OnboardingTab({ checklists, company }: OnboardingProps) {
+
+    // Calculate progress
+    const total = checklists?.length || 0;
+    const completed = checklists?.filter(item => item.pivot.is_completed).length || 0;
+
+    // Convert to the format expected by ChecklistItem component
+    const formattedChecklists: ChecklistWithPivot[] = (checklists || []).map(item => ({
+        ...item,
+        is_completed: item.pivot.is_completed,
+        remarks: item.pivot.remark ? [{
+            id: item.id,
+            remark: item.pivot.remark,
+            file: item.pivot.file,
+            file_url: item.pivot.file_url, // Include S3 URL
+            created_at: item.pivot.created_at
+        }] : []
+    }));
 
     return (
         <CompanyLayout company={company} title={`${company.name} - Onboarding`}>
@@ -547,8 +592,8 @@ export default function OnboardingTab({ company }: OnboardingProps) {
                     </div>
 
                     <div className="space-y-2">
-                        {data.checklists?.length ? (
-                            data.checklists.map((item) => (
+                        {formattedChecklists.length > 0 ? (
+                            formattedChecklists.map((item) => (
                                 <ChecklistItem
                                     key={item.id}
                                     item={item}
@@ -575,7 +620,7 @@ export default function OnboardingTab({ company }: OnboardingProps) {
 ======================= */
 
 interface ChecklistItemProps {
-    item: Checklist;
+    item: ChecklistWithPivot;
     companyId: number;
 }
 
@@ -619,27 +664,24 @@ function ChecklistItem({ item, companyId }: ChecklistItemProps) {
         }
     };
 
+    const isCompleted = item.pivot.is_completed;
+    const remarks = item.remarks || [];
+
     return (
         <div className="rounded-lg border border-gray-200 bg-white p-4 transition-colors hover:border-gray-300">
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                    <div
-                        className={`flex h-8 w-8 items-center justify-center rounded-lg ${item.is_completed ? 'bg-emerald-100 text-emerald-600' : 'bg-gray-100 text-gray-600'}`}
-                    >
-                        {item.is_completed ? (
-                            <CheckCircle2 className="h-4 w-4" />
-                        ) : (
-                            <span className="text-sm font-medium">
-                                {item.id}
-                            </span>
-                        )}
-                    </div>
                     <div>
                         <h4
-                            className={`font-medium ${item.is_completed ? 'text-emerald-700' : 'text-gray-900'}`}
+                            className={`font-medium ${isCompleted ? 'text-emerald-700' : 'text-gray-900'}`}
                         >
-                            {item.title}
+                            Step {item.id}: {item.title}
                         </h4>
+                        {item.pivot.remark && !isCompleted && (
+                            <p className="text-xs text-gray-500 mt-1">
+                                Remark: {item.pivot.remark}
+                            </p>
+                        )}
                     </div>
                 </div>
 
@@ -648,17 +690,17 @@ function ChecklistItem({ item, companyId }: ChecklistItemProps) {
                         <AlertDialogTrigger asChild>
                             <Button
                                 variant={
-                                    item.is_completed ? 'outline' : 'default'
+                                    isCompleted ? 'outline' : 'default'
                                 }
                                 size="sm"
-                                className={`h-8 ${item.is_completed ? 'border-gray-200 text-gray-700 hover:bg-gray-50' : ''}`}
+                                className={`h-8 ${isCompleted ? 'border-gray-200 text-gray-700 hover:bg-gray-50' : ''}`}
                             >
-                                {item.is_completed ? (
+                                {isCompleted ? (
                                     'View'
                                 ) : (
                                     <>
                                         <Plus className="mr-1.5 h-3.5 w-3.5" />
-                                        Add Remark
+                                        {item.pivot.remark ? 'Update Remark' : 'Add Remark'}
                                     </>
                                 )}
                             </Button>
@@ -673,15 +715,7 @@ function ChecklistItem({ item, companyId }: ChecklistItemProps) {
                                             <AlertDialogTitle className="text-lg font-semibold">
                                                 {item.title}
                                             </AlertDialogTitle>
-                                            <AlertDialogDescription className="flex items-center gap-2">
-                                                <span
-                                                    className={`inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium ${item.is_completed ? 'bg-emerald-100 text-emerald-700' : 'bg-blue-100 text-blue-700'}`}
-                                                >
-                                                    {item.is_completed
-                                                        ? 'Completed'
-                                                        : 'In Progress'}
-                                                </span>
-                                            </AlertDialogDescription>
+
                                         </div>
                                         <AlertDialogCancel className="h-8 w-8 border-0 p-0 hover:bg-gray-100">
                                             <X className="h-4 w-4" />
@@ -695,35 +729,35 @@ function ChecklistItem({ item, companyId }: ChecklistItemProps) {
                                     className="flex flex-col"
                                 >
                                     <div className="flex-1 space-y-5 overflow-y-auto p-5">
-                                        {/* Existing Remarks */}
-                                        {item.remarks.length > 0 && (
+                                        {/* Existing Remark from Pivot */}
+                                        {item.pivot.remark && (
                                             <div className="space-y-3">
                                                 <h5 className="text-sm font-medium text-gray-700">
-                                                    Previous Remarks
+                                                    Remark
                                                 </h5>
-                                                <div className="space-y-3">
-                                                    {item.remarks.map(
-                                                        (remark) => (
-                                                            <RemarkItem
-                                                                key={remark.id}
-                                                                remark={remark}
+                                                <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
+                                                    <p className="text-sm text-gray-800">
+                                                        {item.pivot.remark}
+                                                    </p>
+                                                    {item.pivot.file && (
+                                                        <div className="mt-3">
+                                                            <FilePreview
+                                                                file={item.pivot.file}
+                                                                file_url={item.pivot.file_url}  // Pass S3 URL
                                                             />
-                                                        ),
+                                                        </div>
                                                     )}
+                                                    <p className="mt-2 text-xs text-gray-400">
+                                                        Added on {formatDate(item.pivot.created_at)}
+                                                    </p>
                                                 </div>
                                             </div>
                                         )}
 
-                                        {/* Add New Remark Form */}
-                                        {!item.is_completed && (
+
+                                        {/* Add/Update Remark Form */}
+                                        {!isCompleted && (
                                             <div className="space-y-4">
-                                                <div className="flex items-center gap-2">
-                                                    <div className="h-px flex-1 bg-gray-200" />
-                                                    <span className="text-xs font-medium tracking-wider text-gray-500 uppercase">
-                                                        Add New Remark
-                                                    </span>
-                                                    <div className="h-px flex-1 bg-gray-200" />
-                                                </div>
 
                                                 <div className="space-y-4">
                                                     <div>
@@ -746,6 +780,7 @@ function ChecklistItem({ item, companyId }: ChecklistItemProps) {
                                                             }
                                                             placeholder="Enter your remarks..."
                                                             className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm placeholder-gray-400 focus:border-blue-300 focus:ring-2 focus:ring-blue-100 focus:outline-none"
+                                                            defaultValue={item.pivot.remark || ''}
                                                         />
                                                         {errors.remarks && (
                                                             <p className="mt-1 text-xs text-red-600">
@@ -816,7 +851,7 @@ function ChecklistItem({ item, companyId }: ChecklistItemProps) {
                                                                 handleFileSelect(
                                                                     e.target
                                                                         .files?.[0] ||
-                                                                        null,
+                                                                    null,
                                                                 );
                                                             }}
                                                         />
@@ -832,7 +867,7 @@ function ChecklistItem({ item, companyId }: ChecklistItemProps) {
                                             <AlertDialogCancel className="h-9 px-4">
                                                 Close
                                             </AlertDialogCancel>
-                                            {!item.is_completed && (
+                                            {!isCompleted && (
                                                 <Button
                                                     type="submit"
                                                     disabled={
@@ -847,7 +882,7 @@ function ChecklistItem({ item, companyId }: ChecklistItemProps) {
                                                             Saving...
                                                         </>
                                                     ) : (
-                                                        'Save Remark'
+                                                        item.pivot.remark ? 'Update Remark' : 'Save Remark'
                                                     )}
                                                 </Button>
                                             )}

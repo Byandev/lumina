@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Company;
+use App\Models\OnboardingChecklist;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -10,17 +11,15 @@ class OnboardingChecklistController extends Controller
 {
     public function index(Company $company)
     {
-
-        $company->load([
-            'checklists' => function ($query) {
-                $query->with('remarks');
-            }
-        ])->paginate(15);
-
+        $checklists = $company->checklists()
+            ->withPivot(['is_completed', 'remark', 'file'])
+            ->orderBy('id')
+            ->get();
 
 
         return Inertia::render('companies/company/onboarding-tab', [
-            'company' => $company
+            'company' => $company,
+            'checklists' => $checklists,
         ]);
     }
 }
