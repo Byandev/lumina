@@ -551,7 +551,7 @@ export default function index({
                             <Button
                                 type="submit"
                                 disabled={
-                                    processing || data.company_ids.length === 0
+                                    processing
                                 }
                             >
                                 {processing
@@ -711,7 +711,7 @@ export default function index({
                                                         >
                                                             Clear Search
                                                         </Button>
-                                                    </div>
+                                                        </div>
                                             )
                                             }
                                         </td>
@@ -785,7 +785,7 @@ export default function index({
                                                     </div>
                                                 ) : (
                                                     <span className="text-xs text-muted-foreground">
-                                                        No companies
+                                                        All companies
                                                     </span>
                                                 )}
                                             </td>

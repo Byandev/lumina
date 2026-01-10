@@ -1,25 +1,15 @@
-import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/app-layout';
+import { cn } from '@/lib/utils';
 import { BreadcrumbItem } from '@/types';
 import { Head, Link, usePage } from '@inertiajs/react';
 import {
+    ArrowLeft,
     Building,
     ClipboardCheck,
     Clock,
     TrendingUp,
-    Users,
-    Settings,
-    ArrowLeft,
-    ChevronRight,
-    Shield,
-    Globe,
-    Mail,
-    Phone,
-    MapPin
 } from 'lucide-react';
 import { ReactNode } from 'react';
-import { cn } from '@/lib/utils';
-import { format } from 'date-fns';
 
 interface CompanyLayoutProps {
     children: ReactNode;
@@ -28,10 +18,10 @@ interface CompanyLayoutProps {
 }
 
 export default function CompanyLayout({
-                                          children,
-                                          company,
-                                          title,
-                                      }: CompanyLayoutProps) {
+    children,
+    company,
+    title,
+}: CompanyLayoutProps) {
     const { url } = usePage();
     const currentPath = url;
 
@@ -51,7 +41,9 @@ export default function CompanyLayout({
             name: 'Overview',
             href: `/companies/${company.id}/details`,
             icon: Building,
-            current: currentPath === `/companies/${company.id}` || currentPath === `/companies/${company.id}/details`,
+            current:
+                currentPath === `/companies/${company.id}` ||
+                currentPath === `/companies/${company.id}/details`,
         },
         {
             name: 'Onboarding',
@@ -77,49 +69,59 @@ export default function CompanyLayout({
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={title || `${company.name} - Company Details`} />
 
-            <div className="min-h-screen p-4">
-                {/* Header with Background */}
-                <h1 className='text-lg font-bold mb-4'>Company Details</h1>
-
-                {/* Main Content */}
-                <div className="">
-                    {/* Tabs Navigation - Enhanced */}
-                    <div className="mb-6">
-                        <div className="border-b border-gray-200">
-                            <nav className="scrollbar-hide -mb-px flex space-x-1 overflow-x-auto pb-0.5">
-                                {tabs.map((tab) => (
-                                    <Link
-                                        key={tab.name}
-                                        href={tab.href}
-                                        className={cn(
-                                            'group relative inline-flex items-center gap-2 border-b-2 px-3 py-3 text-sm font-medium whitespace-nowrap transition-all',
-                                            tab.current
-                                                ? 'border-blue-600 bg-blue-50/50 text-blue-600'
-                                                : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700',
-                                        )}
-                                    >
-                                        <tab.icon
-                                            className={cn(
-                                                'h-4 w-4 transition-colors',
-                                                tab.current
-                                                    ? 'text-blue-600'
-                                                    : 'text-gray-400 group-hover:text-gray-500',
-                                            )}
-                                        />
-                                        {tab.name}
-                                        {tab.current && (
-                                            <div className="absolute right-0 bottom-0 left-0 h-0.5 bg-blue-600" />
-                                        )}
-                                    </Link>
-                                ))}
-                            </nav>
+            <div className="min-h-screen bg-gradient-to-b from-white via-gray-50/50 to-blue-50/30 p-3 sm:p-4 md:p-6">
+                {/* Header */}
+                <div className="mb-4 sm:mb-6">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                            <div>
+                                <h1 className="text-base font-bold text-gray-900 sm:text-xl md:text-2xl">
+                                    {company.name}
+                                </h1>
+                                <p className="hidden text-sm text-gray-500 sm:block">
+                                    Company ID: {company.id}
+                                </p>
+                            </div>
                         </div>
                     </div>
+                </div>
 
-                    {/* Tab Content */}
-                    <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
-                        <div className="p-6">{children}</div>
+                {/* Consistent Tabs Navigation (Same on all screen sizes) */}
+                <div className="mb-4 sm:mb-6">
+                    <div className="border-b border-gray-200">
+                        <nav className="scrollbar-hide -mb-px flex space-x-1 overflow-x-auto pb-0.5">
+                            {tabs.map((tab) => (
+                                <Link
+                                    key={tab.name}
+                                    href={tab.href}
+                                    className={cn(
+                                        'group relative inline-flex items-center gap-2 border-b-2 px-3 py-2.5 text-xs font-medium whitespace-nowrap transition-all sm:px-4 sm:py-3 sm:text-sm',
+                                        tab.current
+                                            ? 'border-blue-600 bg-blue-50/50 text-blue-600'
+                                            : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700',
+                                    )}
+                                >
+                                    <tab.icon
+                                        className={cn(
+                                            'h-3.5 w-3.5 transition-colors sm:h-4 sm:w-4',
+                                            tab.current
+                                                ? 'text-blue-600'
+                                                : 'text-gray-400 group-hover:text-gray-500',
+                                        )}
+                                    />
+                                    {tab.name}
+                                    {tab.current && (
+                                        <div className="absolute right-0 bottom-0 left-0 h-0.5 bg-blue-600" />
+                                    )}
+                                </Link>
+                            ))}
+                        </nav>
                     </div>
+                </div>
+
+                {/* Content Area */}
+                <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+                    <div className="p-4 sm:p-6">{children}</div>
                 </div>
             </div>
         </AppLayout>

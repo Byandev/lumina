@@ -1,20 +1,20 @@
-import React, { ChangeEvent, FormEvent, useMemo, useState } from 'react';
 import { router, useForm } from '@inertiajs/react';
+import React, { ChangeEvent, FormEvent, useMemo, useState } from 'react';
 import Select, { type SingleValue, type StylesConfig } from 'react-select';
 
 import CompanyLayout from '@/pages/companies/company/company-layout';
 import type { CompanyFormData as BaseCompanyFormData } from '@/pages/companies/company/types';
-import type { Company, Owner, OwnerFormData, Sponsor, Coach } from './types';
+import type { Coach, Company, Owner, OwnerFormData, Sponsor } from './types';
 
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import {
     Dialog,
     DialogContent,
+    DialogDescription,
     DialogHeader,
     DialogTitle,
-    DialogDescription,
 } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 import {
     BarChart,
@@ -55,7 +55,12 @@ interface ShowProps {
 
 const statusOptions = ['active', 'inactive', 'terminated'] as const;
 const notarizationOptions = ['pending', 'done', 'rejected'] as const;
-const levelOptions = ['educate', 'empowerment', 'enterprise', 'exponential'] as const;
+const levelOptions = [
+    'educate',
+    'empowerment',
+    'enterprise',
+    'exponential',
+] as const;
 const salesActivityOptions = ['generating', 'testing', 'inactive'] as const;
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
@@ -90,7 +95,11 @@ const flatSelectStyles: StylesConfig<SelectOption, false> = {
     }),
     option: (base, state) => ({
         ...base,
-        backgroundColor: state.isSelected ? '#8b5cf6' : state.isFocused ? '#f8fafc' : '#ffffff',
+        backgroundColor: state.isSelected
+            ? '#8b5cf6'
+            : state.isFocused
+              ? '#f8fafc'
+              : '#ffffff',
         color: state.isSelected ? '#ffffff' : '#374151',
         ':active': { backgroundColor: '#7c3aed', color: '#ffffff' },
     }),
@@ -156,14 +165,19 @@ export default function DetailTab({ company, sponsors, coaches }: ShowProps) {
         return {
             value: String(company.coach.id),
             label: company.coach.name,
-            photo: (company.coach as any).photo_url ?? (company.coach as any).photo ?? null,
+            photo:
+                (company.coach as any).photo_url ??
+                (company.coach as any).photo ??
+                null,
             specialization: (company.coach as any).specialization ?? null,
         };
     };
 
     const getSelectedSponsor = (): SelectOption => {
         const sponsorId =
-            (company?.sponsor?.id != null ? String(company.sponsor.id) : null) ??
+            (company?.sponsor?.id != null
+                ? String(company.sponsor.id)
+                : null) ??
             (company as any)?.sponsor_id?.toString?.() ??
             '';
 
@@ -175,8 +189,11 @@ export default function DetailTab({ company, sponsors, coaches }: ShowProps) {
             : { value: '', label: 'No Sponsor' };
     };
 
-    const [selectedCoach, setSelectedCoach] = useState<SelectOption | null>(getSelectedCoach());
-    const [selectedSponsor, setSelectedSponsor] = useState<SelectOption>(getSelectedSponsor());
+    const [selectedCoach, setSelectedCoach] = useState<SelectOption | null>(
+        getSelectedCoach(),
+    );
+    const [selectedSponsor, setSelectedSponsor] =
+        useState<SelectOption>(getSelectedSponsor());
 
     const {
         data: companyFormData,
@@ -447,23 +464,28 @@ export default function DetailTab({ company, sponsors, coaches }: ShowProps) {
 
     return (
         <CompanyLayout company={company} title={`${company.name} - Details`}>
-            <div className="space-y-2 md:space-y-4 lg:space-y-6">
-                <div className="rounded-xl border border-gray-200 bg-white p-2 md:p-4 lg:p-6">
-                    <div className="mb-4 flex flex-row items-center justify-between border-b border-gray-200 pb-2">
-                        <p className="text-sm font-semibold text-gray-900">Company Information</p>
+            <div className="space-y-4 md:space-y-6">
+                {/* Company Information Card */}
+                <div className="rounded-xl border border-gray-200 bg-white p-4 md:p-6">
+                    <div className="mb-4 flex flex-col items-start justify-between gap-4 border-b border-gray-200 pb-4 sm:flex-row sm:items-center sm:gap-0">
+                        <p className="text-sm font-semibold text-gray-900">
+                            Company Information
+                        </p>
 
-                        <div className="flex items-center gap-2">
+                        <div className="flex w-full items-center justify-end gap-2 sm:w-auto">
                             {!isEditingCompany ? (
                                 <button
                                     type="button"
                                     onClick={() => setIsEditingCompany(true)}
-                                    className="inline-flex items-center gap-1.5 rounded-lg "
+                                    className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm hover:bg-gray-50"
                                 >
                                     <Edit className="h-4 w-4" />
-                                    Edit
+                                    <span className="hidden sm:inline">
+                                        Edit
+                                    </span>
                                 </button>
                             ) : (
-                                <div className="flex items-center gap-2">
+                                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-2">
                                     <button
                                         type="button"
                                         onClick={resetCompanyForm}
@@ -476,24 +498,28 @@ export default function DetailTab({ company, sponsors, coaches }: ShowProps) {
                                         type="button"
                                         onClick={(e) => handleCompanySubmit(e)}
                                         disabled={companyProcessing}
-                                        className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-pink-500 via-violet-500 to-cyan-500 px-4 py-2 text-sm font-semibold text-white transition-all hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+                                        className="inline-flex items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-pink-500 via-violet-500 to-cyan-500 px-4 py-2 text-sm font-semibold text-white transition-all hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
                                     >
-                                        {companyProcessing ? 'Saving…' : 'Save Changes'}
+                                        {companyProcessing
+                                            ? 'Saving…'
+                                            : 'Save Changes'}
                                     </button>
                                 </div>
                             )}
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                        <div className="flex items-start gap-4">
+                    {/* Company Name & Logo Section */}
+                    <div className="mb-6 grid grid-cols-1 gap-6 md:grid-cols-2">
+                        {/* Company Info */}
+                        <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center">
                             <div className="relative">
                                 {company.logo ? (
                                     <div className="relative">
                                         <img
                                             src={company.logo_url}
                                             alt={company.name}
-                                            className="h-16 w-16 rounded-xl object-cover ring-2 ring-white"
+                                            className="h-16 w-16 rounded-xl object-cover ring-2 ring-white md:h-20 md:w-20"
                                         />
                                         {isEditingCompany && (
                                             <button
@@ -506,48 +532,65 @@ export default function DetailTab({ company, sponsors, coaches }: ShowProps) {
                                         )}
                                     </div>
                                 ) : (
-                                    <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-gradient-to-br from-pink-500 via-violet-500 to-cyan-500">
-                                        <span className="text-xl font-bold text-white">{getInitials(company.name)}</span>
+                                    <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-gradient-to-br from-pink-500 via-violet-500 to-cyan-500 md:h-20 md:w-20">
+                                        <span className="text-xl font-bold text-white">
+                                            {getInitials(company.name)}
+                                        </span>
                                     </div>
                                 )}
                             </div>
 
-                            <div className="min-w-0">
+                            <div className="min-w-0 flex-1">
                                 {isEditingCompany ? (
                                     <div className="space-y-2">
                                         <Input
                                             name="name"
                                             value={companyFormData.name}
                                             onChange={onCompanyInputChange}
-                                            className={`border-none bg-transparent px-0 text-xl font-semibold ${errorClass(
+                                            className={`border-none bg-transparent px-0 text-lg font-semibold md:text-xl ${errorClass(
                                                 !!companyErrors.name,
                                             )}`}
                                             placeholder="Company Name"
                                         />
-                                        <InputError message={companyErrors.name as any} />
+                                        <InputError
+                                            message={companyErrors.name as any}
+                                        />
 
                                         <div className="pt-2">
-                                            <Label className="mb-2 block text-sm text-gray-500">Logo</Label>
-                                            <div className="flex items-center gap-3">
+                                            <Label className="mb-2 block text-sm text-gray-500">
+                                                Logo
+                                            </Label>
+                                            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
                                                 <Input
                                                     type="file"
                                                     accept="image/*,.pdf"
                                                     onChange={handleLogoUpload}
                                                     className="text-sm"
                                                 />
-                                                {logoFile && <span className="text-xs text-gray-500">{logoFile.name}</span>}
+                                                {logoFile && (
+                                                    <span className="truncate text-xs text-gray-500">
+                                                        {logoFile.name}
+                                                    </span>
+                                                )}
                                             </div>
-                                            <InputError message={companyErrors.logo as any} />
+                                            <InputError
+                                                message={
+                                                    companyErrors.logo as any
+                                                }
+                                            />
                                         </div>
                                     </div>
                                 ) : (
-                                    <h2 className="truncate text-xl font-semibold text-gray-900">{company.name}</h2>
+                                    <h2 className="truncate text-lg font-semibold text-gray-900 md:text-xl">
+                                        {company.name}
+                                    </h2>
                                 )}
                             </div>
                         </div>
 
-                        <div className="rounded-xl bg-white p-6">
-                            <div className="flex items-center gap-6">
+                        {/* Coach Assignment */}
+                        <div className="rounded-xl bg-white p-4 md:p-6">
+                            <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:gap-6">
                                 <div className="min-w-0 flex-1">
                                     {isEditingCompany ? (
                                         <div className="space-y-2">
@@ -563,8 +606,12 @@ export default function DetailTab({ company, sponsors, coaches }: ShowProps) {
                                                     <div className="flex items-center gap-3 py-1">
                                                         {option.photo ? (
                                                             <img
-                                                                src={option?.photo_url}
-                                                                alt={option.label}
+                                                                src={
+                                                                    option?.photo_url
+                                                                }
+                                                                alt={
+                                                                    option.label
+                                                                }
                                                                 className="h-8 w-8 rounded-full object-cover"
                                                             />
                                                         ) : (
@@ -572,52 +619,86 @@ export default function DetailTab({ company, sponsors, coaches }: ShowProps) {
                                                                 <User className="h-4 w-4 text-violet-600" />
                                                             </div>
                                                         )}
-
+                                                        <div className="min-w-0">
+                                                            <div className="truncate text-sm font-medium">
+                                                                {option.label}
+                                                            </div>
+                                                            {option.specialization && (
+                                                                <div className="truncate text-xs text-gray-500">
+                                                                    {
+                                                                        option.specialization
+                                                                    }
+                                                                </div>
+                                                            )}
+                                                        </div>
                                                     </div>
                                                 )}
                                             />
-                                            <InputError message={companyErrors.coach_id as any} />
+                                            <InputError
+                                                message={
+                                                    companyErrors.coach_id as any
+                                                }
+                                            />
                                         </div>
                                     ) : company.coach ? (
-                                        <div className="flex items-center gap-4">
-                                            {(company.coach as any).photo_url || (company.coach as any).photo ? (
+                                        <div className="flex items-center gap-3">
+                                            {(company.coach as any).photo_url ||
+                                            (company.coach as any).photo ? (
                                                 <img
-                                                    src={company.coach.photo_url}
+                                                    src={
+                                                        company.coach.photo_url
+                                                    }
                                                     alt={company.coach.name}
-                                                    className="h-12 w-12 rounded-full object-cover"
+                                                    className="h-10 w-10 rounded-full object-cover md:h-12 md:w-12"
                                                 />
                                             ) : (
-                                                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-r from-pink-100 to-violet-100">
-                                                    <User className="h-6 w-6 text-violet-600" />
+                                                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-r from-pink-100 to-violet-100 md:h-12 md:w-12">
+                                                    <User className="h-5 w-5 text-violet-600 md:h-6 md:w-6" />
                                                 </div>
                                             )}
                                             <div className="min-w-0">
-                                                <div className="truncate font-semibold text-gray-900">{company.coach.name}</div>
-                                                {(company.coach as any).specialization && (
-                                                    <div className="truncate text-sm text-gray-500">
-                                                        {(company.coach as any).specialization}
+                                                <div className="truncate text-sm font-semibold text-gray-900 md:text-base">
+                                                    {company.coach.name}
+                                                </div>
+                                                {(company.coach as any)
+                                                    .specialization && (
+                                                    <div className="truncate text-xs text-gray-500 md:text-sm">
+                                                        {
+                                                            (
+                                                                company.coach as any
+                                                            ).specialization
+                                                        }
                                                     </div>
                                                 )}
                                             </div>
                                         </div>
                                     ) : (
-                                        <div className=" flex text-center">
-                                            <p className="text-sm text-gray-500">No coach assigned</p>
+                                        <div className="flex">
+                                            <p className="text-sm text-gray-500">
+                                                No coach assigned
+                                            </p>
                                         </div>
                                     )}
                                 </div>
 
-                                <div className="flex min-w-[180px] flex-col gap-1">
+                                <div className="flex w-full flex-col gap-1 sm:w-auto sm:min-w-[180px]">
                                     <div className="flex items-center gap-2">
-                                        <p className="text-gray-400">Assigned Coach</p>
+                                        <p className="text-sm text-gray-400 md:text-base">
+                                            Assigned Coach
+                                        </p>
                                     </div>
-                                    {isEditingCompany && <span className="text-xs text-gray-500">Select a coach</span>}
+                                    {isEditingCompany && (
+                                        <span className="text-xs text-gray-500">
+                                            Select a coach
+                                        </span>
+                                    )}
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <div className="mb-6 grid grid-cols-2 gap-4">
+                    {/* Contact Details Grid */}
+                    <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
                         <DetailItem
                             icon={<Mail className="h-4 w-4 text-pink-500" />}
                             label="Email"
@@ -664,10 +745,11 @@ export default function DetailTab({ company, sponsors, coaches }: ShowProps) {
                         />
                     </div>
 
-                    <div className="border-b" />
+                    <div className="mb-4 border-b" />
 
+                    {/* Status Badges Grid */}
                     <div className="rounded-xl p-4">
-                        <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
+                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3">
                             <StatusBadge
                                 icon={<Info className="h-4 w-4" />}
                                 label="Status"
@@ -676,7 +758,9 @@ export default function DetailTab({ company, sponsors, coaches }: ShowProps) {
                                 isEditing={isEditingCompany}
                                 editingValue={companyFormData.status}
                                 options={statusOptions}
-                                onSelectChange={(value) => setCompanyFormData('status', value)}
+                                onSelectChange={(value) =>
+                                    setCompanyFormData('status', value)
+                                }
                             />
 
                             <StatusBadge
@@ -685,9 +769,16 @@ export default function DetailTab({ company, sponsors, coaches }: ShowProps) {
                                 value={company.notarization_status}
                                 color="violet"
                                 isEditing={isEditingCompany}
-                                editingValue={companyFormData.notarization_status}
+                                editingValue={
+                                    companyFormData.notarization_status
+                                }
                                 options={notarizationOptions}
-                                onSelectChange={(value) => setCompanyFormData('notarization_status', value)}
+                                onSelectChange={(value) =>
+                                    setCompanyFormData(
+                                        'notarization_status',
+                                        value,
+                                    )
+                                }
                             />
 
                             <StatusBadge
@@ -698,15 +789,19 @@ export default function DetailTab({ company, sponsors, coaches }: ShowProps) {
                                 isEditing={isEditingCompany}
                                 editingValue={companyFormData.erp_status}
                                 options={statusOptions}
-                                onSelectChange={(value) => setCompanyFormData('erp_status', value)}
+                                onSelectChange={(value) =>
+                                    setCompanyFormData('erp_status', value)
+                                }
                             />
 
-                            <div className="flex items-center gap-3 bg-blue-50">
+                            <div className="flex items-center gap-3 bg-blue-50 p-3">
                                 <div className="flex h-10 w-10 items-center justify-center">
                                     <Percent className="h-5 w-5 text-blue-500" />
                                 </div>
                                 <div>
-                                    <div className="text-xs text-gray-500">Progress</div>
+                                    <div className="text-xs text-gray-500">
+                                        Progress
+                                    </div>
                                     <div className="bg-gradient-to-r from-pink-600 to-violet-600 bg-clip-text text-lg font-semibold text-transparent">
                                         {checklistPercentage}%
                                     </div>
@@ -721,7 +816,9 @@ export default function DetailTab({ company, sponsors, coaches }: ShowProps) {
                                 isEditing={isEditingCompany}
                                 editingValue={companyFormData.sales_activity}
                                 options={salesActivityOptions}
-                                onSelectChange={(value) => setCompanyFormData('sales_activity', value)}
+                                onSelectChange={(value) =>
+                                    setCompanyFormData('sales_activity', value)
+                                }
                             />
 
                             <StatusBadge
@@ -732,17 +829,22 @@ export default function DetailTab({ company, sponsors, coaches }: ShowProps) {
                                 isEditing={isEditingCompany}
                                 editingValue={companyFormData.level}
                                 options={levelOptions}
-                                onSelectChange={(value) => setCompanyFormData('level', value)}
+                                onSelectChange={(value) =>
+                                    setCompanyFormData('level', value)
+                                }
                             />
                         </div>
                     </div>
                 </div>
 
-                <div className="rounded-xl border border-gray-200 bg-white p-6">
-                    <div className="mb-6 flex items-center justify-between">
+                {/* Company Owners Card */}
+                <div className="rounded-xl border border-gray-200 bg-white p-4 md:p-6">
+                    <div className="mb-6 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center sm:gap-0">
                         <div className="flex items-center gap-2">
                             <Users className="h-5 w-5 text-pink-500" />
-                            <h3 className="font-semibold text-gray-900">Company Owners</h3>
+                            <h3 className="font-semibold text-gray-900">
+                                Company Owners
+                            </h3>
                             <span className="ml-2 rounded-full bg-pink-100 px-2 py-1 text-xs font-medium text-pink-700">
                                 {company.owners?.length || 0}
                             </span>
@@ -750,10 +852,11 @@ export default function DetailTab({ company, sponsors, coaches }: ShowProps) {
                         <button
                             type="button"
                             onClick={openAddOwnerDialog}
-                            className="flex cursor-pointer items-center gap-2 rounded-lg"
+                            className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-pink-500 to-violet-500 px-4 py-2 text-white transition-all hover:from-pink-600 hover:to-violet-600 sm:w-auto"
                         >
                             <Plus className="h-4 w-4" />
-                            Add Owner
+                            <span className="hidden sm:inline">Add Owner</span>
+                            <span className="sm:hidden">Add</span>
                         </button>
                     </div>
 
@@ -771,10 +874,14 @@ export default function DetailTab({ company, sponsors, coaches }: ShowProps) {
                             ))}
                         </div>
                     ) : (
-                        <div className="rounded-xl border border-dashed border-gray-200 py-12 text-center">
+                        <div className="rounded-xl border border-dashed border-gray-200 py-8 text-center md:py-12">
                             <Users className="mx-auto mb-4 h-12 w-12 text-gray-300" />
-                            <p className="mb-2 text-gray-500">No owners added yet</p>
-                            <p className="mb-4 text-sm text-gray-400">Add the first owner to this company</p>
+                            <p className="mb-2 text-gray-500">
+                                No owners added yet
+                            </p>
+                            <p className="mb-4 text-sm text-gray-400">
+                                Add the first owner to this company
+                            </p>
                             <button
                                 type="button"
                                 onClick={openAddOwnerDialog}
@@ -789,8 +896,11 @@ export default function DetailTab({ company, sponsors, coaches }: ShowProps) {
             </div>
 
             {/* Owner Dialog */}
-            <Dialog open={isOwnerDialogOpen} onOpenChange={setIsOwnerDialogOpen}>
-                <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
+            <Dialog
+                open={isOwnerDialogOpen}
+                onOpenChange={setIsOwnerDialogOpen}
+            >
+                <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto sm:max-h-[95vh]">
                     <DialogHeader className="z-10 bg-white pb-4">
                         <DialogTitle className="flex items-center gap-2 text-lg font-semibold">
                             {editingOwner ? (
@@ -806,11 +916,16 @@ export default function DetailTab({ company, sponsors, coaches }: ShowProps) {
                             )}
                         </DialogTitle>
                         <DialogDescription className="text-gray-500">
-                            {editingOwner ? 'Update owner information' : 'Add a new property owner to the system'}
+                            {editingOwner
+                                ? 'Update owner information'
+                                : 'Add a new property owner to the system'}
                         </DialogDescription>
                     </DialogHeader>
 
-                    <form onSubmit={handleOwnerSubmit} className="space-y-6 pb-4">
+                    <form
+                        onSubmit={handleOwnerSubmit}
+                        className="space-y-6 pb-4"
+                    >
                         <div className="space-y-6">
                             {/* Profile Photo Section */}
                             <div className="space-y-3">
@@ -824,9 +939,11 @@ export default function DetailTab({ company, sponsors, coaches }: ShowProps) {
                                         {ownerPhotoFile ? (
                                             <div className="relative">
                                                 <img
-                                                    src={URL.createObjectURL(ownerPhotoFile)}
+                                                    src={URL.createObjectURL(
+                                                        ownerPhotoFile,
+                                                    )}
                                                     alt="Profile preview"
-                                                    className="h-28 w-28 rounded-xl border-2 border-pink-100 object-cover"
+                                                    className="h-24 w-24 rounded-xl border-2 border-pink-100 object-cover sm:h-28 sm:w-28"
                                                 />
                                                 <button
                                                     type="button"
@@ -841,37 +958,48 @@ export default function DetailTab({ company, sponsors, coaches }: ShowProps) {
                                             <div className="relative">
                                                 <img
                                                     src={editingOwner.photo_url}
-                                                    alt={editingOwner?.name ?? 'Owner'}
-                                                    className="h-28 w-28 rounded-xl border-2 border-violet-100 object-cover"
+                                                    alt={
+                                                        editingOwner?.name ??
+                                                        'Owner'
+                                                    }
+                                                    className="h-24 w-24 rounded-xl border-2 border-violet-100 object-cover sm:h-28 sm:w-28"
                                                 />
                                                 <div className="absolute right-0 bottom-0 flex h-6 w-6 items-center justify-center rounded-full border-2 border-white bg-green-500">
                                                     <Check className="h-3 w-3 text-white" />
                                                 </div>
                                             </div>
                                         ) : (
-                                            <div className="flex h-28 w-28 items-center justify-center rounded-xl border-2 border-dashed border-gray-300 bg-gradient-to-br from-pink-50 to-violet-50">
-                                                <Upload className="h-10 w-10 text-gray-400" />
+                                            <div className="flex h-24 w-24 items-center justify-center rounded-xl border-2 border-dashed border-gray-300 bg-gradient-to-br from-pink-50 to-violet-50 sm:h-28 sm:w-28">
+                                                <Upload className="h-8 w-8 text-gray-400 sm:h-10 sm:w-10" />
                                             </div>
                                         )}
                                     </div>
 
                                     <div className="flex-1">
                                         <div className="mb-2">
-                                            <Label htmlFor="ownerPhoto" className="mb-1 block text-sm font-medium">
+                                            <Label
+                                                htmlFor="ownerPhoto"
+                                                className="mb-1 block text-sm font-medium"
+                                            >
                                                 Upload photo
                                             </Label>
                                             <Input
                                                 id="ownerPhoto"
                                                 type="file"
                                                 accept="image/*"
-                                                onChange={handleOwnerPhotoChange}
+                                                onChange={
+                                                    handleOwnerPhotoChange
+                                                }
                                                 className="w-full cursor-pointer text-sm file:mr-4 file:rounded-lg file:border-0 file:bg-violet-50 file:px-4 file:py-2 file:text-sm file:font-medium file:text-violet-700 hover:file:bg-violet-100"
                                             />
                                         </div>
                                         <p className="text-xs text-gray-500">
-                                            Recommended: Square image, max 5MB. JPG, PNG.
+                                            Recommended: Square image, max 5MB.
+                                            JPG, PNG.
                                         </p>
-                                        <InputError message={ownerErrors.photo as any} />
+                                        <InputError
+                                            message={ownerErrors.photo as any}
+                                        />
                                     </div>
                                 </div>
                             </div>
@@ -879,8 +1007,12 @@ export default function DetailTab({ company, sponsors, coaches }: ShowProps) {
                             {/* Required Fields */}
                             <div className="space-y-4">
                                 <div className="space-y-2">
-                                    <Label htmlFor="ownerName" className="flex items-center gap-1">
-                                        Full Name <span className="text-rose-500">*</span>
+                                    <Label
+                                        htmlFor="ownerName"
+                                        className="flex items-center gap-1"
+                                    >
+                                        Full Name{' '}
+                                        <span className="text-rose-500">*</span>
                                     </Label>
                                     <Input
                                         id="ownerName"
@@ -889,14 +1021,22 @@ export default function DetailTab({ company, sponsors, coaches }: ShowProps) {
                                         onChange={handleOwnerInputChange}
                                         required
                                         placeholder="John Doe"
-                                        className={errorClass(!!ownerErrors.name)}
+                                        className={errorClass(
+                                            !!ownerErrors.name,
+                                        )}
                                     />
-                                    <InputError message={ownerErrors.name as any} />
+                                    <InputError
+                                        message={ownerErrors.name as any}
+                                    />
                                 </div>
 
                                 <div className="space-y-2">
-                                    <Label htmlFor="ownerEmail" className="flex items-center gap-1">
-                                        Email Address <span className="text-rose-500">*</span>
+                                    <Label
+                                        htmlFor="ownerEmail"
+                                        className="flex items-center gap-1"
+                                    >
+                                        Email Address{' '}
+                                        <span className="text-rose-500">*</span>
                                     </Label>
                                     <Input
                                         id="ownerEmail"
@@ -906,45 +1046,64 @@ export default function DetailTab({ company, sponsors, coaches }: ShowProps) {
                                         onChange={handleOwnerInputChange}
                                         required
                                         placeholder="owner@example.com"
-                                        className={errorClass(!!ownerErrors.email)}
+                                        className={errorClass(
+                                            !!ownerErrors.email,
+                                        )}
                                     />
-                                    <InputError message={ownerErrors.email as any} />
+                                    <InputError
+                                        message={ownerErrors.email as any}
+                                    />
                                 </div>
                             </div>
 
                             {/* Contact Information */}
                             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                 <div className="space-y-2">
-                                    <Label htmlFor="ownerPhone">Phone Number</Label>
+                                    <Label htmlFor="ownerPhone">
+                                        Phone Number
+                                    </Label>
                                     <Input
                                         id="ownerPhone"
                                         name="phone"
                                         value={ownerFormData.phone || ''}
                                         onChange={handleOwnerInputChange}
                                         placeholder="+63 9xx xxx xxxx"
-                                        className={errorClass(!!ownerErrors.phone)}
+                                        className={errorClass(
+                                            !!ownerErrors.phone,
+                                        )}
                                     />
-                                    <InputError message={ownerErrors.phone as any} />
+                                    <InputError
+                                        message={ownerErrors.phone as any}
+                                    />
                                 </div>
 
                                 <div className="space-y-2">
-                                    <Label htmlFor="ownerBirthdate">Birthdate</Label>
+                                    <Label htmlFor="ownerBirthdate">
+                                        Birthdate
+                                    </Label>
                                     <Input
                                         id="ownerBirthdate"
                                         name="birthdate"
                                         type="date"
                                         value={ownerFormData.birthdate || ''}
                                         onChange={handleOwnerInputChange}
-                                        className={errorClass(!!ownerErrors.birthdate)}
+                                        className={errorClass(
+                                            !!ownerErrors.birthdate,
+                                        )}
                                     />
-                                    <InputError message={ownerErrors.birthdate as any} />
+                                    <InputError
+                                        message={ownerErrors.birthdate as any}
+                                    />
                                 </div>
                             </div>
 
                             {/* Social Media & Address */}
                             <div className="space-y-4">
                                 <div className="space-y-2">
-                                    <Label htmlFor="ownerFacebook" className="flex items-center gap-2">
+                                    <Label
+                                        htmlFor="ownerFacebook"
+                                        className="flex items-center gap-2"
+                                    >
                                         <Facebook className="h-4 w-4 text-blue-600" />
                                         Facebook Profile
                                     </Label>
@@ -954,22 +1113,32 @@ export default function DetailTab({ company, sponsors, coaches }: ShowProps) {
                                         value={ownerFormData.facebook || ''}
                                         onChange={handleOwnerInputChange}
                                         placeholder="https://facebook.com/username"
-                                        className={errorClass(!!ownerErrors.facebook)}
+                                        className={errorClass(
+                                            !!ownerErrors.facebook,
+                                        )}
                                     />
-                                    <InputError message={ownerErrors.facebook as any} />
+                                    <InputError
+                                        message={ownerErrors.facebook as any}
+                                    />
                                 </div>
 
                                 <div className="space-y-2">
-                                    <Label htmlFor="ownerAddress">Address</Label>
+                                    <Label htmlFor="ownerAddress">
+                                        Address
+                                    </Label>
                                     <Input
                                         id="ownerAddress"
                                         name="address"
                                         value={ownerFormData.address || ''}
                                         onChange={handleOwnerInputChange}
                                         placeholder="123 Main St, City, State"
-                                        className={errorClass(!!ownerErrors.address)}
+                                        className={errorClass(
+                                            !!ownerErrors.address,
+                                        )}
                                     />
-                                    <InputError message={ownerErrors.address as any} />
+                                    <InputError
+                                        message={ownerErrors.address as any}
+                                    />
                                 </div>
                             </div>
 
@@ -987,16 +1156,22 @@ export default function DetailTab({ company, sponsors, coaches }: ShowProps) {
                                                 <div className="flex items-start gap-3">
                                                     <FileImage className="mt-0.5 h-5 w-5 text-green-600" />
                                                     <div>
-                                                        <p className="text-sm font-medium text-gray-900">{ownerProofIdFile.name}</p>
+                                                        <p className="truncate text-sm font-medium text-gray-900">
+                                                            {
+                                                                ownerProofIdFile.name
+                                                            }
+                                                        </p>
                                                         <p className="mt-1 text-xs text-gray-500">
-                                                            {formatFileSize(ownerProofIdFile.size)}
+                                                            {formatFileSize(
+                                                                ownerProofIdFile.size,
+                                                            )}
                                                         </p>
                                                     </div>
                                                 </div>
                                                 <button
                                                     type="button"
                                                     onClick={removeOwnerProofId}
-                                                    className="text-gray-400 transition-colors hover:text-gray-600"
+                                                    className="flex-shrink-0 text-gray-400 transition-colors hover:text-gray-600"
                                                     aria-label="Remove file"
                                                 >
                                                     <X className="h-4 w-4" />
@@ -1009,15 +1184,22 @@ export default function DetailTab({ company, sponsors, coaches }: ShowProps) {
                                                 <div className="flex items-center gap-3">
                                                     <CheckCircle className="h-5 w-5 text-emerald-600" />
                                                     <div>
-                                                        <p className="text-sm font-medium text-gray-900">ID Verified</p>
-                                                        <p className="text-xs text-emerald-600">Document uploaded</p>
+                                                        <p className="text-sm font-medium text-gray-900">
+                                                            ID Verified
+                                                        </p>
+                                                        <p className="text-xs text-emerald-600">
+                                                            Document uploaded
+                                                        </p>
                                                     </div>
                                                 </div>
                                                 <a
-                                                    href={getFileUrl((editingOwner as any).proof_id_url)}
+                                                    href={getFileUrl(
+                                                        (editingOwner as any)
+                                                            .proof_id_url,
+                                                    )}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
-                                                    className="text-sm text-blue-600 transition-colors hover:text-blue-800 hover:underline"
+                                                    className="truncate text-sm text-blue-600 transition-colors hover:text-blue-800 hover:underline"
                                                 >
                                                     View Document
                                                 </a>
@@ -1026,15 +1208,21 @@ export default function DetailTab({ company, sponsors, coaches }: ShowProps) {
                                     ) : (
                                         <div className="rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 p-6 text-center transition-colors hover:border-gray-400">
                                             <FileText className="mx-auto h-10 w-10 text-gray-400" />
-                                            <p className="mt-2 text-sm font-medium text-gray-700">Upload ID Proof</p>
+                                            <p className="mt-2 text-sm font-medium text-gray-700">
+                                                Upload ID Proof
+                                            </p>
                                             <p className="mt-1 text-xs text-gray-500">
-                                                Passport, Driver&apos;s License, or National ID
+                                                Passport, Driver&apos;s License,
+                                                or National ID
                                             </p>
                                         </div>
                                     )}
 
                                     <div>
-                                        <Label htmlFor="ownerProofId" className="mb-2 block text-sm font-medium">
+                                        <Label
+                                            htmlFor="ownerProofId"
+                                            className="mb-2 block text-sm font-medium"
+                                        >
                                             Upload document
                                         </Label>
                                         <Input
@@ -1044,8 +1232,15 @@ export default function DetailTab({ company, sponsors, coaches }: ShowProps) {
                                             onChange={handleOwnerProofIdChange}
                                             className="w-full cursor-pointer text-sm file:mr-4 file:rounded-lg file:border-0 file:bg-violet-50 file:px-4 file:py-2 file:text-sm file:font-medium file:text-violet-700 hover:file:bg-violet-100"
                                         />
-                                        <p className="mt-2 text-xs text-gray-500">Accepts images and PDF files, max 5MB</p>
-                                        <InputError message={ownerErrors.proof_id as any} />
+                                        <p className="mt-2 text-xs text-gray-500">
+                                            Accepts images and PDF files, max
+                                            5MB
+                                        </p>
+                                        <InputError
+                                            message={
+                                                ownerErrors.proof_id as any
+                                            }
+                                        />
                                     </div>
                                 </div>
                             </div>
@@ -1055,14 +1250,15 @@ export default function DetailTab({ company, sponsors, coaches }: ShowProps) {
                         <div className="bottom-0 border-t bg-white pt-4">
                             <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
                                 <div className="text-sm text-gray-500">
-                                    <span className="text-rose-500">*</span> Required fields
+                                    <span className="text-rose-500">*</span>{' '}
+                                    Required fields
                                 </div>
 
                                 <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
                                     <button
                                         type="button"
                                         onClick={handleCancelOwner}
-                                        className="w-full rounded-lg border border-gray-300 px-5 py-2.5 font-medium text-gray-700 transition-colors hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-200 sm:w-auto"
+                                        className="w-full rounded-lg border border-gray-300 px-5 py-2.5 font-medium text-gray-700 transition-colors hover:bg-gray-50 focus:ring-2 focus:ring-gray-200 focus:outline-none sm:w-auto"
                                     >
                                         Cancel
                                     </button>
@@ -1070,7 +1266,7 @@ export default function DetailTab({ company, sponsors, coaches }: ShowProps) {
                                     <button
                                         type="submit"
                                         disabled={ownerProcessing}
-                                        className="flex w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-pink-500 to-violet-500 px-5 py-2.5 font-medium text-white shadow-sm transition-all hover:from-pink-600 hover:to-violet-600 focus:outline-none focus:ring-2 focus:ring-pink-200 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
+                                        className="flex w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-pink-500 to-violet-500 px-5 py-2.5 font-medium text-white shadow-sm transition-all hover:from-pink-600 hover:to-violet-600 focus:ring-2 focus:ring-pink-200 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
                                     >
                                         {ownerProcessing ? (
                                             <>
@@ -1120,24 +1316,26 @@ interface DetailItemProps {
 }
 
 function DetailItem({
-                        icon,
-                        label,
-                        value,
-                        isEditing,
-                        editingValue,
-                        name,
-                        onChange,
-                        error,
-                        isSelect,
-                        selectValue,
-                        selectOptions,
-                        onSelectChange,
-                    }: DetailItemProps) {
+    icon,
+    label,
+    value,
+    isEditing,
+    editingValue,
+    name,
+    onChange,
+    error,
+    isSelect,
+    selectValue,
+    selectOptions,
+    onSelectChange,
+}: DetailItemProps) {
     return (
         <div className="space-y-2">
             <div className="flex items-center gap-2">
                 {icon}
-                <span className="text-sm font-medium text-gray-500">{label}</span>
+                <span className="text-sm font-medium text-gray-500">
+                    {label}
+                </span>
             </div>
 
             {isEditing ? (
@@ -1150,6 +1348,7 @@ function DetailItem({
                                 options={selectOptions ?? []}
                                 styles={flatSelectStyles}
                                 classNamePrefix="react-select"
+                                className="text-sm"
                             />
                             <InputError message={error as any} />
                         </>
@@ -1159,14 +1358,16 @@ function DetailItem({
                                 name={name}
                                 value={editingValue || ''}
                                 onChange={onChange}
-                                className={`bg-transparent border-gray-200 ${errorClass(!!error)}`}
+                                className={`border-gray-200 bg-transparent ${errorClass(!!error)}`}
                             />
                             <InputError message={error as any} />
                         </>
                     )}
                 </div>
             ) : (
-                <p className="text-sm font-medium text-gray-900">{value}</p>
+                <p className="truncate text-sm font-medium text-gray-900">
+                    {value}
+                </p>
             )}
         </div>
     );
@@ -1183,7 +1384,16 @@ interface StatusBadgeProps {
     onSelectChange: (value: string) => void;
 }
 
-function StatusBadge({ icon, label, value, color, isEditing, editingValue, options, onSelectChange }: StatusBadgeProps) {
+function StatusBadge({
+    icon,
+    label,
+    value,
+    color,
+    isEditing,
+    editingValue,
+    options,
+    onSelectChange,
+}: StatusBadgeProps) {
     const colorClasses: Record<StatusBadgeProps['color'], string> = {
         pink: 'text-pink-600 bg-pink-50',
         violet: 'text-violet-600 bg-violet-50',
@@ -1195,21 +1405,27 @@ function StatusBadge({ icon, label, value, color, isEditing, editingValue, optio
 
     const formatStatus = (status?: string | null) => {
         if (!status) return 'N/A';
-        return status.charAt(0).toUpperCase() + status.slice(1).replace('_', ' ');
+        return (
+            status.charAt(0).toUpperCase() + status.slice(1).replace('_', ' ')
+        );
     };
 
     return (
-        <div className={`${colorClasses[color]} flex items-center gap-3 p-2`}>
-            <div className={`h-10 w-10 rounded-lg ${colorClasses[color]} flex items-center justify-center`}>{icon}</div>
+        <div className={`${colorClasses[color]} flex items-center gap-3 p-3`}>
+            <div
+                className={`h-10 w-10 rounded-lg ${colorClasses[color]} flex items-center justify-center`}
+            >
+                {icon}
+            </div>
 
-            <div className="flex-1">
-                <div className="text-xs text-gray-500">{label}</div>
+            <div className="min-w-0 flex-1">
+                <div className="truncate text-xs text-gray-500">{label}</div>
 
                 {isEditing ? (
                     <select
                         value={editingValue}
                         onChange={(e) => onSelectChange(e.target.value)}
-                        className="w-full bg-transparent text-sm font-medium focus:outline-none"
+                        className="w-full truncate bg-transparent text-sm font-medium focus:outline-none"
                     >
                         <option value="">Select...</option>
                         {options.map((option) => (
@@ -1219,7 +1435,9 @@ function StatusBadge({ icon, label, value, color, isEditing, editingValue, optio
                         ))}
                     </select>
                 ) : (
-                    <div className="text-sm font-medium text-gray-900">{formatStatus(value)}</div>
+                    <div className="truncate text-sm font-medium text-gray-900">
+                        {formatStatus(value)}
+                    </div>
                 )}
             </div>
         </div>
@@ -1234,7 +1452,13 @@ interface OwnerCardCompactProps {
     onDelete: () => void;
 }
 
-function OwnerCardCompact({ owner, formatDate, getFileUrl, onEdit, onDelete }: OwnerCardCompactProps) {
+function OwnerCardCompact({
+    owner,
+    formatDate,
+    getFileUrl,
+    onEdit,
+    onDelete,
+}: OwnerCardCompactProps) {
     const initials =
         owner.name
             ?.split(' ')
@@ -1247,26 +1471,34 @@ function OwnerCardCompact({ owner, formatDate, getFileUrl, onEdit, onDelete }: O
     const proofUrl = (owner as any).proof_id_url ?? (owner as any).ids ?? null;
 
     return (
-        <div className="bg-gradient-to-r from-gray-50 to-white rounded-xl p-4 hover:from-pink-50 hover:to-violet-50 transition-all">
+        <div className="rounded-xl bg-gradient-to-r from-gray-50 to-white p-4 transition-all hover:from-pink-50 hover:to-violet-50">
             <div className="flex items-start gap-3">
                 <div className="flex-shrink-0">
                     {owner.photo ? (
-                        <img src={owner.photo_url} alt={owner.name} className="h-12 w-12 rounded-lg object-cover" />
+                        <img
+                            src={owner.photo_url}
+                            alt={owner.name}
+                            className="h-12 w-12 rounded-lg object-cover"
+                        />
                     ) : (
-                        <div className="h-12 w-12 rounded-lg bg-gradient-to-br from-pink-500 to-violet-500 flex items-center justify-center">
-                            <span className="text-sm font-bold text-white">{initials}</span>
+                        <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-br from-pink-500 to-violet-500">
+                            <span className="text-sm font-bold text-white">
+                                {initials}
+                            </span>
                         </div>
                     )}
                 </div>
 
-                <div className="flex-1 min-w-0">
+                <div className="min-w-0 flex-1">
                     <div className="flex items-start justify-between">
-                        <h4 className="font-semibold text-gray-900 truncate">{owner.name}</h4>
+                        <h4 className="truncate text-sm font-semibold text-gray-900 md:text-base">
+                            {owner.name}
+                        </h4>
                         <div className="flex gap-1">
                             <button
                                 type="button"
                                 onClick={onEdit}
-                                className="h-6 w-6 rounded hover:bg-gray-100 flex items-center justify-center"
+                                className="flex h-6 w-6 items-center justify-center rounded hover:bg-gray-100"
                                 title="Edit"
                             >
                                 <Edit className="h-3 w-3 text-gray-500" />
@@ -1274,7 +1506,7 @@ function OwnerCardCompact({ owner, formatDate, getFileUrl, onEdit, onDelete }: O
                             <button
                                 type="button"
                                 onClick={onDelete}
-                                className="h-6 w-6 rounded hover:bg-rose-50 flex items-center justify-center"
+                                className="flex h-6 w-6 items-center justify-center rounded hover:bg-rose-50"
                                 title="Delete"
                             >
                                 <Trash2 className="h-3 w-3 text-rose-500" />
@@ -1285,27 +1517,33 @@ function OwnerCardCompact({ owner, formatDate, getFileUrl, onEdit, onDelete }: O
                     <div className="mt-2 space-y-1">
                         <div className="flex items-center gap-2">
                             <Mail className="h-3 w-3 text-pink-500" />
-                            <span className="text-xs text-gray-600 truncate">{owner.email || 'No email'}</span>
+                            <span className="truncate text-xs text-gray-600">
+                                {owner.email || 'No email'}
+                            </span>
                         </div>
                         <div className="flex items-center gap-2">
                             <Phone className="h-3 w-3 text-violet-500" />
-                            <span className="text-xs text-gray-600">{owner.phone || 'No phone'}</span>
+                            <span className="text-xs text-gray-600">
+                                {owner.phone || 'No phone'}
+                            </span>
                         </div>
                         {owner.birthdate && (
                             <div className="flex items-center gap-2">
                                 <Calendar className="h-3 w-3 text-cyan-500" />
-                                <span className="text-xs text-gray-600">{formatDate(owner.birthdate)}</span>
+                                <span className="text-xs text-gray-600">
+                                    {formatDate(owner.birthdate)}
+                                </span>
                             </div>
                         )}
                     </div>
 
                     {proofUrl && (
-                        <div className="mt-3 pt-3 border-t border-gray-100">
+                        <div className="mt-3 border-t border-gray-100 pt-3">
                             <a
                                 href={getFileUrl(proofUrl)}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="inline-flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800"
+                                className="inline-flex items-center gap-1 truncate text-xs text-blue-600 hover:text-blue-800"
                             >
                                 <IdCard className="h-3 w-3" />
                                 View ID Proof

@@ -189,6 +189,7 @@ class CompanyController extends Controller
                             'address' => isset($ownerData['address']) ? trim($ownerData['address']) : null,
                             'facebook' => isset($ownerData['facebook']) ? trim($ownerData['facebook']) : null,
                             'birthdate' => isset($ownerData['birthdate']) ? $ownerData['birthdate'] : null,
+                            'role' => 'owner',
                             'photo' => $ownerPhotoPath,
                             'ids' => $idFilePath,
                             'company_id' => $createdCompany->id,
@@ -402,6 +403,7 @@ class CompanyController extends Controller
                     'facebook' => $ownerData['facebook_link'] ?? null,
                     'birthdate' => $ownerData['birthdate'] ?? null,
                     'photo' => $photoPath,
+                    'role' => 'owner',
                     'ids' => $idPath,
                     'company_id' => $company->id,
                 ]);

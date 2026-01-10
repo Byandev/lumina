@@ -3,6 +3,7 @@
 use App\Http\Controllers\ChecklistRemarkController;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\CompanyEventController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\OwnerController;
 use App\Http\Controllers\PerformanceRecordController;
@@ -25,12 +26,8 @@ Route::get('/submit', function () {
 Route::post('/submit', [CompanyController::class, 'submit'])->name('company.submit');
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('dashboard', function () {
-
-        return Inertia::render('dashboard');
-
-    })->middleware(['auth'])->name('dashboard');
-
+    Route::get('dashboard', [\App\Http\Controllers\DashboardController::class, 'index'])->middleware(['auth'])->name('dashboard');
+    Route::get('/dashboard/data', [DashboardController::class, 'getDashboardData']);
 
     Route::get('companies', [CompanyController::class, 'index'])->name('companies');
     Route::get('companies/create', [CompanyController::class, 'create'])->name('companies.create');

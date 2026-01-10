@@ -194,10 +194,10 @@ export default function CompaniesIndex({
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Companies" />
 
-            <div className="px-4 py-6">
+            <div className="px-4 py-2 md:py-6">
                 <div className="mb-4">
-                    <div className="flex items-center justify-between gap-3">
-                        <div className="min-w-0">
+                    <div className="flex flex-col md:flex-row justify-between gap-3">
+                        <div className="">
                             <h1 className="text-lg font-semibold text-foreground">
                                 Companies
                             </h1>
@@ -221,7 +221,7 @@ export default function CompaniesIndex({
                                     value={searchTerm}
                                     onChange={handleSearchChange}
                                     placeholder="Search companies..."
-                                    className="pl-8 h-9 text-sm"
+                                    className="h-9 pl-8 text-sm"
                                 />
 
                                 {searchTerm && (
@@ -241,7 +241,7 @@ export default function CompaniesIndex({
                                 className="inline-flex items-center gap-2 rounded-md bg-gradient-to-r from-pink-500 via-blue-500 to-cyan-500 px-4 py-2 text-sm font-semibold text-white transition hover:scale-105"
                             >
                                 <Plus className="h-4 w-4" />
-                                Add Company
+                                <span className='hidden md:block'>Add Company</span>
                             </Link>
                         </div>
                     </div>
@@ -261,7 +261,7 @@ export default function CompaniesIndex({
                 {/* Content Card */}
                 <div className="overflow-hidden">
                     {!hasData ? (
-                        <div className="rounded-2xl border   px-6 py-10 text-center">
+                        <div className="rounded-2xl border px-6 py-10 text-center">
                             {/* Icon */}
                             <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-gray-200">
                                 <Building className="h-6 w-6 text-gray-400" />
@@ -303,85 +303,78 @@ export default function CompaniesIndex({
                         </div>
                     ) : (
                         <>
-                            <div className="overflow-x-auto rounded-xl border">
-                                <table className="min-w-full">
-                                    <thead className="bg-gray-100">
+                            <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
+                                <div className="overflow-x-auto">
+                                    <table className="min-w-[1024px] sm:min-w-full">
+                                        <thead className="bg-gradient-to-r from-pink-50 via-blue-50 to-sky-50">
                                         <tr>
-                                            <th className="px-4 py-3 text-left text-xs font-semibold tracking-wider text-gray-600 uppercase">
+                                            <th className="px-3 py-2.5 text-left text-xs font-semibold uppercase tracking-wider text-gray-700 sm:px-4 sm:py-3">
                                                 Company
                                             </th>
-                                            <th className="px-4 py-3 text-left text-xs font-semibold tracking-wider text-gray-600 uppercase">
+                                            <th className="px-3 py-2.5 text-left text-xs font-semibold uppercase tracking-wider text-gray-700 sm:px-4 sm:py-3">
                                                 Owners
                                             </th>
-                                            <th className="px-4 py-3 text-left text-xs font-semibold tracking-wider text-gray-600 uppercase">
+                                            <th className="px-3 py-2.5 text-left text-xs font-semibold uppercase tracking-wider text-gray-700 sm:px-4 sm:py-3">
                                                 Sponsor
                                             </th>
-                                            <th className="px-4 py-3 text-left text-xs font-semibold tracking-wider text-gray-600 uppercase">
+                                            <th className="px-3 py-2.5 text-left text-xs font-semibold uppercase tracking-wider text-gray-700 sm:px-4 sm:py-3">
                                                 Onboarding
                                             </th>
-                                            <th className="px-4 py-3 text-left text-xs font-semibold tracking-wider text-gray-600 uppercase">
+                                            <th className="px-3 py-2.5 text-left text-xs font-semibold uppercase tracking-wider text-gray-700 sm:px-4 sm:py-3">
                                                 Notarization
                                             </th>
-                                            <th className="px-4 py-3 text-left text-xs font-semibold tracking-wider text-gray-600 uppercase">
+                                            <th className="px-3 py-2.5 text-left text-xs font-semibold uppercase tracking-wider text-gray-700 sm:px-4 sm:py-3">
                                                 ERP
                                             </th>
-                                            <th className="px-4 py-3 text-left text-xs font-semibold tracking-wider text-gray-600 uppercase">
+                                            <th className="px-3 py-2.5 text-left text-xs font-semibold uppercase tracking-wider text-gray-700 sm:px-4 sm:py-3">
                                                 Sales
                                             </th>
-                                            <th className="px-4 py-3 text-left text-xs font-semibold tracking-wider text-gray-600 uppercase">
+                                            <th className="px-3 py-2.5 text-left text-xs font-semibold uppercase tracking-wider text-gray-700 sm:px-4 sm:py-3">
                                                 Level
                                             </th>
                                         </tr>
-                                    </thead>
+                                        </thead>
 
-                                    <tbody className="divide-y divide-gray-100">
+                                        <tbody className="divide-y divide-gray-100">
                                         {companies.data.map((company) => (
                                             <tr
                                                 key={company.id}
-                                                className="align-top transition-colors even:bg-gray-50/30 hover:bg-gray-50/70"
+                                                className="align-top transition-colors hover:bg-gradient-to-r hover:from-pink-50/30 hover:via-blue-50/30 hover:to-sky-50/30"
                                             >
                                                 {/* Company */}
-                                                <td className="px-4 py-3">
-                                                    <div className="flex items-center gap-3">
-                                                        <div className="h-9 w-9 flex-shrink-0 overflow-hidden rounded-lg border border-gray-200 bg-gray-50">
-                                                            {company.logo ? (
+                                                <td className="px-3 py-2.5 sm:px-4 sm:py-3">
+                                                    <div className="flex items-center gap-2 sm:gap-3">
+                                                        <div className="h-8 w-8 flex-shrink-0 overflow-hidden rounded-lg border border-gray-200 bg-gradient-to-br from-pink-100 via-blue-100 to-sky-100 sm:h-9 sm:w-9">
+                                                            {company.logo_url ? (
                                                                 <img
-                                                                    src={`${company.logo_url}`}
-                                                                    alt={
-                                                                        company.name
-                                                                    }
+                                                                    src={company.logo_url}
+                                                                    alt={company.name}
                                                                     className="h-full w-full object-cover"
                                                                 />
                                                             ) : (
                                                                 <div className="flex h-full w-full items-center justify-center">
-                                                                    <span className="text-xs font-semibold text-gray-700">
-                                                                        {getInitials(
-                                                                            company.name,
-                                                                        )}
-                                                                    </span>
+                                            <span className="text-xs font-semibold text-gray-700">
+                                                {getInitials(company.name)}
+                                            </span>
                                                                 </div>
                                                             )}
                                                         </div>
 
                                                         <div className="min-w-0">
-                                                            <div className="max-w-[240px] truncate text-sm font-semibold text-gray-900">
+                                                            <div className="max-w-[140px] truncate text-sm font-semibold text-gray-900 sm:max-w-[240px]">
                                                                 <Link
                                                                     href={`/companies/${company.id}/details`}
                                                                     className="font-light hover:underline"
                                                                 >
-                                                                    {
-                                                                        company.name
-                                                                    }
+                                                                    {company.name}
                                                                 </Link>
                                                             </div>
                                                             {company.email && (
                                                                 <div className="mt-0.5 flex items-center gap-1 text-xs text-gray-500">
-                                                                    <Mail className="h-3.5 w-3.5 flex-shrink-0 text-gray-400" />
-                                                                    <span className="max-w-[260px] truncate">
-                                                                        {
-                                                                            company.email
-                                                                        }
-                                                                    </span>
+                                                                    <Mail className="h-3 w-3 flex-shrink-0 text-gray-400 sm:h-3.5 sm:w-3.5" />
+                                                                    <span className="max-w-[120px] truncate sm:max-w-[260px]">
+                                                {company.email}
+                                            </span>
                                                                 </div>
                                                             )}
                                                         </div>
@@ -389,286 +382,259 @@ export default function CompaniesIndex({
                                                 </td>
 
                                                 {/* Owners */}
-                                                <td className="px-4 py-3">
-                                                    <div className="space-y-2">
-                                                        {company.owners &&
-                                                        company.owners.length >
-                                                            0 ? (
+                                                <td className="px-3 py-2.5 sm:px-4 sm:py-3">
+                                                    <div className="space-y-1.5 sm:space-y-2">
+                                                        {company.owners && company.owners.length > 0 ? (
                                                             <>
-                                                                {company.owners
-                                                                    .slice(0, 2)
-                                                                    .map(
-                                                                        (
-                                                                            owner,
-                                                                        ) => (
-                                                                            <div
-                                                                                key={
-                                                                                    owner.id
-                                                                                }
-                                                                                className="flex items-center gap-2"
-                                                                            >
-                                                                                <div className="h-7 w-7 flex-shrink-0 overflow-hidden rounded-full border border-gray-200 bg-gray-50">
-                                                                                    {owner.photo ? (
-                                                                                        <img
-                                                                                            src={`${owner.photo_url}`}
-                                                                                            alt={
-                                                                                                owner.name
-                                                                                            }
-                                                                                            className="h-full w-full object-cover"
-                                                                                        />
-                                                                                    ) : (
-                                                                                        <div className="flex h-full w-full items-center justify-center">
-                                                                                            <span className="text-[10px] font-semibold text-gray-700">
-                                                                                                {getInitials(
-                                                                                                    owner.name,
-                                                                                                )}
-                                                                                            </span>
-                                                                                        </div>
-                                                                                    )}
+                                                                {company.owners.slice(0, 1).map((owner) => (
+                                                                    <div key={owner.id} className="flex items-center gap-1.5 sm:gap-2">
+                                                                        <div className="h-6 w-6 flex-shrink-0 overflow-hidden rounded-full border border-gray-200 bg-gray-50 sm:h-7 sm:w-7">
+                                                                            {owner.photo_url ? (
+                                                                                <img
+                                                                                    src={owner.photo_url}
+                                                                                    alt={owner.name}
+                                                                                    className="h-full w-full object-cover"
+                                                                                />
+                                                                            ) : (
+                                                                                <div className="flex h-full w-full items-center justify-center">
+                                                            <span className="text-[9px] font-semibold text-gray-700 sm:text-[10px]">
+                                                                {getInitials(owner.name)}
+                                                            </span>
                                                                                 </div>
+                                                                            )}
+                                                                        </div>
 
-                                                                                <div className="min-w-0">
-                                                                                    <div className="max-w-[180px] truncate text-xs font-light text-gray-900">
-                                                                                        {
-                                                                                            owner.name
-                                                                                        }
-                                                                                    </div>
-                                                                                    <div className="max-w-[200px] truncate text-[11px] text-gray-500">
-                                                                                        {
-                                                                                            owner.email
-                                                                                        }
-                                                                                    </div>
-                                                                                </div>
-
-                                                                                {owner.is_primary && (
-                                                                                    <span className="inline-flex items-center rounded-full bg-blue-50 px-2 py-0.5 text-[11px] font-semibold text-blue-700">
-                                                                                        Primary
-                                                                                    </span>
-                                                                                )}
+                                                                        <div className="min-w-0">
+                                                                            <div className="max-w-[100px] truncate text-xs font-light text-gray-900 sm:max-w-[180px]">
+                                                                                {owner.name}
                                                                             </div>
-                                                                        ),
-                                                                    )}
+                                                                            <div className="max-w-[100px] truncate text-[10px] text-gray-500 sm:max-w-[200px] sm:text-[11px]">
+                                                                                {owner.email}
+                                                                            </div>
+                                                                        </div>
 
-                                                                {company.owners
-                                                                    .length >
-                                                                    2 && (
-                                                                    <div className="pl-9 text-xs text-gray-500">
-                                                                        +
-                                                                        {company
-                                                                            .owners
-                                                                            .length -
-                                                                            2}{' '}
-                                                                        more
-                                                                        owner
-                                                                        {company
-                                                                            .owners
-                                                                            .length -
-                                                                            2 !==
-                                                                        1
-                                                                            ? 's'
-                                                                            : ''}
+                                                                        {owner.is_primary && (
+                                                                            <span className="inline-flex items-center rounded-full bg-blue-50 px-1.5 py-0.5 text-[10px] font-semibold text-blue-700 sm:px-2 sm:py-0.5 sm:text-[11px]">
+                                                        P
+                                                    </span>
+                                                                        )}
+                                                                    </div>
+                                                                ))}
+
+                                                                {company.owners.length > 1 && (
+                                                                    <div className="text-xs text-gray-500 sm:pl-9">
+                                                                        +{company.owners.length - 1} more
                                                                     </div>
                                                                 )}
                                                             </>
                                                         ) : (
-                                                            <div className="flex items-center gap-2 text-gray-500">
-                                                                <Users className="h-4 w-4 text-gray-400" />
-                                                                <span className="text-xs">
-                                                                    No owners
-                                                                </span>
+                                                            <div className="flex items-center gap-1.5 text-gray-500 sm:gap-2">
+                                                                <Users className="h-3.5 w-3.5 text-gray-400 sm:h-4 sm:w-4" />
+                                                                <span className="text-xs">No owners</span>
                                                             </div>
                                                         )}
                                                     </div>
                                                 </td>
 
                                                 {/* Sponsor */}
-                                                <td className="px-4 py-3">
+                                                <td className="px-3 py-2.5 sm:px-4 sm:py-3">
                                                     {company.sponsor ? (
-                                                        <div className="flex items-center gap-2">
-                                                            <div className="h-7 w-7 flex-shrink-0 overflow-hidden rounded-lg border border-gray-200 bg-gray-50">
-                                                                {company.sponsor
-                                                                    .logo ? (
+                                                        <div className="flex items-center gap-1.5 sm:gap-2">
+                                                            <div className="h-6 w-6 flex-shrink-0 overflow-hidden rounded-lg border border-gray-200 bg-gray-50 sm:h-7 sm:w-7">
+                                                                {company.sponsor.logo_url ? (
                                                                     <img
-                                                                        src={`${company.sponsor.logo_url}`}
-                                                                        alt={
-                                                                            company
-                                                                                .sponsor
-                                                                                .name
-                                                                        }
+                                                                        src={company.sponsor.logo_url}
+                                                                        alt={company.sponsor.name}
                                                                         className="h-full w-full object-cover"
                                                                     />
                                                                 ) : (
                                                                     <div className="flex h-full w-full items-center justify-center">
-                                                                        <span className="text-[10px] font-semibold text-gray-700">
-                                                                            {getInitials(
-                                                                                company
-                                                                                    .sponsor
-                                                                                    .name,
-                                                                            )}
-                                                                        </span>
+                                                <span className="text-[9px] font-semibold text-gray-700 sm:text-[10px]">
+                                                    {getInitials(company.sponsor.name)}
+                                                </span>
                                                                     </div>
                                                                 )}
                                                             </div>
 
                                                             <div className="min-w-0">
-                                                                <div className="max-w-[160px] truncate text-xs font-semibold text-gray-900">
+                                                                <div className="max-w-[100px] truncate text-xs font-semibold text-gray-900 sm:max-w-[160px]">
                                                                     <Link
                                                                         href={`/companies/${company.sponsor.id}`}
                                                                         className="font-light transition hover:text-gray-900 hover:underline"
                                                                     >
-                                                                        {
-                                                                            company
-                                                                                .sponsor
-                                                                                .name
-                                                                        }
+                                                                        {company.sponsor.name}
                                                                     </Link>
                                                                 </div>
                                                             </div>
                                                         </div>
                                                     ) : (
-                                                        <span className="text-xs text-gray-400">
-                                                            —
-                                                        </span>
+                                                        <span className="text-xs text-gray-400">—</span>
                                                     )}
                                                 </td>
 
                                                 {/* Onboarding */}
-                                                <td className="px-4 py-3">
-                                                    <div className="w-28">
+                                                <td className="px-3 py-2.5 sm:px-4 sm:py-3">
+                                                    <div className="w-20 sm:w-28">
                                                         <div className="flex items-center justify-between">
-                                                            <span
-                                                                className={`text-xs font-semibold tabular-nums ${
-                                                                    company.checklist_progress ===
-                                                                    100
-                                                                        ? 'text-green-700'
-                                                                        : company.checklist_progress >=
-                                                                            70
-                                                                          ? 'text-blue-700'
-                                                                          : company.checklist_progress >=
-                                                                              30
-                                                                            ? 'text-yellow-700'
-                                                                            : 'text-red-700'
-                                                                }`}
-                                                            >
-                                                                {
-                                                                    company.checklist_progress
-                                                                }
-                                                                %
-                                                            </span>
-                                                            <span className="text-[11px] text-gray-500 tabular-nums">
-                                                                {
-                                                                    company.completed_checklist_count
-                                                                }
-                                                                /
-                                                                {
-                                                                    company.total_checklist_count
-                                                                }
-                                                            </span>
+                                    <span
+                                        className={`text-xs font-semibold tabular-nums ${
+                                            company.checklist_progress === 100
+                                                ? 'text-green-700'
+                                                : company.checklist_progress >= 70
+                                                    ? 'text-blue-700'
+                                                    : company.checklist_progress >= 30
+                                                        ? 'text-yellow-700'
+                                                        : 'text-red-700'
+                                        }`}
+                                    >
+                                        {company.checklist_progress}%
+                                    </span>
+                                                            <span className="hidden text-[10px] text-gray-500 tabular-nums sm:block sm:text-[11px]">
+                                        {company.completed_checklist_count}/{company.total_checklist_count}
+                                    </span>
                                                         </div>
 
-                                                        <div className="mt-1 h-2 w-full overflow-hidden rounded-full bg-gray-200">
+                                                        <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-gray-200 sm:h-2">
                                                             <div
                                                                 className={`h-full transition-all duration-300 ${
-                                                                    company.checklist_progress ===
-                                                                    100
+                                                                    company.checklist_progress === 100
                                                                         ? 'bg-green-600'
-                                                                        : company.checklist_progress >=
-                                                                            70
-                                                                          ? 'bg-blue-600'
-                                                                          : company.checklist_progress >=
-                                                                              30
-                                                                            ? 'bg-yellow-500'
-                                                                            : 'bg-red-500'
+                                                                        : company.checklist_progress >= 70
+                                                                            ? 'bg-blue-600'
+                                                                            : company.checklist_progress >= 30
+                                                                                ? 'bg-yellow-500'
+                                                                                : 'bg-red-500'
                                                                 }`}
-                                                                style={{
-                                                                    width: `${company.checklist_progress}%`,
-                                                                }}
+                                                                style={{ width: `${company.checklist_progress}%` }}
                                                             />
                                                         </div>
+                                                        <span className="mt-0.5 block text-[10px] text-gray-500 tabular-nums sm:hidden">
+                                    {company.completed_checklist_count}/{company.total_checklist_count}
+                                </span>
                                                     </div>
                                                 </td>
 
-                                                {/* Notarization */}
-                                                <td className="px-4 py-3">
-                                                    <span
-                                                        className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-semibold ${getStatusColor(
-                                                            company.notarization_status,
-                                                        )}`}
-                                                    >
-                                                        <span className="h-1.5 w-1.5 rounded-full bg-current opacity-60" />
-                                                        {formatStatus(
-                                                            company.notarization_status,
-                                                        )}
-                                                    </span>
+                                                {/* Status Columns (Compact on mobile) */}
+                                                <td className="px-3 py-2.5 sm:px-4 sm:py-3">
+                            <span
+                                className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-semibold sm:text-[11px] ${getStatusColor(
+                                    company.notarization_status,
+                                )}`}
+                            >
+                                <span className="h-1.5 w-1.5 rounded-full bg-current opacity-60" />
+                                <span className="hidden sm:inline">
+                                    {formatStatus(company.notarization_status)}
+                                </span>
+                                <span className="sm:hidden">
+                                    {formatStatus(company.notarization_status).substring(0, 3)}
+                                </span>
+                            </span>
                                                 </td>
 
-                                                {/* ERP */}
-                                                <td className="px-4 py-3">
-                                                    <span
-                                                        className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-semibold ${getStatusColor(
-                                                            company.erp_status,
-                                                        )}`}
-                                                    >
-                                                        <span className="h-1.5 w-1.5 rounded-full bg-current opacity-60" />
-                                                        {formatStatus(
-                                                            company.erp_status,
-                                                        )}
-                                                    </span>
+                                                <td className="px-3 py-2.5 sm:px-4 sm:py-3">
+                            <span
+                                className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-semibold sm:text-[11px] ${getStatusColor(
+                                    company.erp_status,
+                                )}`}
+                            >
+                                <span className="h-1.5 w-1.5 rounded-full bg-current opacity-60" />
+                                <span className="hidden sm:inline">
+                                    {formatStatus(company.erp_status)}
+                                </span>
+                                <span className="sm:hidden">
+                                    {formatStatus(company.erp_status).substring(0, 3)}
+                                </span>
+                            </span>
                                                 </td>
 
-                                                {/* Sales */}
-                                                <td className="px-4 py-3">
-                                                    <span
-                                                        className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-semibold ${getStatusColor(
-                                                            company.sales_activity,
-                                                        )}`}
-                                                    >
-                                                        <span className="h-1.5 w-1.5 rounded-full bg-current opacity-60" />
-                                                        {formatStatus(
-                                                            company.sales_activity,
-                                                        )}
-                                                    </span>
+                                                <td className="px-3 py-2.5 sm:px-4 sm:py-3">
+                            <span
+                                className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-semibold sm:text-[11px] ${getStatusColor(
+                                    company.sales_activity,
+                                )}`}
+                            >
+                                <span className="h-1.5 w-1.5 rounded-full bg-current opacity-60" />
+                                <span className="hidden sm:inline">
+                                    {formatStatus(company.sales_activity)}
+                                </span>
+                                <span className="sm:hidden">
+                                    {formatStatus(company.sales_activity).substring(0, 3)}
+                                </span>
+                            </span>
                                                 </td>
 
-                                                {/* Level */}
-                                                <td className="px-4 py-3">
-                                                    <span
-                                                        className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-semibold ${getLevelColor(
-                                                            company.level,
-                                                        )}`}
-                                                    >
-                                                        <span className="h-1.5 w-1.5 rounded-full bg-current opacity-60" />
-                                                        {formatStatus(
-                                                            company.level,
-                                                        )}
-                                                    </span>
+                                                <td className="px-3 py-2.5 sm:px-4 sm:py-3">
+                            <span
+                                className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-semibold sm:text-[11px] ${getLevelColor(
+                                    company.level,
+                                )}`}
+                            >
+                                <span className="h-1.5 w-1.5 rounded-full bg-current opacity-60" />
+                                <span className="hidden sm:inline">
+                                    {formatStatus(company.level)}
+                                </span>
+                                <span className="sm:hidden">
+                                    {formatStatus(company.level).substring(0, 3)}
+                                </span>
+                            </span>
                                                 </td>
                                             </tr>
                                         ))}
-                                    </tbody>
-                                </table>
-                                <div className="flex flex-col items-center justify-between gap-3 border-t border-gray-200 bg-white px-4 py-3 sm:flex-row">
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                {/* Mobile Pagination Banner */}
+                                <div className="border-t border-gray-200 bg-gradient-to-r from-pink-50/50 via-blue-50/50 to-sky-50/50 sm:hidden">
+                                    <div className="p-2">
+                                        <div className="flex items-center justify-between">
+                                            <div className="text-xs text-gray-700">
+                                                <span className="font-semibold">{companies.from}</span>-
+                                                <span className="font-semibold">{companies.to}</span> of{' '}
+                                                <span className="font-semibold">{companies.total}</span>
+                                            </div>
+                                            <div className="flex items-center gap-1">
+                                                <Link
+                                                    href={pagination.prev.url || '#'}
+                                                    className={`inline-flex items-center rounded border border-gray-300 p-1.5 ${
+                                                        !pagination.prev.url
+                                                            ? 'pointer-events-none opacity-30'
+                                                            : 'hover:bg-gray-50'
+                                                    }`}
+                                                    preserveScroll
+                                                    preserveState
+                                                >
+                                                    <ChevronLeft className="h-3.5 w-3.5" />
+                                                </Link>
+                                                <Link
+                                                    href={pagination.next.url || '#'}
+                                                    className={`inline-flex items-center rounded border border-gray-300 p-1.5 ${
+                                                        !pagination.next.url
+                                                            ? 'pointer-events-none opacity-30'
+                                                            : 'hover:bg-gray-50'
+                                                    }`}
+                                                    preserveScroll
+                                                    preserveState
+                                                >
+                                                    <ChevronRight className="h-3.5 w-3.5" />
+                                                </Link>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Desktop Pagination */}
+                                <div className="hidden flex-col items-center justify-between gap-3 border-t border-gray-200 bg-gradient-to-r from-pink-50/50 via-blue-50/50 to-sky-50/50 px-4 py-3 sm:flex sm:flex-row">
                                     <div className="flex flex-col sm:flex-row sm:items-center sm:gap-3">
-                                        <p className="text-xs text-gray-700">
+                                        <p className="text-xs text-gray-700 sm:text-sm">
                                             Showing{' '}
-                                            <span className="font-semibold">
-                                                {companies.from}
-                                            </span>{' '}
-                                            to{' '}
-                                            <span className="font-semibold">
-                                                {companies.to}
-                                            </span>{' '}
-                                            of{' '}
-                                            <span className="font-semibold">
-                                                {companies.total}
-                                            </span>{' '}
-                                            results
+                                            <span className="font-semibold text-gray-900">{companies.from}</span> to{' '}
+                                            <span className="font-semibold text-gray-900">{companies.to}</span> of{' '}
+                                            <span className="font-semibold text-gray-900">{companies.total}</span> results
                                         </p>
                                         {searchTerm && (
                                             <div className="mt-1 sm:mt-0">
-                                                <span className="text-xs text-gray-500">
-                                                    Search: "{searchTerm}"
-                                                </span>
+                                                <span className="text-xs text-gray-500 sm:text-sm">Search: "{searchTerm}"</span>
                                             </div>
                                         )}
                                     </div>
@@ -677,7 +643,7 @@ export default function CompaniesIndex({
                                         {/* Prev */}
                                         <Link
                                             href={pagination.prev.url || '#'}
-                                            className={`inline-flex items-center rounded-lg border border-gray-300 px-2 py-1.5 text-xs font-semibold transition ${
+                                            className={`inline-flex items-center rounded-lg border border-gray-300 px-2 py-1.5 text-xs font-semibold transition sm:text-sm ${
                                                 !pagination.prev.url
                                                     ? 'pointer-events-none opacity-50'
                                                     : 'bg-white text-gray-700 hover:bg-gray-50'
@@ -691,28 +657,22 @@ export default function CompaniesIndex({
                                         {/* Pages */}
                                         {pagination.pages.map((link, index) => {
                                             const label = link.label;
-                                            const isNumeric = /^\d+$/.test(
-                                                label,
-                                            );
+                                            const isNumeric = /^\d+$/.test(label);
 
-                                            // Render ellipsis if paginator outputs it
                                             if (!isNumeric) {
                                                 return (
                                                     <span
                                                         key={`ellipsis-${index}-${label}`}
-                                                        className="px-2 py-1.5 text-xs text-gray-400"
+                                                        className="px-2 py-1.5 text-xs text-gray-400 sm:text-sm"
                                                     >
-                                                        <MoreHorizontal className="h-4 w-4" />
-                                                    </span>
+                            <MoreHorizontal className="h-4 w-4" />
+                        </span>
                                                 );
                                             }
 
                                             const pageNum = parseInt(label, 10);
                                             const isNear =
-                                                Math.abs(
-                                                    pageNum -
-                                                        companies.current_page,
-                                                ) <= 1 ||
+                                                Math.abs(pageNum - companies.current_page) <= 1 ||
                                                 pageNum === 1 ||
                                                 pageNum === companies.last_page;
 
@@ -722,16 +682,12 @@ export default function CompaniesIndex({
                                                 <Link
                                                     key={`${label}-${index}`}
                                                     href={link.url || '#'}
-                                                    className={`inline-flex items-center rounded-lg border px-2.5 py-1.5 text-xs font-semibold transition ${
+                                                    className={`inline-flex items-center rounded-lg border px-2.5 py-1.5 text-xs font-semibold transition sm:text-sm ${
                                                         link.active
-                                                            ? ' bg-gradient-to-r from-pink-500 via-blue-500 to-cyan-500 text-white'
+                                                            ? 'border-transparent bg-gradient-to-r from-pink-500 via-blue-500 to-sky-500 text-white'
                                                             : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
                                                     }`}
-                                                    aria-current={
-                                                        link.active
-                                                            ? 'page'
-                                                            : undefined
-                                                    }
+                                                    aria-current={link.active ? 'page' : undefined}
                                                     preserveScroll
                                                     preserveState
                                                 >
@@ -743,7 +699,7 @@ export default function CompaniesIndex({
                                         {/* Next */}
                                         <Link
                                             href={pagination.next.url || '#'}
-                                            className={`inline-flex items-center rounded-lg border border-gray-300 px-2 py-1.5 text-xs font-semibold transition ${
+                                            className={`inline-flex items-center rounded-lg border border-gray-300 px-2 py-1.5 text-xs font-semibold transition sm:text-sm ${
                                                 !pagination.next.url
                                                     ? 'pointer-events-none opacity-50'
                                                     : 'bg-white text-gray-700 hover:bg-gray-50'
@@ -757,7 +713,6 @@ export default function CompaniesIndex({
                                 </div>
                             </div>
 
-                            {/* Pagination */}
                         </>
                     )}
                 </div>

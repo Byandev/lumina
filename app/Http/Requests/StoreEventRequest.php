@@ -40,15 +40,9 @@ class StoreEventRequest extends FormRequest
                 'max:255',
             ],
             'company_ids' => [
-                'required',
-                'array',
-                'min:1',
+                'nullable',
             ],
-            'company_ids.*' => [
-                'required',
-                'integer',
-                'exists:companies,id',
-            ],
+
         ];
     }
 
@@ -73,12 +67,6 @@ class StoreEventRequest extends FormRequest
             'location.string' => 'The event location must be a valid text.',
             'location.max' => 'The event location may not be greater than 255 characters.',
 
-            'company_ids.required' => 'Please select at least one company for this event.',
-            'company_ids.array' => 'Please select valid companies.',
-            'company_ids.min' => 'Please select at least one company for this event.',
-            'company_ids.*.required' => 'Each company selection is required.',
-            'company_ids.*.integer' => 'Company ID must be a valid integer.',
-            'company_ids.*.exists' => 'One or more selected companies do not exist in our records.',
         ];
     }
 
