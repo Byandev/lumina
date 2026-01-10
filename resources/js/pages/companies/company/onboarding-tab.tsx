@@ -688,20 +688,32 @@ function ChecklistItem({ item, companyId }: ChecklistItemProps) {
     return (
         <div className="rounded-lg border border-gray-200 bg-white p-3 transition-colors hover:border-gray-300 sm:p-4">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <div className="flex items-start gap-3">
+                <div className="flex items-start gap-3 ">
+                    <input
+                        type="checkbox"
+                        checked={isCompleted}
+                        className="mt-1 h-4 w-4 rounded bg-gradient-to-r from-pink-500 via-blue-500 to-cyan-500 border-gray-300 text-emerald-600 focus:ring-emerald-500"
+                    />
+
                     <div className="min-w-0 flex-1">
                         <h4
-                            className={`text-sm font-medium sm:text-base ${isCompleted ? 'text-emerald-700' : 'text-gray-900'}`}
+                            className={`text-sm font-medium sm:text-base ${
+                                isCompleted
+                                    ? 'text-emerald-700 '
+                                    : 'text-gray-900'
+                            }`}
                         >
                             Step {item.id}: {item.title}
                         </h4>
+
                         {item.pivot.remark && !isCompleted && (
-                            <p className="mt-1 truncate text-xs text-gray-500">
+                            <p className="mt-1 text-xs text-gray-500">
                                 Remark: {item.pivot.remark}
                             </p>
                         )}
                     </div>
                 </div>
+
 
                 <div className="flex items-center gap-2 self-end sm:self-center">
                     <AlertDialog open={open} onOpenChange={setOpen}>
@@ -731,7 +743,7 @@ function ChecklistItem({ item, companyId }: ChecklistItemProps) {
                             </Button>
                         </AlertDialogTrigger>
 
-                        <AlertDialogContent className="max-w-2xl p-0 sm:max-w-3xl">
+                        <AlertDialogContent className=" p-0">
                             <div className="max-h-[85vh] overflow-hidden rounded-lg">
                                 {/* Header */}
                                 <AlertDialogHeader className="border-b p-4 sm:p-5">
