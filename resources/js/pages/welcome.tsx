@@ -12,12 +12,20 @@ import {
     BarChart3,
     Workflow,
 } from 'lucide-react';
+import React from 'react';
+import { Toaster } from '@/components/ui/toast';
+import { FlashHandler } from '@/components/FlashHandler';
 
 export default function WelcomeHero() {
     const { auth } = usePage<SharedData>().props;
 
+
+
+
     return (
         <>
+            <Toaster />
+            <FlashHandler />
             <Head title="GENCYS - Onboarding Handbook">
                 <link rel="preconnect" href="https://fonts.bunny.net" />
                 <link

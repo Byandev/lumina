@@ -426,7 +426,6 @@ class CompanyController extends Controller
 
         } catch (\Exception $e) {
 
-
             foreach ($storedFiles as $filePath) {
                 if (Storage::disk('s3')->exists($filePath)) {
                     Storage::disk('s3')->delete($filePath);
