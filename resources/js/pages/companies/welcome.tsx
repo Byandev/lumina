@@ -103,7 +103,7 @@ export default function Welcome() {
 
     const submit = (e: React.FormEvent) => {
         e.preventDefault();
-        post('/submit', {
+        post('/partnership-application', {
             forceFormData: true,
             preserveScroll: true,
         });

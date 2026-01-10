@@ -19,15 +19,14 @@ Route::get('/', function () {
     ]);
 })->name('home');
 
-Route::get('/submit', function () {
+Route::get('/partnership-application', function () {
     return Inertia::render('companies/welcome');
 });
 
-Route::post('/submit', [CompanyController::class, 'submit'])->name('company.submit');
+Route::post('/partnership-application', [CompanyController::class, 'submit'])->name('company.submit');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', [\App\Http\Controllers\DashboardController::class, 'index'])->middleware(['auth'])->name('dashboard');
-    Route::get('/dashboard/data', [DashboardController::class, 'getDashboardData']);
 
     Route::get('companies', [CompanyController::class, 'index'])->name('companies');
     Route::get('companies/create', [CompanyController::class, 'create'])->name('companies.create');
