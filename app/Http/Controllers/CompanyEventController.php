@@ -10,25 +10,21 @@ use Inertia\Inertia;
 
 class CompanyEventController extends Controller
 {
-
     public function index(Company $company)
     {
         $attendance = CompanyEvent::with('event')
-        ->where('company_id', $company->id)
+            ->where('company_id', $company->id)
             ->latest()
             ->paginate(15);
-
 
         return Inertia::render('companies/company/attendance-tab', [
             'company' => $company,
             'attendances' => $attendance,
         ]);
     }
+
     public function store(Request $request, Event $event)
     {
-
-
-
 
         $validated = $request->validate([
             'event_id' => 'required|exists:events,id',
@@ -36,7 +32,6 @@ class CompanyEventController extends Controller
             'attendance.*.company_id' => 'required|integer|exists:companies,id',
             'attendance.*.status' => 'required|in:present,absent,late,cleared',
         ]);
-
 
         foreach ($validated['attendance'] as $row) {
             $event->syncAttendance($row['company_id'], $row['status']);

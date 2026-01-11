@@ -4,9 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
+use Inertia\Inertia;
 
 class UserController extends Controller
 {
@@ -26,9 +26,7 @@ class UserController extends Controller
             });
         }
 
-
         $users = $query->paginate(10)->withQueryString();
-
 
         return Inertia::render('users/index', [
             'users' => $users,

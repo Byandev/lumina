@@ -9,7 +9,6 @@ use App\Models\Event;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redirect;
-use Illuminate\Support\Facades\Validator;
 use Inertia\Inertia;
 
 class EventController extends Controller
@@ -55,9 +54,10 @@ class EventController extends Controller
 
             return redirect()->back()->with('success', 'Event created successfully.');
 
-        }catch (\Exception $exception){
+        } catch (\Exception $exception) {
 
-            \Log::error('Event creation failed: ' . $exception->getMessage());
+            \Log::error('Event creation failed: '.$exception->getMessage());
+
             return Redirect::back()->withErrors($exception->getMessage());
         }
 
@@ -66,7 +66,6 @@ class EventController extends Controller
     public function show(Request $request, Event $event)
     {
         $search = (string) $request->query('search', '');
-
 
         $companies = $event->companies()
             ->select('companies.id', 'companies.name', 'companies.logo')
@@ -100,10 +99,9 @@ class EventController extends Controller
 
             $event->companies()->sync($request->company_ids);
 
-
             return redirect()->back()->with('success', 'Event updated successfully.');
         } catch (\Exception $exception) {
-            Log::error('Event update failed: ' . $exception->getMessage());
+            Log::error('Event update failed: '.$exception->getMessage());
 
             return redirect()->back()
                 ->withErrors(['error' => 'Failed to update event. Please try again.'])

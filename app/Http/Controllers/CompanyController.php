@@ -12,49 +12,59 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
+use Spatie\QueryBuilder\AllowedFilter;
+use Spatie\QueryBuilder\QueryBuilder;
 
 class CompanyController extends Controller
 {
     public function index(Request $request)
     {
-        $search = $request->input('search', '');
-
-        $companies = Company::with('owners', 'sponsor:id,name,logo')
-            ->withCount([
-                'checklists as total_checklist_count',
-                'checklists as completed_checklist_count' => function ($query) {
-                    $query->where('is_completed', true);
-                }
+        $companies = QueryBuilder::for(Company::class)
+            ->with('owners')
+            ->select('companies.*')
+            ->selectSub(function ($query) {
+                $query->from('users')
+                    ->selectRaw('COUNT(*)')
+                    ->whereColumn('users.company_id', 'companies.id');
+            }, 'owners_count')
+            ->selectSub(function ($query) {
+                $query->from('company_checklists')
+                    ->selectRaw('
+                ROUND(
+                    (SUM(is_completed) / NULLIF(COUNT(*), 0)),
+                    4
+                )
+            ')
+                    ->whereColumn('company_checklists.company_id', 'companies.id');
+            }, 'onboarding_percentage')
+            ->allowedFilters([
+                AllowedFilter::partial('search', 'name'),
             ])
-            ->when($search, function ($query, $search) {
-                return $query->where('companies.name', 'LIKE', "%{$search}%");
-            })
-            ->latest()
+            ->allowedSorts([
+                'name',
+                'notarization_status',
+                'erp_status',
+                'sales_activity',
+                'level',
+                'owners_count',
+                'onboarding_percentage',
+            ])
             ->paginate(20);
-
-
-
-        $companies->getCollection()->transform(function ($company) {
-            $company->checklist_progress = $company->total_checklist_count > 0
-                ? round(($company->completed_checklist_count / $company->total_checklist_count) * 100)
-                : 0;
-            return $company;
-        });
-
-
 
         return Inertia::render('companies/companies-index', [
             'companies' => $companies,
-            'search' => $search,
+            'query' => [
+                ...$request->only(['sort', 'perPage', 'page']),
+                'filter' => $request->input('filter', []),
+            ],
         ]);
     }
 
     public function create()
     {
-        $companies = Company::get([ 'id', 'name', 'logo']);
+        $companies = Company::get(['id', 'name', 'logo']);
         $users = User::get(['id', 'name', 'photo']);
 
         return Inertia::render('companies/companies-create', [
@@ -64,15 +74,14 @@ class CompanyController extends Controller
     }
 
     /**
-     * @param StoreCompanyRequest $request
      * @return RedirectResponse
+     *
      * @throws \Throwable
      */
     public function store(StoreCompanyRequest $request)
     {
         DB::beginTransaction();
 
-        $disk = 's3'; // switch here only
         $uploadedFiles = [];
         $createdCompany = null;
 
@@ -81,9 +90,9 @@ class CompanyController extends Controller
             $logoPath = null;
             if ($request->hasFile('logo') && $request->file('logo')->isValid()) {
                 $logoFile = $request->file('logo');
-                $logoFileName = 'logo_' . uniqid() . '_' . time() . '.' . $logoFile->getClientOriginalExtension();
+                $logoFileName = 'logo_'.uniqid().'_'.time().'.'.$logoFile->getClientOriginalExtension();
 
-                $logoPath = $logoFile->storeAs('companies/logos', $logoFileName, $disk);
+                $logoPath = $logoFile->storeAs('companies/logos', $logoFileName);
                 $uploadedFiles[] = $logoPath;
             }
 
@@ -105,7 +114,7 @@ class CompanyController extends Controller
                 $company->checklists()->attach($checklistItem->id, [
                     'remark' => '',
                     'is_completed' => false,
-                    'file' => null
+                    'file' => null,
                 ]);
             }
 
@@ -123,9 +132,9 @@ class CompanyController extends Controller
                         $ownerData['photo']->isValid()
                     ) {
                         $photoFile = $ownerData['photo'];
-                        $photoFileName = 'photo_' . uniqid() . '_' . time() . '_' . $index . '.' . $photoFile->getClientOriginalExtension();
+                        $photoFileName = 'photo_'.uniqid().'_'.time().'_'.$index.'.'.$photoFile->getClientOriginalExtension();
 
-                        $ownerPhotoPath = $photoFile->storeAs('owners/photos', $photoFileName, $disk);
+                        $ownerPhotoPath = $photoFile->storeAs('owners/photos', $photoFileName);
                         $uploadedFiles[] = $ownerPhotoPath;
                     }
 
@@ -139,9 +148,9 @@ class CompanyController extends Controller
                     ) {
                         $idFile = $ownerData['id_file'];
                         $idFileOriginalName = $idFile->getClientOriginalName();
-                        $idFileName = 'id_' . uniqid() . '_' . time() . '_' . $index . '.' . $idFile->getClientOriginalExtension();
+                        $idFileName = 'id_'.uniqid().'_'.time().'_'.$index.'.'.$idFile->getClientOriginalExtension();
 
-                        $idFilePath = $idFile->storeAs('owners/ids', $idFileName, $disk);
+                        $idFilePath = $idFile->storeAs('owners/ids', $idFileName);
                         $uploadedFiles[] = $idFilePath;
                     }
 
@@ -159,8 +168,8 @@ class CompanyController extends Controller
 
                         // Replace photo (delete old from S3)
                         if ($ownerPhotoPath) {
-                            if ($owner->photo && Storage::disk($disk)->exists($owner->photo)) {
-                                Storage::disk($disk)->delete($owner->photo);
+                            if ($owner->photo && Storage::exists($owner->photo)) {
+                                Storage::delete($owner->photo);
                             }
                             $updateData['photo'] = $ownerPhotoPath;
                         }
@@ -171,8 +180,8 @@ class CompanyController extends Controller
                             // Make sure your User model column names are consistent.
                             $oldIdPath = $owner->id_file_path ?? $owner->ids ?? null;
 
-                            if ($oldIdPath && Storage::disk($disk)->exists($oldIdPath)) {
-                                Storage::disk($disk)->delete($oldIdPath);
+                            if ($oldIdPath && Storage::exists($oldIdPath)) {
+                                Storage::delete($oldIdPath);
                             }
 
                             $updateData['id_file_path'] = $idFilePath;
@@ -201,18 +210,20 @@ class CompanyController extends Controller
             DB::commit();
 
             return redirect()->route('companies')
-                ->with('success', 'Company created successfully with ' . count($request->owners ?? []) . ' owner(s).');
+                ->with('success', 'Company created successfully with '.count($request->owners ?? []).' owner(s).');
 
         } catch (ValidationException $e) {
+            dd($e->getMessage());
             DB::rollBack();
             throw $e;
         } catch (\Throwable $e) {
+            dd($e->getMessage());
             DB::rollBack();
 
             // Cleanup: delete newly uploaded S3 objects
             foreach ($uploadedFiles as $filePath) {
-                if ($filePath && Storage::disk($disk)->exists($filePath)) {
-                    Storage::disk($disk)->delete($filePath);
+                if ($filePath && Storage::exists($filePath)) {
+                    Storage::delete($filePath);
                 }
             }
 
@@ -220,18 +231,17 @@ class CompanyController extends Controller
                 $createdCompany->delete();
             }
 
-            Log::error('Company creation failed: ' . $e->getMessage(), [
+            Log::error('Company creation failed: '.$e->getMessage(), [
                 'exception' => $e,
                 'trace' => $e->getTraceAsString(),
                 'request_data' => $request->except(['logo', 'owners.*.photo', 'owners.*.id_file']),
             ]);
 
             return back()->withErrors([
-                'server_error' => 'An error occurred while creating the company. Please try again. If the problem persists, contact support.'
+                'server_error' => 'An error occurred while creating the company. Please try again. If the problem persists, contact support.',
             ])->withInput();
         }
     }
-
 
     public function show(Company $company)
     {
@@ -241,11 +251,9 @@ class CompanyController extends Controller
         $totalChecklists = $company->checklists()->count();
         $completedChecklists = $company->checklists()->where('is_completed', true)->count();
 
-
         $checklistPercentage = $totalChecklists > 0
             ? round(($completedChecklists / $totalChecklists) * 100)
             : 0;
-
 
         return Inertia::render('companies/company/detail-tab', [
             'company' => [
@@ -258,10 +266,7 @@ class CompanyController extends Controller
         ]);
     }
 
-
     // Performance tab
-
-
 
     public function update(Request $request, $id)
     {
@@ -285,7 +290,7 @@ class CompanyController extends Controller
         $logoPath = null;
         if ($request->hasFile('logo') && $request->file('logo')->isValid()) {
             $logoFile = $request->file('logo');
-            $logoFileName = 'logo_' . uniqid() . '_' . time() . '.' . $logoFile->getClientOriginalExtension();
+            $logoFileName = 'logo_'.uniqid().'_'.time().'.'.$logoFile->getClientOriginalExtension();
             $logoPath = $logoFile->storeAs('companies/logos', $logoFileName, 'public');
             $uploadedFiles[] = $logoPath;
         }
@@ -305,17 +310,13 @@ class CompanyController extends Controller
             'logo' => $logoPath,
         ]);
 
-
-
-
-
         return back()->with('success', 'Company updated successfully.');
     }
 
     public function destroy(Company $company)
     {
         if ($company->logo) {
-            Storage::disk('public')->delete($company->logo);
+            Storage::delete($company->logo);
         }
 
         $company->owners()->delete();
@@ -416,7 +417,7 @@ class CompanyController extends Controller
                 $company->checklists()->attach($checklistItem->id, [
                     'remark' => '',
                     'is_completed' => false,
-                    'file' => null
+                    'file' => null,
                 ]);
             }
 
@@ -426,13 +427,11 @@ class CompanyController extends Controller
 
         } catch (\Exception $e) {
 
-
             foreach ($storedFiles as $filePath) {
-                if (Storage::disk('s3')->exists($filePath)) {
-                    Storage::disk('s3')->delete($filePath);
+                if (Storage::exists($filePath)) {
+                    Storage::delete($filePath);
                 }
             }
-
 
             return redirect()
                 ->back()
@@ -440,7 +439,4 @@ class CompanyController extends Controller
                 ->withErrors(['error' => 'An error occurred while submitting the form. Please try again.']);
         }
     }
-
-
-
 }

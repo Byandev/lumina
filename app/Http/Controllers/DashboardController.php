@@ -2,13 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
 use App\Models\Company;
-use App\Models\PerformanceRecord;
 use App\Models\CompanyChecklist;
+use App\Models\PerformanceRecord;
+use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
 
 class DashboardController extends Controller
 {
@@ -126,6 +126,7 @@ class DashboardController extends Controller
     {
         $total = CompanyChecklist::count();
         $completed = CompanyChecklist::where('is_completed', true)->count();
+
         return $total > 0 ? round(($completed / $total) * 100, 1) : 0;
     }
 
@@ -222,6 +223,7 @@ class DashboardController extends Controller
                 'count' => $count,
             ];
         }
+
         return $data;
     }
 
@@ -245,7 +247,7 @@ class DashboardController extends Controller
                 'count' => $count,
             ];
         }
+
         return $data;
     }
 }
-

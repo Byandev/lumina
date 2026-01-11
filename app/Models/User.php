@@ -4,10 +4,8 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Support\Facades\Storage;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 
 class User extends Authenticatable
@@ -21,6 +19,7 @@ class User extends Authenticatable
      * @var list<string>
      */
     protected $guarded = [];
+
     /**
      * The attributes that should be hidden for serialization.
      *
@@ -34,7 +33,7 @@ class User extends Authenticatable
     ];
 
     protected $appends = [
-        'photo_url'
+
     ];
 
     /**
@@ -51,23 +50,8 @@ class User extends Authenticatable
         ];
     }
 
-
-    public function companies(){
-        return $this->hasMany(Company::class, );
-    }
-
-    public function getPhotoUrlAttribute(): ?string
+    public function companies()
     {
-        if (!$this->photo) {
-            return null;
-        }
-
-        return Storage::disk('s3')->temporaryUrl(
-            $this->photo,
-            now()->addMinutes(10)
-        );
-
+        return $this->hasMany(Company::class);
     }
-
-
 }

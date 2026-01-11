@@ -77,7 +77,6 @@ class StoreCompanyRequest extends FormRequest
             'owners.*.facebook' => [
                 'nullable',
                 'string',
-                'max:255',
                 'url',
                 'regex:/^(https?:\/\/)?(www\.)?facebook\.com\/.+/i',
             ],
@@ -92,7 +91,6 @@ class StoreCompanyRequest extends FormRequest
                 'image',
                 'mimes:jpeg,png,jpg,gif,webp',
                 'max:5120', // 5MB
-                'dimensions:max_width=2000,max_height=2000',
             ],
             'owners.*.id_file' => [
                 'required',

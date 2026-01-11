@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Support\Facades\Storage;
 
@@ -19,15 +18,14 @@ class CompanyChecklist extends Pivot
         'checklist_id',
         'is_completed',
         'remark',
-        'file'
+        'file',
     ];
-
 
     protected $appends = ['file_url'];
 
     public function getFileUrlAttribute(): ?string
     {
-        if (!$this->file) {
+        if (! $this->file) {
             return null;
         }
 
@@ -36,6 +34,4 @@ class CompanyChecklist extends Pivot
             now()->addMinutes(10)
         );
     }
-
-
 }

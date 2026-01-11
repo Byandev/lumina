@@ -9,7 +9,6 @@ use Illuminate\Support\Facades\Storage;
 
 class CompanyChecklistController extends Controller
 {
-
     public function remark(Request $request, Company $company)
     {
         $validated = $request->validate([
@@ -35,10 +34,10 @@ class CompanyChecklistController extends Controller
                 $extension = $file->getClientOriginalExtension();
 
                 // Create filename: CompanyName_ChecklistID_OriginalName_Timestamp.Extension
-                $filename = $clientName . '_Checklist' . $checklistId . '_' . $originalName . '_' . time() . '.' . $extension;
+                $filename = $clientName.'_Checklist'.$checklistId.'_'.$originalName.'_'.time().'.'.$extension;
 
                 $filePath = $file->storeAs(
-                    "checklist-remarks",
+                    'checklist-remarks',
                     $filename,
                     's3'
                 );
@@ -50,7 +49,7 @@ class CompanyChecklistController extends Controller
                 ->where('checklist_id', $checklistId)
                 ->first();
 
-            $isUpdate = !is_null($existingPivot);
+            $isUpdate = ! is_null($existingPivot);
 
             if ($isUpdate) {
                 // This is an update - delete old file if exists and new file is uploaded
@@ -81,8 +80,6 @@ class CompanyChecklistController extends Controller
                 ]);
             }
 
-
-
             DB::commit();
 
             return redirect()
@@ -99,7 +96,7 @@ class CompanyChecklistController extends Controller
 
             return redirect()
                 ->back()
-                ->withErrors(['error' => 'Failed to save remark: ' . $e->getMessage()])
+                ->withErrors(['error' => 'Failed to save remark: '.$e->getMessage()])
                 ->withInput();
         }
     }

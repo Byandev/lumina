@@ -38,8 +38,6 @@ class HandleInertiaRequests extends Middleware
     {
         [$message, $author] = str(Inspiring::quotes()->random())->explode('-');
 
-
-
         return [
             ...parent::share($request),
             'name' => config('app.name'),

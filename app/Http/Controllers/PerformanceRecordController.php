@@ -19,7 +19,6 @@ class PerformanceRecordController extends Controller
             ->latest()
             ->paginate(10);
 
-
         return Inertia::render('companies/company/performance-tab', [
             'records' => $records,
             'company' => $company,
@@ -39,16 +38,18 @@ class PerformanceRecordController extends Controller
             PerformanceRecord::create($validated);
 
             DB::commit();
+
             return back()->with('success', 'Performance record created successfully.');
         } catch (\Throwable $e) {
             DB::rollBack();
 
             // If a file was uploaded, remove it
-            if (!empty($validated['attachment_path'])) {
+            if (! empty($validated['attachment_path'])) {
                 $this->deleteAttachment($validated['attachment_path']);
             }
 
-            \Log::error('Performance record creation failed: ' . $e->getMessage());
+            \Log::error('Performance record creation failed: '.$e->getMessage());
+
             return back()->with('error', 'Failed to create performance record. Please try again.');
         }
     }
@@ -81,16 +82,18 @@ class PerformanceRecordController extends Controller
             }
 
             DB::commit();
+
             return back()->with('success', 'Performance record updated successfully.');
         } catch (\Throwable $e) {
             DB::rollBack();
 
             // If we uploaded a new file in this request, delete it
-            if ($request->hasFile('attachment') && !empty($validated['attachment_path'])) {
+            if ($request->hasFile('attachment') && ! empty($validated['attachment_path'])) {
                 $this->deleteAttachment($validated['attachment_path']);
             }
 
-            \Log::error('Performance record update failed: ' . $e->getMessage());
+            \Log::error('Performance record update failed: '.$e->getMessage());
+
             return back()->with('error', 'Failed to update performance record. Please try again.');
         }
     }
@@ -113,11 +116,13 @@ class PerformanceRecordController extends Controller
             }
 
             DB::commit();
+
             return back()->with('success', 'Performance record deleted successfully.');
         } catch (\Throwable $e) {
             DB::rollBack();
 
-            \Log::error('Performance record deletion failed: ' . $e->getMessage());
+            \Log::error('Performance record deletion failed: '.$e->getMessage());
+
             return back()->with('error', 'Failed to delete performance record. Please try again.');
         }
     }
@@ -125,23 +130,23 @@ class PerformanceRecordController extends Controller
     private function rules(): array
     {
         return [
-            'start_date'   => ['required', 'date', 'before_or_equal:end_date'],
-            'end_date'     => ['required', 'date', 'after_or_equal:start_date'],
-            'phase'        => ['required', 'in:Testing,Scaling'],
-            'no_of_items'  => ['required', 'integer', 'min:0'],
-            'avg_ads_spent'=> ['required', 'numeric', 'min:0', 'max:99999999.99'],
-            'roas'         => ['required', 'numeric', 'min:0', 'max:999.99'],
-            'rts'          => ['required', 'numeric', 'min:0', 'max:100'],
-            'highlights'   => ['nullable', 'string', 'max:2000'],
-            'challenges'   => ['nullable', 'string', 'max:2000'],
-            'action_plan'  => ['nullable', 'string', 'max:2000'],
-            'attachment'   => ['nullable', 'file', 'mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png', 'max:10240'],
+            'start_date' => ['required', 'date', 'before_or_equal:end_date'],
+            'end_date' => ['required', 'date', 'after_or_equal:start_date'],
+            'phase' => ['required', 'in:Testing,Scaling'],
+            'no_of_items' => ['required', 'integer', 'min:0'],
+            'avg_ads_spent' => ['required', 'numeric', 'min:0', 'max:99999999.99'],
+            'roas' => ['required', 'numeric', 'min:0', 'max:999.99'],
+            'rts' => ['required', 'numeric', 'min:0', 'max:100'],
+            'highlights' => ['nullable', 'string', 'max:2000'],
+            'challenges' => ['nullable', 'string', 'max:2000'],
+            'action_plan' => ['nullable', 'string', 'max:2000'],
+            'attachment' => ['nullable', 'file', 'mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png', 'max:10240'],
         ];
     }
 
     private function uploadAttachment(Request $request, Company $company): ?string
     {
-        if (!$request->hasFile('attachment')) {
+        if (! $request->hasFile('attachment')) {
             return null;
         }
 

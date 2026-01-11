@@ -39,9 +39,8 @@ class PerformanceRecord extends Model
         'action_plan' => 'string',
     ];
 
-
     protected $appends = [
-        'attachment_path_url'
+        'attachment_path_url',
     ];
 
     public function company()
@@ -51,7 +50,7 @@ class PerformanceRecord extends Model
 
     public function getAttachmentPathUrlAttribute(): ?string
     {
-        if (!$this->attachment_path) {
+        if (! $this->attachment_path) {
             return null;
         }
 

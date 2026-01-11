@@ -1,14 +1,11 @@
 <?php
 
-use App\Http\Controllers\ChecklistRemarkController;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\CompanyEventController;
-use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\OwnerController;
 use App\Http\Controllers\PerformanceRecordController;
 use App\Http\Controllers\UserController;
-use App\Models\Company;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Laravel\Fortify\Features;
@@ -57,7 +54,5 @@ Route::prefix('companies/{company}')->group(function () {
     Route::post('performance-records/{performance}/', [PerformanceRecordController::class, 'update'])->name('companies.performance-records.update');
     Route::delete('performance-records/{performance}', [PerformanceRecordController::class, 'destroy'])->name('companies.performance-records.destroy');
 });
-
-
 
 require __DIR__.'/settings.php';

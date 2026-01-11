@@ -22,7 +22,6 @@ return new class extends Migration
             $table->string('proof_of_payment')->nullable();
             $table->string('e_signature')->nullable();
 
-
             $table->string('logo')->nullable();
             $table->string('owner_photo')->nullable();
 
@@ -52,6 +51,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-            Schema::dropIfExists('companies');
+        Schema::dropIfExists('companies');
     }
 };

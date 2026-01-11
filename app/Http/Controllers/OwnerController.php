@@ -10,7 +10,6 @@ use Illuminate\Support\Facades\Storage;
 
 class OwnerController extends Controller
 {
-
     public function store(Request $request, Company $company)
     {
 
@@ -44,8 +43,6 @@ class OwnerController extends Controller
             'password' => Hash::make('password123'),
             'company_id' => $company->id,
         ]);
-
-
 
         return back()->with('success', 'Owner created successfully.');
     }
@@ -94,8 +91,6 @@ class OwnerController extends Controller
             Storage::disk('public')->delete($user->photo);
         }
 
-
         return back()->with('success', 'Owner removed successfully.');
     }
-
 }

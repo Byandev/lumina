@@ -3,8 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Company;
-use App\Models\OnboardingChecklist;
-use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class OnboardingChecklistController extends Controller
@@ -15,7 +13,6 @@ class OnboardingChecklistController extends Controller
             ->withPivot(['is_completed', 'remark', 'file'])
             ->orderBy('id')
             ->get();
-
 
         return Inertia::render('companies/company/onboarding-tab', [
             'company' => $company,

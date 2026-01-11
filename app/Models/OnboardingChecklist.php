@@ -12,7 +12,6 @@ class OnboardingChecklist extends Model
         'is_completed',
     ];
 
-
     protected $casts = [
         'is_completed' => 'boolean',
     ];
@@ -28,6 +27,4 @@ class OnboardingChecklist extends Model
             ->withPivot('remark', 'file', 'is_completed')
             ->withTimestamps();
     }
-
-
 }

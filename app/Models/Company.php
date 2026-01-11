@@ -4,16 +4,10 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Support\Facades\Storage;
 
 class Company extends Model
 {
     protected $guarded = [];
-
-     protected $appends = ['logo_url'];
-
-
 
     public function sponsor(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
@@ -31,7 +25,8 @@ class Company extends Model
         return $this->hasOne(User::class, 'id', 'coach_id');
     }
 
-    public function owners(){
+    public function owners()
+    {
         return $this->hasMany(User::class);
     }
 
@@ -49,7 +44,6 @@ class Company extends Model
             ->withTimestamps();
     }
 
-
     /**
      * Get completed checklists
      */
@@ -58,7 +52,6 @@ class Company extends Model
         return $this->checklists()
             ->wherePivot('is_completed', true);
     }
-
 
     public function getChecklistProgressAttribute()
     {
@@ -106,26 +99,4 @@ class Company extends Model
     {
         return $this->hasMany(PerformanceRecord::class);
     }
-
-    public function getLogoUrlAttribute(): ?string
-    {
-        if (!$this->logo) {
-            return null;
-        }
-
-        return Storage::disk('s3')->temporaryUrl(
-            $this->logo,
-            now()->addMinutes(10)
-        );
-    }
-
-
-
-
-
-
-
-
-
-
 }
