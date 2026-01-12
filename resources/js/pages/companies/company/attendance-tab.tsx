@@ -83,8 +83,8 @@ export default function AttendanceTab({ attendances, company }: AttendanceProps)
 
     return (
         <CompanyLayout company={company}>
-            <div className="">
-                <div className="min-w-0 mb-4">
+            <div className="rounded-xl border border-gray-200 bg-white p-4">
+                <div className="mb-4 min-w-0">
                     <h3 className="text-base font-semibold text-gray-900">
                         Attendance
                     </h3>

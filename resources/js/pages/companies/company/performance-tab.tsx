@@ -263,10 +263,10 @@ export default function PerformanceTab({ company, records }: Props) {
 
     return (
         <CompanyLayout company={company}>
-            <div className="space-y-4">
+            <div className="rounded-xl border border-gray-200 bg-white p-4">
                 {/* Compact header */}
                 <div className="flex items-center justify-between">
-                    <div className="min-w-0">
+                    <div className="min-w-0 mb-4">
                         <h3 className="text-base font-semibold text-gray-900">
                             Performance
                         </h3>

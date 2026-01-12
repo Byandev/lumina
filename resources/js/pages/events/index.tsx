@@ -1,3 +1,4 @@
+import ComponentCard from '@/components/component-card';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -8,8 +9,12 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import {
+    DataTable,
+    NormalHeader,
+    SortableHeader,
+} from '@/components/ui/data-table';
 import {
     Dialog,
     DialogContent,
@@ -28,33 +33,16 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import AppLayout from '@/layouts/app-layout';
-import { dashboard } from '@/routes';
-import type { BreadcrumbItem } from '@/types';
-import { Head, useForm, router, Link } from '@inertiajs/react';
-import { format } from 'date-fns';
-import {
-    Edit,
-    Plus,
-    Trash2,
-    Search,
-    X,
-    ChevronLeft,
-    ChevronRight,
-    Users,
-    Building,
-    Eye, Loader2,
-} from 'lucide-react';
-import React, { FormEvent, useEffect, useState, useCallback } from 'react';
-import { debounce } from 'lodash';
-import { route } from 'ziggy-js';
-import {
-    Tooltip,
-    TooltipContent,
-    TooltipProvider,
-    TooltipTrigger,
-} from '@/components/ui/tooltip';
+import { toFrontendSort } from '@/lib/sort';
+import type { BreadcrumbItem, PaginatedData } from '@/types';
+import { Head, router, useForm } from '@inertiajs/react';
+import { ColumnDef } from '@tanstack/react-table';
+import { omit } from 'lodash';
+import { Edit, Eye, Plus, Search, Trash2, Users } from 'lucide-react';
+import React, { FormEvent, useEffect, useMemo, useState } from 'react';
 import ReactSelect from 'react-select';
 import makeAnimated from 'react-select/animated';
+import EventCompaniesAvatar from '@/components/events/event-companies-avatar';
 
 interface Event {
     id: number;
@@ -83,33 +71,27 @@ interface PaginationLink {
 }
 
 interface EventsPageProps {
-    events: {
-        data: Event[];
-        links: PaginationLink[];
-        current_page: number;
-        from: number;
-        last_page: number;
-        per_page: number;
-        to: number;
-        total: number;
+    events: PaginatedData<Event>;
+    query?: {
+        sort?: string | null;
+        perPage?: number | string | null;
+        page?: number | string;
+        filter?: {
+            search?: string;
+        };
     };
     companies: Company[];
-    search: string;
 }
 
 // For react-select animation
 const animatedComponents = makeAnimated();
 
-export default function index({
-    events,
-    companies,
-    search: initialSearch = '',
-}: EventsPageProps) {
+export default function index({ events, query, companies }: EventsPageProps) {
     const [isOpen, setIsOpen] = useState(false);
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const [editingEvent, setEditingEvent] = useState<Event | null>(null);
     const [eventToDelete, setEventToDelete] = useState<Event | null>(null);
-    const [search, setSearch] = useState(initialSearch);
+    const [searchValue, setSearchValue] = useState(query?.filter?.search ?? '');
 
     // Convert companies to react-select options
     const companyOptions = companies.map((company) => ({
@@ -147,56 +129,35 @@ export default function index({
         setData('company_ids', selectedIds);
     };
 
-    // Debounced search function
-    const debouncedSearch = useCallback(
-        debounce((value: string) => {
+    useEffect(() => {
+        const currentSearchParam = query?.filter?.search ?? '';
+
+        if (searchValue === currentSearchParam) {
+            return;
+        }
+
+        const timer = setTimeout(() => {
             router.get(
                 '/events',
-                { search: value, page: 1 },
+                {
+                    sort: query?.sort,
+                    'filter[search]': searchValue || undefined,
+                    page: 1,
+                },
                 {
                     preserveState: true,
                     replace: true,
                     preserveScroll: true,
                 },
             );
-        }, 500),
-        [],
-    );
+        }, 500);
 
-    // Clear search
-    const clearSearch = () => {
-        setSearch('');
-        router.get(
-            '/events',
-            {},
-            {
-                preserveState: true,
-                replace: true,
-                preserveScroll: true,
-            },
-        );
-    };
+        return () => clearTimeout(timer);
+    }, [searchValue, query?.filter?.search, query?.sort]);
 
-    // Handle search input change
-    const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const value = e.target.value;
-        setSearch(value);
-        debouncedSearch(value);
-    };
-
-    // Handle page change
-    const handlePageChange = (url: string | null) => {
-        if (url) {
-            router.get(
-                url,
-                {},
-                {
-                    preserveState: true,
-                    preserveScroll: true,
-                },
-            );
-        }
-    };
+    const initialSorting = useMemo(() => {
+        return toFrontendSort(query?.sort ?? null);
+    }, [query?.sort]);
 
     useEffect(() => {
         if (editingEvent) {
@@ -313,8 +274,8 @@ export default function index({
             backgroundColor: state.isSelected
                 ? 'hsl(var(--primary))'
                 : state.isFocused
-                  ? 'hsl(var(--accent))'
-                  : 'transparent',
+                    ? 'hsl(var(--accent))'
+                    : 'transparent',
             color: state.isSelected
                 ? 'hsl(var(--primary-foreground))'
                 : 'hsl(var(--foreground))',
@@ -368,6 +329,131 @@ export default function index({
             },
         }),
     };
+
+    const columns: ColumnDef<Event>[] = [
+        {
+            accessorKey: 'name',
+            header: ({ column }) => (
+                <SortableHeader column={column} title={'Name'} />
+            ),
+            cell: ({ row }) => {
+                const event = row.original;
+
+                return (
+                    <div className="flex items-center gap-2 sm:gap-3">
+                        <div className="min-w-0">
+                            <div className="max-w-[140px] truncate text-sm font-medium text-gray-900 sm:max-w-[240px]">
+                                {event.name}
+                            </div>
+                        </div>
+                    </div>
+                );
+            },
+        },
+        {
+            accessorKey: 'date',
+            header: ({ column }) => (
+                <SortableHeader column={column} title={'Date'} />
+            ),
+            cell: ({ row }) => {
+                const event = row.original;
+
+                return (
+                    <div className="min-w-0">
+                        <div className="max-w-[140px] truncate text-sm text-gray-600 sm:max-w-[240px]">
+                            {new Date(event.date).toLocaleDateString('en-US', {
+                                year: 'numeric',
+                                month: 'short',
+                                day: 'numeric',
+                            })}
+                        </div>
+                    </div>
+                );
+            },
+        },
+        {
+            accessorKey: 'location',
+            header: ({ column }) => (
+                <SortableHeader column={column} title={'Location'} />
+            ),
+            cell: ({ row }) => {
+                const event = row.original;
+
+                return (
+                    <div className="min-w-0">
+                        <div className="max-w-[140px] truncate text-sm text-gray-600 sm:max-w-[240px]">
+                            {event.location}
+                        </div>
+                    </div>
+                );
+            },
+        },
+        {
+            accessorKey: 'type',
+            header: ({ column }) => (
+                <SortableHeader column={column} title={'Type'} />
+            ),
+            cell: ({ row }) => {
+                const event = row.original;
+
+                return (
+                    <div className="min-w-0">
+                        <div className="max-w-[140px] truncate text-sm text-gray-600 sm:max-w-[240px]">
+                            {event.type}
+                        </div>
+                    </div>
+                );
+            },
+        },
+
+        {
+            accessorKey: 'companies',
+            header: ({ column }) => (
+                <NormalHeader column={column} title={'Companies'} />
+            ),
+            cell: ({ row }) => <EventCompaniesAvatar event={row.original} />,
+        },
+        {
+            accessorKey: 'actions',
+            header: ({ column }) => (
+                <NormalHeader column={column} title={'Actions'} />
+            ),
+            cell: ({ row }) => {
+                const event = row.original;
+                return (
+                    <div className="flex items-center gap-1">
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                            title="View"
+                            onClick={() => router.get(`/events/${event.id}`)}
+                        >
+                            <Eye className="h-4 w-4" />
+                        </Button>
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                            title="Edit"
+                            onClick={() => handleEdit(event)}
+                        >
+                            <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-destructive hover:bg-destructive/10"
+                            title="Delete"
+                            onClick={() => handleDeleteClick(event)}
+                        >
+                            <Trash2 className="h-4 w-4" />
+                        </Button>
+                    </div>
+                );
+            },
+        },
+    ];
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -548,12 +634,7 @@ export default function index({
                             >
                                 Cancel
                             </Button>
-                            <Button
-                                type="submit"
-                                disabled={
-                                    processing
-                                }
-                            >
+                            <Button type="submit" disabled={processing}>
                                 {processing
                                     ? 'Saving...'
                                     : editingEvent
@@ -600,14 +681,11 @@ export default function index({
 
             <div className="px-4 py-6">
                 <div className="mb-4">
-                    <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-center justify-between gap-3">
                         <div className="min-w-0">
-                            <h1 className="text-lg font-semibold text-foreground">
+                            <h1 className="text-lg font-semibold text-foreground md:text-xl">
                                 Events
                             </h1>
-                            <p className="mt-0.5 text-xs text-muted-foreground">
-                                Manage all events in your system
-                            </p>
                         </div>
                         <div className="flex items-end space-x-2">
                             <div className="relative max-w-md">
@@ -615,20 +693,12 @@ export default function index({
                                 <Input
                                     type="text"
                                     placeholder="Search events..."
-                                    value={search}
-                                    onChange={handleSearchChange}
+                                    value={searchValue}
+                                    onChange={(e) =>
+                                        setSearchValue(e.target.value)
+                                    }
                                     className="h-9 pr-9 pl-9"
                                 />
-                                {search ? (
-                                    <button
-                                        type="button"
-                                        onClick={clearSearch}
-                                        className="absolute top-4.5 right-2 -translate-y-1/2 rounded p-1 text-muted-foreground hover:text-foreground"
-                                        aria-label="Clear search"
-                                    >
-                                        <X className="h-4 w-4" />
-                                    </button>
-                                ) : null}
                             </div>
                             <Button
                                 onClick={() => {
@@ -643,308 +713,30 @@ export default function index({
                         </div>
                     </div>
                 </div>
-                <div className='mb-2'>
-                    {search ? (
-                        <p className="mt-2 text-xs text-muted-foreground">
-                            Results for{' '}
-                            <span className="font-medium text-foreground">
-                                "{search}"
-                            </span>
-                        </p>
-                    ) : null}
-                </div>
-
-                {/* Events Table - Keeping borderless design */}
-                <div className="rounded-lg border">
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-sm">
-                            <thead className="bg-gray-100">
-                                <tr className="text-xs text-muted-foreground">
-                                    <th className="px-4 py-2 text-left font-medium">
-                                        Event
-                                    </th>
-                                    <th className="px-4 py-2 text-left font-medium">
-                                        Date
-                                    </th>
-                                    <th className="px-4 py-2 text-left font-medium">
-                                        Type
-                                    </th>
-                                    <th className="px-4 py-2 text-left font-medium">
-                                        Location
-                                    </th>
-                                    <th className="px-4 py-2 text-left font-medium">
-                                        Companies
-                                    </th>
-                                    <th className="px-4 py-2 text-right font-medium">
-                                        Actions
-                                    </th>
-                                </tr>
-                            </thead>
-
-                            <tbody className="divide-y divide-border/60">
-                                {events.data.length === 0 ? (
-                                    <tr>
-                                        <td
-                                            colSpan={6}
-                                            className="px-4 py-10 text-center text-sm text-muted-foreground"
-                                        >
-                                            {search && (
-                                                    <div className="flex flex-col items-center justify-center gap-3">
-                                                        <div className="rounded-full bg-gray-100 p-3">
-                                                            <Search className="h-6 w-6 text-gray-400" />
-                                                        </div>
-                                                        <div className="space-y-1 text-center">
-                                                            <p className="text-sm font-semibold text-gray-900">
-                                                                No events found
-                                                            </p>
-                                                            <p className="text-xs text-gray-500">
-                                                                Try adjusting
-                                                                your search
-                                                            </p>
-                                                        </div>
-                                                        <Button
-                                                            variant="outline"
-                                                            onClick={
-                                                                clearSearch
-                                                            }
-                                                            size="sm"
-                                                        >
-                                                            Clear Search
-                                                        </Button>
-                                                        </div>
-                                            )
-                                            }
-                                        </td>
-                                    </tr>
-                                ) : (
-                                    events.data.map((event) => (
-                                        <tr
-                                            key={event.id}
-                                            className="even:bg-gray-50/30 hover:bg-muted/30"
-                                        >
-                                            <td className="px-4 py-2">
-                                                <div className="font-medium text-foreground">
-                                                    {event.name}
-                                                </div>
-                                            </td>
-
-                                            <td className="px-4 py-2">
-                                                <div className="text-sm text-foreground">
-                                                    {format(
-                                                        new Date(event.date),
-                                                        'PPp',
-                                                    )}
-                                                </div>
-                                            </td>
-
-                                            <td className="px-4 py-2">
-                                                <Badge
-                                                    variant="outline"
-                                                    className="h-6 px-2 text-xs capitalize"
-                                                >
-                                                    {event.type}
-                                                </Badge>
-                                            </td>
-
-                                            <td className="px-4 py-2">
-                                                <div className="text-sm text-foreground">
-                                                    {event.location}
-                                                </div>
-                                            </td>
-
-                                            <td className="px-4 py-2">
-                                                {event.companies?.length ? (
-                                                    <div className="flex flex-wrap gap-1.5">
-                                                        {event.companies
-                                                            .slice(0, 3)
-                                                            .map((company) => (
-                                                                <Badge
-                                                                    key={
-                                                                        company.id
-                                                                    }
-                                                                    variant="secondary"
-                                                                    className="h-6 gap-1 px-2 text-xs"
-                                                                >
-                                                                    <Building className="h-3.5 w-3.5" />
-                                                                    {
-                                                                        company.name
-                                                                    }
-                                                                </Badge>
-                                                            ))}
-                                                        {event.companies
-                                                            .length > 3 ? (
-                                                            <Badge
-                                                                variant="outline"
-                                                                className="h-6 px-2 text-xs"
-                                                            >
-                                                                +
-                                                                {event.companies
-                                                                    .length - 3}
-                                                            </Badge>
-                                                        ) : null}
-                                                    </div>
-                                                ) : (
-                                                    <span className="text-xs text-muted-foreground">
-                                                        All companies
-                                                    </span>
-                                                )}
-                                            </td>
-
-                                            <td className="px-4 py-2">
-                                                <TooltipProvider>
-                                                    <div className="flex items-center justify-end gap-1.5">
-                                                        {/* Edit */}
-                                                        <Tooltip>
-                                                            <TooltipTrigger
-                                                                asChild
-                                                            >
-                                                                <Button
-                                                                    variant="ghost"
-                                                                    size="icon"
-                                                                    onClick={() =>
-                                                                        handleEdit(
-                                                                            event,
-                                                                        )
-                                                                    }
-                                                                    className="h-8 w-8"
-                                                                >
-                                                                    <Edit className="h-4 w-4" />
-                                                                </Button>
-                                                            </TooltipTrigger>
-                                                            <TooltipContent>
-                                                                <p>
-                                                                    Edit event
-                                                                </p>
-                                                            </TooltipContent>
-                                                        </Tooltip>
-
-                                                        {/* Delete */}
-                                                        <Tooltip>
-                                                            <TooltipTrigger
-                                                                asChild
-                                                            >
-                                                                <Button
-                                                                    variant="ghost"
-                                                                    size="icon"
-                                                                    onClick={() =>
-                                                                        handleDeleteClick(
-                                                                            event,
-                                                                        )
-                                                                    }
-                                                                    className="h-8 w-8 text-destructive hover:bg-destructive/10"
-                                                                >
-                                                                    <Trash2 className="h-4 w-4" />
-                                                                </Button>
-                                                            </TooltipTrigger>
-                                                            <TooltipContent>
-                                                                <p>
-                                                                    Delete event
-                                                                </p>
-                                                            </TooltipContent>
-                                                        </Tooltip>
-
-                                                        {/* View */}
-                                                        <Tooltip>
-                                                            <TooltipTrigger
-                                                                asChild
-                                                            >
-                                                                <Link
-                                                                    href={`/events/${event.id}`}
-                                                                    className="inline-flex h-8 w-8 items-center justify-center rounded-md hover:bg-muted"
-                                                                    aria-label="View event"
-                                                                >
-                                                                    <Eye className="h-4 w-4" />
-                                                                </Link>
-                                                            </TooltipTrigger>
-                                                            <TooltipContent>
-                                                                <p>
-                                                                    View event
-                                                                </p>
-                                                            </TooltipContent>
-                                                        </Tooltip>
-                                                    </div>
-                                                </TooltipProvider>
-                                            </td>
-                                        </tr>
-                                    ))
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
-
-                    {/* Compact pagination footer */}
-                    <div className=" flex flex-col items-center gap-2 border-t p-2  px-4 sm:flex-row md:justify-between">
-                        <div className="text-xs text-muted-foreground">
-                            Showing{' '}
-                            <span className="font-medium text-foreground">
-                                {events.from || 0}
-                            </span>
-                            –{' '}
-                            <span className="font-medium text-foreground">
-                                {events.to || 0}
-                            </span>{' '}
-                            of{' '}
-                            <span className="font-medium text-foreground">
-                                {events.total}
-                            </span>
-                        </div>
-
-                        <div className="mt-2 flex items-center gap-1">
-                            <Button
-                                variant="outline"
-                                size="icon"
-                                onClick={() =>
-                                    handlePageChange(
-                                        events.links[0]?.url ?? null,
-                                    )
-                                }
-                                disabled={!events.links[0]?.url}
-                                className="h-8 w-8"
-                            >
-                                <ChevronLeft className="h-4 w-4" />
-                            </Button>
-
-                            {events.links.slice(1, -1).map((link, index) => {
-                                const isEllipsis = link.label === '...';
-                                const isCurrent = link.active;
-
-                                return (
-                                    <Button
-                                        key={index}
-                                        variant={
-                                            isCurrent ? 'default' : 'outline'
-                                        }
-                                        size="icon"
-                                        onClick={() =>
-                                            handlePageChange(link.url)
-                                        }
-                                        disabled={!link.url || isEllipsis}
-                                        className="h-8 w-8 text-xs"
-                                    >
-                                        {isEllipsis ? '…' : link.label}
-                                    </Button>
-                                );
-                            })}
-
-                            <Button
-                                variant="outline"
-                                size="icon"
-                                onClick={() =>
-                                    handlePageChange(
-                                        events.links[events.links.length - 1]
-                                            ?.url ?? null,
-                                    )
-                                }
-                                disabled={
-                                    !events.links[events.links.length - 1]?.url
-                                }
-                                className="h-8 w-8"
-                            >
-                                <ChevronRight className="h-4 w-4" />
-                            </Button>
-                        </div>
-                    </div>
-                </div>
+                <ComponentCard desc="Manage all events in your system">
+                    <DataTable
+                        columns={columns}
+                        enableInternalPagination={false}
+                        data={events.data || []}
+                        initialSorting={initialSorting}
+                        meta={{ ...omit(events, ['data']) }}
+                        onFetch={(params) => {
+                            router.get(
+                                '/events',
+                                {
+                                    sort: params?.sort,
+                                    'filter[search]': searchValue || undefined,
+                                    page: params?.page ?? 1,
+                                },
+                                {
+                                    preserveState: false,
+                                    replace: true,
+                                    preserveScroll: true,
+                                },
+                            );
+                        }}
+                    />
+                </ComponentCard>
             </div>
         </AppLayout>
     );

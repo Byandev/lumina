@@ -159,3 +159,22 @@ export function SortableHeader<TData>({ column, title }: SortableHeaderProps<TDa
         </div>
     )
 }
+
+
+
+
+export function NormalHeader<TData>({ column, title }: SortableHeaderProps<TData>) {
+    const sorted = useMemo(() => column.getIsSorted(), [column])
+
+    return (
+        <div
+            className="flex items-center justify-between cursor-pointer"
+        >
+            <p className="font-medium text-gray-700 text-theme-xs dark:text-gray-400">
+                {title}
+            </p>
+        </div>
+    )
+}
+
+
