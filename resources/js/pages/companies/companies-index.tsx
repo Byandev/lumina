@@ -200,14 +200,14 @@ export default function CompaniesIndex({ companies, query }: CompaniesProps) {
             <Head title="Companies" />
 
             <div className="px-8">
-                <div className="flex flex-col my-6 items-center justify-between gap-3 md:flex-row">
+                <div className="flex flex-col my-8 items-center justify-between gap-8 lg:flex-row">
                     <p className="font-semibold text-foreground text-3xl my-0">
                         Companies
                     </p>
 
                     {/* Search + Add */}
                     <div className="flex items-center gap-3">
-                        <form className="relative w-full sm:w-80">
+                        <form className="relative w-full sm:w-64">
                             <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
                                 <Search className="z-10 h-4 w-4 text-gray-400" />
                             </div>
@@ -228,9 +228,7 @@ export default function CompaniesIndex({ companies, query }: CompaniesProps) {
                             className="inline-flex items-center gap-2 rounded-md bg-gradient-to-r from-pink-500 via-blue-500 to-cyan-500 px-4 py-2 text-sm font-semibold text-white transition hover:scale-105"
                         >
                             <Plus className="h-4 w-4" />
-                            <span className="hidden md:block">
-                                    Add Company
-                                </span>
+                            <span>Add Company</span>
                         </Link>
                     </div>
                 </div>
