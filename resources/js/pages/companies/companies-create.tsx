@@ -325,9 +325,9 @@ export default function CompaniesCreate({ companies, users }: CompaniesProps) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Create Company" />
-            <div className="px-4 py-6">
-                <div className="mb-8">
-                    <h1 className="text-2xl font-bold text-gray-900">
+            <div className="px-4 py-7">
+                <div className="items-center mb-8">
+                    <h1 className="text-lg md:text-xl font-bold text-gray-900">
                         Create New Company
                     </h1>
                     <p className="mt-1 text-sm text-gray-500">

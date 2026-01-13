@@ -85,7 +85,7 @@ const STATUS_ORDER = ['active', 'inactive', 'terminated', 'pending'] as const;
 // Updated colors for pink-blue-sky theme
 const statusColors: Record<string, string> = {
     active: 'bg-gradient-to-r from-pink-100 to-blue-100 text-pink-800 border border-pink-200',
-    inactive: 'bg-gray-100 text-gray-800 border border-gray-200',
+    inactive: 'bg-gray-100 text-gray-800 border  border-gray-100',
     terminated: 'bg-gradient-to-r from-pink-100 via-red-50 to-blue-50 text-red-800 border border-red-200',
     pending: 'bg-gradient-to-r from-yellow-100 to-pink-50 text-yellow-800 border border-yellow-200',
 };
@@ -134,7 +134,7 @@ const titleCase = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
         return (
-            <div className="rounded-lg border border-gray-200 bg-white/95 p-3 shadow-lg backdrop-blur-sm">
+            <div className="rounded-lg border  border-gray-100 bg-white/95 p-3 shadow-lg backdrop-blur-sm">
                 <p className="text-xs font-medium text-gray-900">{label}</p>
                 <p className="mt-1 text-sm font-bold text-pink-600">
                     {payload[0].value} companies
@@ -313,7 +313,7 @@ export default function Dashboard({
     const getStatusBadge = (status: string) => (
         <span
             className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium ${
-                statusColors[status] ?? 'bg-gray-100 text-gray-800 border-gray-200'
+                statusColors[status] ?? 'bg-gray-100 text-gray-800  border-gray-100'
             }`}
         >
             {titleCase(status)}
@@ -323,7 +323,7 @@ export default function Dashboard({
     const getLevelBadge = (level: string) => (
         <span
             className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium ${
-                levelColors[level] ?? 'bg-gray-100 text-gray-800 border-gray-200'
+                levelColors[level] ?? 'bg-gray-100 text-gray-800  border-gray-100'
             }`}
         >
             {titleCase(level)}
@@ -383,7 +383,7 @@ export default function Dashboard({
         icon: React.ReactNode;
         rightSlot?: React.ReactNode;
     }) => (
-        <div className="rounded-xl border border-gray-200 bg-white p-3 shadow-sm sm:p-4">
+        <div className="rounded-xl border border-gray-100 bg-white p-3 sm:p-4">
             <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0 flex-1">
                     <p className="text-xs text-gray-600 sm:text-sm">{title}</p>
@@ -403,12 +403,12 @@ export default function Dashboard({
         <AppLayout>
             <Head title="Dashboard" />
 
-            <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white p-4 md:py-6">
+            <div className="min-h-screen     p-4 md:py-6">
                 {/* Header */}
                 <div className="mb-4 sm:mb-6">
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                         <div>
-                            <h1 className="text-xl font-bold text-gray-900 sm:text-2xl">
+                            <h1 className="text-large md:text-xl font-bold text-gray-900">
                                 Dashboard
                             </h1>
                             <p className="text-xs text-gray-600 sm:text-sm">
@@ -418,15 +418,14 @@ export default function Dashboard({
 
                         {/* Time Range Filter */}
                         <div className="flex items-center gap-2">
-                            <Filter className="h-4 w-4 text-gray-500" />
-                            <div className="flex rounded-lg border border-gray-200 bg-white p-0.5 shadow-sm sm:p-1">
+                            <div className="flex rounded-lg border  border-gray-100 bg-white p-0.5  sm:p-1">
                                 {TIME_RANGES.map((range) => (
                                     <button
                                         key={range}
                                         onClick={() => handleTimeRangeChange(range)}
                                         className={`rounded-md px-2 py-1 text-[10px] font-medium transition-all sm:px-3 sm:py-1.5 sm:text-xs ${
                                             selectedRange === range
-                                                ? `${themeColors.primary.gradient} text-white shadow-sm`
+                                                ? `${themeColors.primary.gradient} text-white  `
                                                 : 'text-gray-700 hover:bg-gray-100'
                                         }`}
                                     >
@@ -436,22 +435,6 @@ export default function Dashboard({
                             </div>
                         </div>
                     </div>
-
-                    {/* Optional: show compared date ranges if provided by backend */}
-                    {(growth.current_range || growth.previous_range) && (
-                        <div className="mt-2 text-[10px] text-gray-600 sm:mt-3 sm:text-xs">
-                            {growth.current_range && (
-                                <span className="mr-3">
-                                    Current: {growth.current_range.start} → {growth.current_range.end}
-                                </span>
-                            )}
-                            {growth.previous_range && (
-                                <span>
-                                    Previous: {growth.previous_range.start} → {growth.previous_range.end}
-                                </span>
-                            )}
-                        </div>
-                    )}
                 </div>
 
                 {/* Stats Grid */}
@@ -517,7 +500,7 @@ export default function Dashboard({
                     {/* Left */}
                     <div className="space-y-4 sm:space-y-6 lg:col-span-2">
                         {/* Growth Chart - Using shadcn/recharts Line Chart */}
-                        <div className="rounded-xl border border-gray-200 bg-white p-3 shadow-sm sm:p-4">
+                        <div className="rounded-xl border  border-gray-100 bg-white p-3   sm:p-4">
                             <div className="mb-3 flex items-center justify-between sm:mb-4">
                                 <div>
                                     <h3 className="text-sm font-semibold text-gray-900">
@@ -552,7 +535,7 @@ export default function Dashboard({
                         </div>
 
                         {/* Recent Companies */}
-                        <div className="rounded-xl border border-gray-200 bg-white p-3 shadow-sm sm:p-4">
+                        <div className="rounded-xl border  border-gray-100 bg-white p-3   sm:p-4">
                             <div className="mb-3 flex items-center justify-between sm:mb-4">
                                 <div>
                                     <h3 className="text-sm font-semibold text-gray-900">
@@ -574,7 +557,7 @@ export default function Dashboard({
 
                             <div className="space-y-2 sm:space-y-3">
                                 {recentCompanies.length === 0 ? (
-                                    <div className="rounded-lg border border-dashed border-gray-200 p-3 text-sm text-gray-600 sm:p-4">
+                                    <div className="rounded-lg border border-dashed  border-gray-100 p-3 text-sm text-gray-600 sm:p-4">
                                         No recent companies found for this range.
                                     </div>
                                 ) : (
@@ -624,13 +607,13 @@ export default function Dashboard({
                     {/* Right */}
                     <div className="space-y-4 sm:space-y-6">
                         {/* Status Distribution */}
-                        <div className="rounded-xl border border-gray-200 bg-white p-3 shadow-sm sm:p-4">
+                        <div className="rounded-xl border  border-gray-100 bg-white p-3   sm:p-4">
                             <h3 className="mb-2 text-sm font-semibold text-gray-900 sm:mb-3">
                                 Status Distribution
                             </h3>
 
                             {orderedStatus.length === 0 ? (
-                                <div className="rounded-lg border border-dashed border-gray-200 p-3 text-sm text-gray-600 sm:p-4">
+                                <div className="rounded-lg border border-dashed  border-gray-100 p-3 text-sm text-gray-600 sm:p-4">
                                     No status data available.
                                 </div>
                             ) : (
@@ -676,7 +659,7 @@ export default function Dashboard({
                         </div>
 
                         {/* Top Performers */}
-                        <div className="rounded-xl border border-gray-200 bg-white p-3 shadow-sm sm:p-4">
+                        <div className="rounded-xl border  border-gray-100 bg-white p-3   sm:p-4">
                             <div className="mb-2 flex items-center justify-between sm:mb-3">
                                 <h3 className="text-sm font-semibold text-gray-900">
                                     Top Performers
@@ -685,7 +668,7 @@ export default function Dashboard({
                             </div>
 
                             {topPerformers.length === 0 ? (
-                                <div className="rounded-lg border border-dashed border-gray-200 p-3 text-sm text-gray-600 sm:p-4">
+                                <div className="rounded-lg border border-dashed  border-gray-100 p-3 text-sm text-gray-600 sm:p-4">
                                     No performance data available.
                                 </div>
                             ) : (
@@ -742,7 +725,7 @@ export default function Dashboard({
                         </div>
 
                         {/* Quick Stats */}
-                        <div className="rounded-xl border border-gray-200 bg-white p-3 shadow-sm sm:p-4">
+                        <div className="rounded-xl border  border-gray-100 bg-white p-3   sm:p-4">
                             <h3 className="mb-2 text-sm font-semibold text-gray-900 sm:mb-3">
                                 Quick Stats
                             </h3>
@@ -802,7 +785,7 @@ export default function Dashboard({
                 {/* Bottom Row */}
                 <div className="mt-4 grid grid-cols-1 gap-4 sm:mt-6 sm:gap-6 lg:grid-cols-2">
                     {/* Recent Performance */}
-                    <div className="rounded-xl border border-gray-200 bg-white p-3 shadow-sm sm:p-4">
+                    <div className="rounded-xl border  border-gray-100 bg-white p-3   sm:p-4">
                         <div className="mb-3 flex items-center justify-between sm:mb-4">
                             <div>
                                 <h3 className="text-sm font-semibold text-gray-900">
@@ -816,7 +799,7 @@ export default function Dashboard({
                         </div>
 
                         {recentPerformance.length === 0 ? (
-                            <div className="rounded-lg border border-dashed border-gray-200 p-3 text-sm text-gray-600 sm:p-4">
+                            <div className="rounded-lg border border-dashed  border-gray-100 p-3 text-sm text-gray-600 sm:p-4">
                                 No recent performance records found.
                             </div>
                         ) : (
@@ -874,13 +857,13 @@ export default function Dashboard({
                     </div>
 
                     {/* Level Distribution */}
-                    <div className="rounded-xl border border-gray-200 bg-white p-3 shadow-sm sm:p-4">
+                    <div className="rounded-xl border  border-gray-100 bg-white p-3   sm:p-4">
                         <h3 className="mb-2 text-sm font-semibold text-gray-900 sm:mb-3">
                             Level Distribution
                         </h3>
 
                         {levelDistribution.length === 0 ? (
-                            <div className="rounded-lg border border-dashed border-gray-200 p-3 text-sm text-gray-600 sm:p-4">
+                            <div className="rounded-lg border border-dashed  border-gray-100 p-3 text-sm text-gray-600 sm:p-4">
                                 No level distribution data available.
                             </div>
                         ) : (
@@ -934,7 +917,7 @@ export default function Dashboard({
 
                 {/* Coach Summary */}
                 {userRole === 'coach' && stats.coach_companies > 0 && (
-                    <div className="mt-4 rounded-xl border border-blue-200 bg-gradient-to-r from-blue-50 to-sky-50 p-3 shadow-sm sm:mt-6 sm:p-4">
+                    <div className="mt-4 rounded-xl border border-blue-200 bg-gradient-to-r from-blue-50 to-sky-50 p-3   sm:mt-6 sm:p-4">
                         <div className="flex items-center justify-between">
                             <div>
                                 <h3 className="text-sm font-semibold text-blue-900">
@@ -944,7 +927,7 @@ export default function Dashboard({
                                     Companies under your guidance
                                 </p>
                             </div>
-                            <div className="rounded-lg bg-white p-2 shadow-sm">
+                            <div className="rounded-lg bg-white p-2  ">
                                 <Users className="h-4 w-4 text-blue-600" />
                             </div>
                         </div>

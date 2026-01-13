@@ -75,11 +75,11 @@ export default function CompanyLayout({
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                             <div>
-                                <h1 className="text-base font-bold text-gray-900 sm:text-xl md:text-2xl">
+                                <h1 className="text-base font-bold text-gray-900 text-lg md:text-xl">
                                     {company.name}
                                 </h1>
-                                <p className="hidden text-sm text-gray-500 sm:block">
-                                    Company ID: {company.id}
+                                <p className="hidden text-xs text-gray-500 sm:block">
+                                    Company Details
                                 </p>
                             </div>
                         </div>

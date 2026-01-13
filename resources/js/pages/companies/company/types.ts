@@ -41,6 +41,7 @@ export interface Event {
     date: string;
     type: string;
     location: string;
+    companies: Company[];
 }
 
 

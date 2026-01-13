@@ -27,7 +27,6 @@ class DashboardController extends Controller
         }
 
         // Core Stats
-        // Note: Keep these global if that's intended. If you want coach-scoped stats, tell me.
         $stats = [
             'total_companies' => Company::count(),
             'active_companies' => Company::where('status', 'active')->count(),
@@ -44,11 +43,10 @@ class DashboardController extends Controller
         // Recent activity (scoped for coach)
         $recentCompanies = (clone $companyQuery)
             ->latest()
-            ->take(6)
+            ->take(2)
             ->with('coach:id,name')
             ->get(['id', 'name', 'status', 'level', 'created_at', 'coach_id']);
 
-        // Recent performance (optionally scope for coach via company relation)
         $recentPerformanceQuery = PerformanceRecord::with('company:id,name,coach_id')
             ->latest()
             ->take(4);
