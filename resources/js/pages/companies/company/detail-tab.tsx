@@ -7,13 +7,6 @@ import { Label } from '@/components/ui/label';
 import StatusBadge from '@/components/companies/status-badge';
 import LevelBadge from '@/components/companies/level-badge';
 import { percentageFormatter } from '@/lib/formatter';
-import { PencilIcon } from 'lucide-react';
-import {
-    Tooltip,
-    TooltipContent,
-    TooltipTrigger,
-} from "@/components/ui/tooltip"
-
 
 interface Props {
     company: Company
@@ -23,19 +16,7 @@ const DetailTab = ({ company }: Props) => {
 
     return <CompanyLayout company={company}>
         <div className="space-y-6">
-            <ComponentCard
-                title={"Company Information"}
-                rightHeader={
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                            <PencilIcon className="cursor-pointer size-5"/>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                            <p>Edit company information</p>
-                        </TooltipContent>
-                    </Tooltip>
-                }>
-
+            <ComponentCard title={"Company Information"}>
                 <div>
                     <div className='flex flex-col md:flex-row items-center gap-x-2'>
                         <Avatar className="size-20">
@@ -70,18 +51,7 @@ const DetailTab = ({ company }: Props) => {
                 </div>
             </ComponentCard>
 
-            <ComponentCard
-                title={"Company Status"}
-                rightHeader={
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                            <PencilIcon className="cursor-pointer size-5"/>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                            <p>Edit company status</p>
-                        </TooltipContent>
-                    </Tooltip>
-                }>
+            <ComponentCard title={"Company Status"}>
                 <div className="grid grid-cols-2 lg:grid-cols-3 gap-6">
                     <div className="flex flex-col gap-2">
                         <Label className="text-sm font-medium">Status</Label>

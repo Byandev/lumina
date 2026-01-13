@@ -64,12 +64,18 @@ class CompanyController extends Controller
 
     public function create()
     {
-        $companies = Company::get(['id', 'name', 'logo']);
-        $users = User::get(['id', 'name', 'photo']);
+        $companies = Company::select(['id', 'name'])
+            ->orderBy('name', 'asc')
+            ->get();
 
-        return Inertia::render('companies/companies-create', [
+        $coaches = User::select(['id', 'name'])
+            ->whereNull('company_id')
+            ->orderBy('name', 'asc')
+            ->get();
+
+        return Inertia::render('companies/create', [
             'companies' => $companies,
-            'users' => $users,
+            'coaches' => $coaches,
         ]);
     }
 
