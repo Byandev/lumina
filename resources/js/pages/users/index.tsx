@@ -30,7 +30,11 @@ import { BreadcrumbItem, PaginatedData } from '@/types';
 import { toFrontendSort } from '@/lib/sort';
 import { ColumnDef } from '@tanstack/react-table';
 import { Company } from '@/types/models/Company';
-import { DataTable, SortableHeader } from '@/components/ui/data-table';
+import {
+    DataTable,
+    NormalHeader,
+    SortableHeader,
+} from '@/components/ui/data-table';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import CompanyOwnersAvatar from '@/components/companies/company-owners-avatar';
 import CircularProgress from '@/components/ui/circular-progress';
@@ -38,9 +42,10 @@ import { percentageFormatter } from '@/lib/formatter';
 import StatusBadge from '@/components/companies/status-badge';
 import { omit } from 'lodash';
 import ComponentCard from '@/components/component-card';
+import FormModal from '@/components/users/form-modal';
 
 interface User {
-    id: number;
+    id: number| string;
     name: string;
     email: string;
     photo?: string | null;
@@ -96,8 +101,9 @@ export default function Index({
                                   users, query
                               }: UsersPageProps) {
     const [isCreateOpen, setIsCreateOpen] = useState<boolean>(false);
-    const [isSearching, setIsSearching] = useState<boolean>(false);
     const [searchValue, setSearchValue] = useState((query?.filter?.search ?? ''));
+    const [isChangePasswordOpen, setIsChangePasswordOpen] = useState<boolean>(false);
+    const [selectedId, setSelectedId] = useState<string | number | null>(null);
 
     useEffect(() => {
         const currentSearchParam = query?.filter?.search ?? '';
@@ -173,6 +179,7 @@ export default function Index({
             .toUpperCase()
             .slice(0, 2);
     };
+
 
     const columns: ColumnDef<User>[] = [
         {
@@ -251,6 +258,33 @@ export default function Index({
                 );
             },
         },
+        {
+            accessorKey: 'id',
+            header: ({ column }) => (
+                <NormalHeader column={column} title={'Actions'} />
+            ),
+            cell: ({ row }) => {
+                const user = row.original;
+
+                return (
+                    <div className="flex items-center gap-2 sm:gap-3">
+                        <div className="min-w-0">
+                            <div className="max-w-[140px] truncate text-sm text-red-600 sm:max-w-[240px]">
+                                <button
+                                    onClick={() => {
+                                        setIsChangePasswordOpen(true);
+                                        setSelectedId(user.id);
+                                    }}
+                                    className="cursor-pointer hover:underline"
+                                >
+                                    Change Password
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                );
+            },
+        },
     ];
 
     // Create
@@ -267,11 +301,19 @@ export default function Index({
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
+            <FormModal
+                open={isChangePasswordOpen}
+                onOpenChange={(bool: boolean) => {
+                    setIsChangePasswordOpen(bool);
+                    setSelectedId('');
+                }}
+                id={selectedId}
+            />
             <div className="min-h-screen p-4 md:py-6">
                 {/* Header */}
-                <div className="mb-4 flex flex-col gap-3 sm:flex-row items-center sm:justify-between">
+                <div className="mb-4 flex flex-col items-center gap-3 sm:flex-row sm:justify-between">
                     <div className="min-w-0">
-                        <h1 className="text-lg md:text-xl font-semibold text-foreground">
+                        <h1 className="text-lg font-semibold text-foreground md:text-xl">
                             Users
                         </h1>
                     </div>
@@ -294,13 +336,13 @@ export default function Index({
                                 <Button className="gap-2">
                                     <Plus className="h-4 w-4" />
                                     <span className="hidden sm:inline">
-										Add User
-									</span>
+                                        Add User
+                                    </span>
                                     <span className="sm:hidden">Add</span>
                                 </Button>
                             </DialogTrigger>
 
-                            <DialogContent className="sm:max-w-[425px]">
+                            <DialogContent className="sm:max-w-[600px]">
                                 <DialogHeader>
                                     <DialogTitle className="text-lg">
                                         Create New User
@@ -469,8 +511,8 @@ export default function Index({
                         <p className="mt-2 text-xs text-muted-foreground">
                             Results for{' '}
                             <span className="font-medium text-foreground">
-								"{searchValue}"
-							</span>
+                                "{searchValue}"
+                            </span>
                         </p>
                     ) : null}
                 </div>

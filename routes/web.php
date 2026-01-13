@@ -37,6 +37,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/companies/{company}/records', [PerformanceRecordController::class, 'store'])->name('remark.store');
     Route::get('/users', [UserController::class, 'index'])->name('users');
     Route::put('/users/{user}', [UserController::class, 'update'])->name('users.update');
+    Route::put('/users/{user}/change-password', [UserController::class, 'changePassword'])->name('users.change-password');
     Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
 });
 

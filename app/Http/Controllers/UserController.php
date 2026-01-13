@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Spatie\QueryBuilder\AllowedFilter;
 use Spatie\QueryBuilder\QueryBuilder;
@@ -83,6 +84,54 @@ class UserController extends Controller
         ]);
 
         return redirect()->back()->with('success', 'User updated successfully.');
+    }
+
+    public function changePassword(Request $request, User $user)
+    {
+
+        // Validate the incoming request with confirmPassword field
+        $validated = $request->validate([
+            'password' => [
+                'required',
+                'string',
+                'min:8',
+            ],
+            'confirmPassword' => [
+                'required',
+                'string',
+                'min:8',
+                'same:password',
+            ],
+        ], [
+            'password.required' => 'The password field is required.',
+            'password.min' => 'Password must be at least 8 characters.',
+            'confirmPassword.required' => 'Please confirm your password.',
+            'confirmPassword.min' => 'Confirm password must be at least 8 characters.',
+            'confirmPassword.same' => 'Passwords do not match.',
+        ]);
+
+        try {
+            $user->update([
+                'password' => Hash::make($validated['password']),
+                'updated_at' => now(),
+            ]);
+
+            return redirect()->back()->with([
+                'success' => 'Password updated successfully.',
+            ]);
+
+        } catch (\Exception $e) {
+
+            \Log::error('Password change failed for user ' . $user->id, [
+                'error' => $e->getMessage(),
+                'user_id' => $user->id,
+                'changer_id' => auth()->id(),
+            ]);
+
+            throw ValidationException::withMessages([
+                'message' => 'Failed to update password. Please try again.'
+            ]);
+        }
     }
 
     /**
