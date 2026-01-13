@@ -15,27 +15,6 @@ use Spatie\QueryBuilder\QueryBuilder;
 
 class EventController extends Controller
 {
-//    public function index(Request $request)
-//    {
-//        $search = $request->input('search', '');
-//
-//        $companies = Company::get(['id', 'name']);
-//
-//        $events = Event::with('companies:id,name')
-//            ->when($search, function ($query, $search) {
-//                return $query->where('events.name', 'LIKE', "%{$search}%");
-//            })
-//            ->latest()
-//            ->paginate(20)
-//            ->withQueryString();
-//
-//        return Inertia::render('events/index', [
-//            'companies' => $companies,
-//            'events' => $events,
-//            'search' => $search,
-//        ]);
-//    }
-
     public function index(Request $request)
     {
         $events = QueryBuilder::for(Event::query())
@@ -70,17 +49,11 @@ class EventController extends Controller
 
         return Inertia::render('events/index', [
             'events' => $events,
-            'query' => [
-                ...$request->only(['sort', 'perPage', 'page']),
-                'filter' => $request->input('filter', []),
-            ],
             'companies' => $companies,
             'query' => [
                 ...$request->only(['sort', 'perPage', 'page']),
                 'filter' => $request->input('filter', []),
             ],
-            'events' => $events,
-            'search' => $search,
         ]);
     }
 
