@@ -30,6 +30,11 @@ class Company extends Model
         return $this->hasMany(User::class);
     }
 
+    public function onboardingChecklists(): Company|\Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(CompanyOnboardingChecklist::class);
+    }
+
     // In Company model
     public function checklists()
     {
@@ -98,5 +103,15 @@ class Company extends Model
     public function records()
     {
         return $this->hasMany(PerformanceRecord::class);
+    }
+
+    public function getOnboardingPercentage()
+    {
+        $totalChecklists = $this->onboardingChecklists()->count();
+        $completedChecklists = $this->onboardingChecklists()->where('is_completed', true)->count();
+
+        return $totalChecklists > 0
+            ? $completedChecklists / $totalChecklists
+            : 0;
     }
 }

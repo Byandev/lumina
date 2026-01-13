@@ -245,11 +245,9 @@ class CompanyController extends Controller
 
     public function show(Company $company)
     {
-
         $company = $company->load('owners', 'coach:id,name,photo', 'sponsor:id,name,logo');
-
-        $totalChecklists = $company->checklists()->count();
-        $completedChecklists = $company->checklists()->where('is_completed', true)->count();
+        $totalChecklists = $company->onboardingChecklists()->count();
+        $completedChecklists = $company->onboardingChecklists()->where('is_completed', true)->count();
 
         $company->onboarding_percentage = $totalChecklists > 0
             ? $completedChecklists / $totalChecklists
@@ -410,10 +408,8 @@ class CompanyController extends Controller
             $checklistItems = OnboardingChecklist::all();
 
             foreach ($checklistItems as $checklistItem) {
-                $company->checklists()->attach($checklistItem->id, [
-                    'remark' => '',
-                    'is_completed' => false,
-                    'file' => null,
+                $company->onboardingChecklists()->create([
+                    'title' => $checklistItem->title,
                 ]);
             }
 

@@ -1,4 +1,5 @@
 import { User } from '@/types';
+import { OnboardingChecklist } from '@/types/models/OnboardingChecklist';
 
 export interface Company {
     id: number;
@@ -22,4 +23,5 @@ export interface Company {
     level?: string;
     owners?: User[];
     onboarding_percentage?: number
+    onboarding_checklists?: OnboardingChecklist[]
 }
