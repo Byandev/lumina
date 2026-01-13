@@ -5,17 +5,30 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import CircularProgress from '@/components/ui/circular-progress';
 import { DataTable, SortableHeader } from '@/components/ui/data-table';
 import { Input } from '@/components/ui/input';
+import {
+    Select,
+    SelectContent,
+    SelectGroup,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 import AppLayout from '@/layouts/app-layout';
 import { percentageFormatter } from '@/lib/formatter';
 import { toFrontendSort } from '@/lib/sort';
-import { companies } from '@/routes';
 import { type BreadcrumbItem, PaginatedData } from '@/types';
 import { Company } from '@/types/models/Company';
 import { Head, Link, router } from '@inertiajs/react';
 import { ColumnDef } from '@tanstack/react-table';
 import { omit } from 'lodash';
-import { Mail, Plus, Search } from 'lucide-react';
+import { Mail, Plus, RefreshCcw, Search } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 interface CompaniesProps {
     companies: PaginatedData<Company>;
@@ -26,6 +39,10 @@ interface CompaniesProps {
         page?: number | string;
         filter?: {
             search?: string;
+            notarization?: string;
+            erp?: string;
+            sales?: string;
+            level?: string;
         };
     };
 }
@@ -33,8 +50,35 @@ interface CompaniesProps {
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Companies',
-        href: companies().url,
+        href: '/companies',
     },
+];
+
+const NOTARIZATION_STATUS_OPTIONS = [
+    { value: 'all', label: 'Notarization' },
+    { value: 'pending', label: 'Pending' },
+    { value: 'done', label: 'Done' },
+];
+
+const ERP_STATUS_OPTIONS = [
+    { value: 'all', label: 'ERP' },
+    { value: 'active', label: 'Active' },
+    { value: 'inactive', label: 'Inactive' },
+];
+
+const SALES_STATUS_OPTIONS = [
+    { value: 'all', label: 'Sales' },
+    { value: 'generating', label: 'Generating' },
+    { value: 'testing', label: 'Testing' },
+    { value: 'inactive', label: 'Inactive' },
+];
+
+const LEVEL_STATUS_OPTIONS = [
+    { value: 'all', label: 'Level' },
+    { value: 'educate', label: 'Educate' },
+    { value: 'empowerment', label: 'Empowerment' },
+    { value: 'enterprise', label: 'Enterprise' },
+    { value: 'exponential', label: 'Exponential' },
 ];
 
 export default function CompaniesIndex({ companies, query }: CompaniesProps) {
@@ -49,13 +93,29 @@ export default function CompaniesIndex({ companies, query }: CompaniesProps) {
     };
 
     const [searchValue, setSearchValue] = useState(query?.filter?.search ?? '');
+    const [notarization, setNotarization] = useState(query?.filter?.notarization ?? 'all');
+    const [erp, setErp] = useState(query?.filter?.erp ?? 'all');
+    const [sales, setSales] = useState(query?.filter?.sales ?? 'all');
+    const [level, setLevel] = useState(query?.filter?.level ?? 'all');
 
     useEffect(() => {
-        const currentSearchParam = query?.filter?.search ?? '';
 
-        if (searchValue === currentSearchParam) {
+        const currentSearchParam = query?.filter?.search ?? '';
+        const currentNotarization = query?.filter?.notarization ?? 'all';
+        const currentErp = query?.filter?.erp ?? 'all';
+        const currentSales = query?.filter?.sales ?? 'all';
+        const currentLevel = query?.filter?.level ?? 'all';
+
+        if (
+            searchValue === currentSearchParam &&
+            notarization === currentNotarization &&
+            erp === currentErp &&
+            sales === currentSales &&
+            level === currentLevel
+        ) {
             return;
         }
+
 
         const timer = setTimeout(() => {
             router.get(
@@ -63,6 +123,10 @@ export default function CompaniesIndex({ companies, query }: CompaniesProps) {
                 {
                     sort: query?.sort,
                     'filter[search]': searchValue || undefined,
+                    'filter[notarization]': notarization === 'all' ? undefined : notarization,
+                    'filter[erp]': erp === 'all' ? undefined : erp,
+                    'filter[sales]': sales === 'all' ? undefined : sales,
+                    'filter[level]': level === 'all' ? undefined : level,
                     page: 1,
                 },
                 {
@@ -74,7 +138,7 @@ export default function CompaniesIndex({ companies, query }: CompaniesProps) {
         }, 500);
 
         return () => clearTimeout(timer);
-    }, [searchValue, query?.filter?.search, query?.sort]);
+    }, [searchValue, notarization, erp, sales, level, query?.sort, query?.filter]);
 
     const initialSorting = useMemo(() => {
         return toFrontendSort(query?.sort ?? null);
@@ -97,7 +161,6 @@ export default function CompaniesIndex({ companies, query }: CompaniesProps) {
                                 alt={company.name}
                             />
                             <AvatarFallback>
-                                {' '}
                                 {getInitials(company.name)}
                             </AvatarFallback>
                         </Avatar>
@@ -195,34 +258,36 @@ export default function CompaniesIndex({ companies, query }: CompaniesProps) {
         },
     ];
 
+    const activeFilters = useMemo(() => {
+        const filters = [];
+        if (notarization !== 'all') filters.push('Notarization');
+        if (erp !== 'all') filters.push('ERP');
+        if (sales !== 'all') filters.push('Sales');
+        if (level !== 'all') filters.push('Level');
+        return filters;
+    }, [notarization, erp, sales, level]);
+
+
+    const clearFilter = () => {
+        setSearchValue('');
+        setNotarization('all');
+        setErp('all');
+        setSales('all');
+        setLevel('all');
+    }
+
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Companies" />
 
-            <div className="px-8">
-                <div className="flex flex-col my-8 items-center justify-between gap-8 lg:flex-row">
-                    <p className="font-semibold text-foreground text-3xl my-0">
+            <div className="px-4 sm:px-8">
+                <div className="my-4 flex flex-col items-center justify-between gap-8 sm:my-8 lg:flex-row">
+                    <p className="my-0 text-3xl font-semibold text-foreground">
                         Companies
                     </p>
 
-                    {/* Search + Add */}
                     <div className="flex items-center gap-3">
-                        <form className="relative w-full sm:w-64">
-                            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                                <Search className="z-10 h-4 w-4 text-gray-400" />
-                            </div>
-
-                            <Input
-                                type="text"
-                                value={searchValue}
-                                onChange={(e) =>
-                                    setSearchValue(e.target.value)
-                                }
-                                placeholder="Search companies..."
-                                className="h-9 pl-8 text-sm"
-                            />
-                        </form>
-
                         <Link
                             href="/companies/create"
                             className="inline-flex items-center gap-2 rounded-md bg-gradient-to-r from-pink-500 via-blue-500 to-cyan-500 px-4 py-2 text-sm font-semibold text-white transition hover:scale-105"
@@ -230,6 +295,116 @@ export default function CompaniesIndex({ companies, query }: CompaniesProps) {
                             <Plus className="h-4 w-4" />
                             <span>Add Company</span>
                         </Link>
+                    </div>
+                </div>
+                <div className="flex justify-between">
+                    <form className="relative w-full sm:w-64">
+                        <div className="pointer-events-none absolute top-2.5 left-0 flex items-center pl-3">
+                            <Search className="z-10 h-4 w-4 text-gray-400" />
+                        </div>
+
+                        <Input
+                            type="text"
+                            value={searchValue}
+                            onChange={(e) => setSearchValue(e.target.value)}
+                            placeholder="Search companies..."
+                            className="h-9 pl-8 text-sm"
+                        />
+                    </form>
+                    <div className="mb-6 flex flex-wrap items-center gap-4">
+                        <Select
+                            value={notarization}
+                            onValueChange={setNotarization}
+                        >
+                            <SelectTrigger className="w-[180px]">
+                                <SelectValue placeholder="Notarization Status" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectGroup>
+                                    {NOTARIZATION_STATUS_OPTIONS.map(
+                                        (option) => (
+                                            <SelectItem
+                                                key={option.value}
+                                                value={option.value}
+                                            >
+                                                {option.label}
+                                            </SelectItem>
+                                        ),
+                                    )}
+                                </SelectGroup>
+                            </SelectContent>
+                        </Select>
+
+                        <Select value={erp} onValueChange={setErp}>
+                            <SelectTrigger className="w-[180px]">
+                                <SelectValue placeholder="ERP Status" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectGroup>
+                                    {ERP_STATUS_OPTIONS.map((option) => (
+                                        <SelectItem
+                                            key={option.value}
+                                            value={option.value}
+                                        >
+                                            {option.label}
+                                        </SelectItem>
+                                    ))}
+                                </SelectGroup>
+                            </SelectContent>
+                        </Select>
+
+                        <Select value={sales} onValueChange={setSales}>
+                            <SelectTrigger className="w-[180px]">
+                                <SelectValue placeholder="Sales Status" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectGroup>
+                                    {SALES_STATUS_OPTIONS.map((option) => (
+                                        <SelectItem
+                                            key={option.value}
+                                            value={option.value}
+                                        >
+                                            {option.label}
+                                        </SelectItem>
+                                    ))}
+                                </SelectGroup>
+                            </SelectContent>
+                        </Select>
+
+                        <Select value={level} onValueChange={setLevel}>
+                            <SelectTrigger className="w-[180px]">
+                                <SelectValue placeholder="Level" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectGroup>
+                                    {LEVEL_STATUS_OPTIONS.map((option) => (
+                                        <SelectItem
+                                            key={option.value}
+                                            value={option.value}
+                                        >
+                                            {option.label}
+                                        </SelectItem>
+                                    ))}
+                                </SelectGroup>
+                            </SelectContent>
+                        </Select>
+                        {activeFilters.length > 0 && (
+                            <TooltipProvider>
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <button
+                                            className="cursor-pointer items-center rounded border p-2 text-sm text-muted-foreground"
+                                            onClick={clearFilter}
+                                        >
+                                            <RefreshCcw className="h-4 w-4" />
+                                        </button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                        <p>Reset Filters</p>
+                                    </TooltipContent>
+                                </Tooltip>
+                            </TooltipProvider>
+                        )}
                     </div>
                 </div>
 
@@ -246,6 +421,16 @@ export default function CompaniesIndex({ companies, query }: CompaniesProps) {
                                 {
                                     sort: params?.sort,
                                     'filter[search]': searchValue || undefined,
+                                    'filter[notarization]':
+                                        notarization === 'all'
+                                            ? undefined
+                                            : notarization,
+                                    'filter[erp]':
+                                        erp === 'all' ? undefined : erp,
+                                    'filter[sales]':
+                                        sales === 'all' ? undefined : sales,
+                                    'filter[level]':
+                                        level === 'all' ? undefined : level,
                                     page: params?.page ?? 1,
                                 },
                                 {
