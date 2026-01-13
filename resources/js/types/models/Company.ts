@@ -16,6 +16,7 @@ export interface Company {
     completed_checklist_count: number;
     checklist_progress: number;
     notarization_status?: string;
+    status?: string;
     erp_status?: string;
     sales_activity?: string;
     level?: string;

@@ -53,7 +53,7 @@ class CompanyController extends Controller
             ])
             ->paginate(20);
 
-        return Inertia::render('companies/companies-index', [
+        return Inertia::render('companies/index', [
             'companies' => $companies,
             'query' => [
                 ...$request->only(['sort', 'perPage', 'page']),
@@ -251,16 +251,12 @@ class CompanyController extends Controller
         $totalChecklists = $company->checklists()->count();
         $completedChecklists = $company->checklists()->where('is_completed', true)->count();
 
-        $checklistPercentage = $totalChecklists > 0
-            ? round(($completedChecklists / $totalChecklists) * 100)
+        $company->onboarding_percentage = $totalChecklists > 0
+            ? $completedChecklists / $totalChecklists
             : 0;
 
         return Inertia::render('companies/company/detail-tab', [
-            'company' => [
-                ...$company->toArray(),
-                'checklist_percentage' => $checklistPercentage,
-                'owners' => $company->owners,
-            ],
+            'company' => $company,
             'sponsors' => \App\Models\Company::all(),
             'coaches' => \App\Models\User::all(),
         ]);

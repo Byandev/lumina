@@ -199,8 +199,8 @@ export default function CompaniesIndex({ companies, query }: CompaniesProps) {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Companies" />
 
-            <div className="px-8">
-                <div className="flex flex-col my-8 items-center justify-between gap-8 lg:flex-row">
+            <div className="px-4 sm:px-8">
+                <div className="flex flex-col my-4 sm:my-8 items-center justify-between gap-8 lg:flex-row">
                     <p className="font-semibold text-foreground text-3xl my-0">
                         Companies
                     </p>

@@ -44,11 +44,14 @@ interface User {
     name: string;
     email: string;
     photo?: string | null;
+    phone?: string | null;
     photo_url?: string | null;
     created_at?: string;
     updated_at?: string;
     email_verified_at?: string;
     role?: string;
+    facebook?: string;
+    birthdate?: string;
 }
 
 interface PaginatedResponse<T> {

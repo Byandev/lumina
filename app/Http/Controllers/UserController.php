@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Company;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -16,8 +15,6 @@ class UserController extends Controller
     /**
      * Display a listing of the resource.
      */
-
-
     public function index(Request $request)
     {
         $users = QueryBuilder::for(User::query())
@@ -45,7 +42,6 @@ class UserController extends Controller
             ],
         ]);
     }
-
 
     /**
      * Store a newly created resource in storage.

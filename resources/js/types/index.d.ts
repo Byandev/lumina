@@ -40,6 +40,10 @@ export interface User {
     created_at: string;
     updated_at: string;
     [key: string]: unknown;
+    facebook?: string;
+    birthdate?: string;
+    phone?: string;
+    address?: string
 }
 
 export interface PaginatedData<T> {
