@@ -41,16 +41,28 @@ const Create = ({ coaches, companies: sponsorCompanies }: Props) => {
         sales_activity: '',
         notarization_status: '',
         erp_status: '',
-        owners: [{ name: '', email: '', phone: '', address: '', facebook: '', birthdate: '' }],
+        logo: null,
+        owners: [
+            {
+                name: '',
+                email: '',
+                phone: '',
+                address: '',
+                facebook: '',
+                birthdate: '',
+                profile_picture: null
+            }
+        ],
     });
 
     const submit = (e: React.FormEvent) => {
         e.preventDefault();
+        console.log(data)
         post('/companies'); // change to route if needed
     };
 
     const addNewOwner = () => {
-        setData('owners', [...data.owners, { name: '', email: '', phone: '', address: '', facebook: '', birthdate: '' }])
+        setData('owners', [...data.owners, { name: '', email: '', phone: '', address: '', facebook: '', birthdate: '', profile_picture: null }])
     }
 
     return (
@@ -64,6 +76,20 @@ const Create = ({ coaches, companies: sponsorCompanies }: Props) => {
                     <div className="space-y-6">
                         <ComponentCard title="Company Information" desc="Provide information about the company">
                             <div className="grid grid-cols-2 gap-6">
+                                <div className="flex flex-col gap-2">
+                                    <Label className="text-sm font-medium">Name</Label>
+                                    <Input
+                                        id="name"
+                                        type='file'
+                                        onChange={(e) => {
+                                            if (e.target.files?.length) {
+                                                setData('logo', e.target.files[0])
+                                            }
+                                        }}
+                                    />
+                                    <InputError message={errors.name} />
+                                </div>
+
                                 <div className="flex flex-col gap-2">
                                     <Label className="text-sm font-medium">Name</Label>
                                     <Input

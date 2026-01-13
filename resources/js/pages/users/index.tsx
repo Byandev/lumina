@@ -38,6 +38,7 @@ import { percentageFormatter } from '@/lib/formatter';
 import StatusBadge from '@/components/companies/status-badge';
 import { omit } from 'lodash';
 import ComponentCard from '@/components/component-card';
+import { Media } from '@/types/models/Media';
 
 interface User {
     id: number;
@@ -53,6 +54,7 @@ interface User {
     facebook?: string;
     birthdate?: string;
     address?: string;
+    profile_picture?: Media | null
 }
 
 interface PaginatedResponse<T> {

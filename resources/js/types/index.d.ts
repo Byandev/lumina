@@ -1,5 +1,6 @@
 import { InertiaLinkProps } from '@inertiajs/react';
 import { LucideIcon } from 'lucide-react';
+import { Media } from '@/types/models/Media';
 
 export interface Auth {
     user: User;
@@ -44,6 +45,7 @@ export interface User {
     birthdate?: string;
     phone?: string;
     address?: string
+    profile_picture?: Media | null
 }
 
 export interface PaginatedData<T> {

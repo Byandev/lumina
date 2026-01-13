@@ -3,8 +3,6 @@ import { Input } from '@/components/ui/input';
 import InputError from '@/components/input-error';
 import React from 'react';
 import { CompanyForm, OwnerPayload } from '@/types/models/Company';
-import { XIcon } from 'lucide-react';
-
 
 type Errors = Record<string, string>;
 
@@ -20,7 +18,7 @@ const CompanyOwnerForm = ({ index,  data, setData, errors }: Props) => {
         name: '', email: '', phone: '', address: '', birthdate: '', facebook: ''
     };
 
-    const setOwner = (field: 'name' | 'email' | 'phone' | 'address' | 'birthdate' | 'facebook', value: string) => {
+    const setOwner = (field: 'name' | 'email' | 'phone' | 'address' | 'birthdate' | 'facebook' | 'profile_picture', value: string | File) => {
         const next = [...data.owners];
         next[index] = { ...owner, [field]: value };
         setData('owners', next);
@@ -41,6 +39,20 @@ const CompanyOwnerForm = ({ index,  data, setData, errors }: Props) => {
             </div>
 
             <div className="grid grid-cols-2 gap-6">
+                <div className="flex flex-col gap-2">
+                    <Label className="text-sm font-medium">Name</Label>
+                    <Input
+                        id={`owners-${index}-profile-picture`}
+                        type='file'
+                        onChange={(e) => {
+                            if (e.target.files?.length) {
+                                setOwner('profile_picture', e.target.files[0])
+                            }
+                        }}
+                    />
+                    <InputError message={errors.name} />
+                </div>
+
                 <Field
                     label="Name"
                     id={`owners-${index}-name`}

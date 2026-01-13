@@ -1,5 +1,6 @@
 import { User } from '@/types';
 import { OnboardingChecklist } from '@/types/models/OnboardingChecklist';
+import { Media } from '@/types/models/Media';
 
 export interface Company {
     id: number;
@@ -24,9 +25,10 @@ export interface Company {
     owners?: User[];
     onboarding_percentage?: number
     onboarding_checklists?: OnboardingChecklist[]
+    company_logo?: Media
 }
 
-export type OwnerPayload = Pick<User, 'name' | 'email' | 'phone' | 'facebook' | 'birthdate' | 'address'>;
+export type OwnerPayload = Pick<User, 'name' | 'email' | 'phone' | 'facebook' | 'birthdate' | 'address' | 'profile_picture'>
 
 export type CompanyForm = Pick<
     Company,
@@ -42,6 +44,6 @@ export type CompanyForm = Pick<
 > & {
     sponsor_id: string;
     coach_id: string;
-
+    logo: File | Media | null;
     owners: OwnerPayload[];
 };

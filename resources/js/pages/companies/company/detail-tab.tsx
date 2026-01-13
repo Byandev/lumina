@@ -20,7 +20,7 @@ const DetailTab = ({ company }: Props) => {
                 <div>
                     <div className='flex flex-col md:flex-row items-center gap-x-2'>
                         <Avatar className="size-20">
-                            <AvatarImage src={`/${company.logo}`} alt="@shadcn" />
+                            <AvatarImage src={company.company_logo?.original_url} alt="@shadcn" />
                             <AvatarFallback>CN</AvatarFallback>
                         </Avatar>
 

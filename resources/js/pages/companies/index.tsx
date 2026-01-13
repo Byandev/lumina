@@ -15,6 +15,7 @@ import { ColumnDef } from '@tanstack/react-table';
 import { omit } from 'lodash';
 import { Mail, Plus, Search } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
+import { useInitials } from '@/hooks/use-initials';
 
 interface CompaniesProps {
     companies: PaginatedData<Company>;
@@ -37,15 +38,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 export default function CompaniesIndex({ companies, query }: CompaniesProps) {
-    const getInitials = (name: string) => {
-        return name
-            .split(' ')
-            .filter(Boolean)
-            .map((word) => word[0])
-            .join('')
-            .toUpperCase()
-            .slice(0, 2);
-    };
+    const getInitials = useInitials();
 
     const [searchValue, setSearchValue] = useState(query?.filter?.search ?? '');
 
@@ -90,13 +83,14 @@ export default function CompaniesIndex({ companies, query }: CompaniesProps) {
 
                 return (
                     <div className="flex items-center gap-2 sm:gap-3">
-                        <Avatar>
-                            <AvatarImage
-                                src={`/${company.logo}`}
-                                alt={company.name}
-                            />
-                            <AvatarFallback>
-                                {' '}
+                        <Avatar className='cursor-pointer'>
+                            {company.company_logo &&
+                                <AvatarImage
+                                    src={company.company_logo?.original_url}
+                                    alt={company.name}
+                                />
+                            }
+                            <AvatarFallback className='bg-blue-600 text-white'>
                                 {getInitials(company.name)}
                             </AvatarFallback>
                         </Avatar>

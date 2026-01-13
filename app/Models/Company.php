@@ -4,9 +4,15 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\MorphOne;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
-class Company extends Model
+class Company extends Model implements HasMedia
 {
+    use InteractsWithMedia;
+
     protected $guarded = [];
 
     public function sponsor(): \Illuminate\Database\Eloquent\Relations\BelongsTo
@@ -80,11 +86,6 @@ class Company extends Model
         return $this->checklists()->count();
     }
 
-    public function remarks()
-    {
-        return $this->hasMany(ChecklistRemark::class);
-    }
-
     public function events()
     {
         return $this->belongsToMany(
@@ -113,5 +114,11 @@ class Company extends Model
         return $totalChecklists > 0
             ? $completedChecklists / $totalChecklists
             : 0;
+    }
+
+    public function companyLogo(): MorphOne
+    {
+        return $this->morphOne(Media::class, 'model')
+            ->where('collection_name', 'COMPANY_LOGO');
     }
 }

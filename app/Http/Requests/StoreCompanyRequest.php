@@ -79,7 +79,7 @@ class StoreCompanyRequest extends FormRequest
                 'before_or_equal:today',
                 'after_or_equal:1900-01-01',
             ],
-            'owners.*.photo' => [
+            'owners.*.profile_picture' => [
                 'nullable',
                 'image',
                 'mimes:jpeg,png,jpg,gif,webp',
@@ -162,80 +162,5 @@ class StoreCompanyRequest extends FormRequest
             'owners.*.photo' => 'owner photo',
             'owners.*.id_file' => 'owner ID document',
         ];
-    }
-
-    /**
-     * Prepare the data for validation.
-     */
-    protected function prepareForValidation(): void
-    {
-        // Trim string inputs
-        $this->merge([
-            'name' => trim($this->name),
-            'email' => trim($this->email),
-            'phone' => trim($this->phone),
-            'address' => trim($this->address),
-        ]);
-
-        // Handle sponsor_id - convert "none" to null
-        if ($this->has('sponsor_id') && $this->sponsor_id === 'none') {
-            $this->merge(['sponsor_id' => null]);
-        }
-
-        // Handle coach_id - convert "none" to null
-        if ($this->has('coach_id') && $this->coach_id === 'none') {
-            $this->merge(['coach_id' => null]);
-        }
-
-        // Trim owner fields
-        if ($this->has('owners') && is_array($this->owners)) {
-            $owners = collect($this->owners)->map(function ($owner) {
-                return [
-                    'name' => trim($owner['name'] ?? ''),
-                    'email' => trim($owner['email'] ?? ''),
-                    'phone' => trim($owner['phone'] ?? ''),
-                    'address' => trim($owner['address'] ?? ''),
-                    'facebook' => trim($owner['facebook'] ?? ''),
-                    'birthdate' => $owner['birthdate'] ?? null,
-                    'photo' => $owner['photo'] ?? null,
-                    'id_file' => $owner['id_file'] ?? null,
-                ];
-            })->toArray();
-
-            $this->merge(['owners' => $owners]);
-        }
-    }
-
-    /**
-     * Get the validated data from the request.
-     */
-    public function validated($key = null, $default = null)
-    {
-        $validated = parent::validated($key, $default);
-
-        // Convert empty strings to null for sponsor_id and coach_id
-        if (isset($validated['sponsor_id']) && $validated['sponsor_id'] === 'none') {
-            $validated['sponsor_id'] = null;
-        }
-
-        if (isset($validated['coach_id']) && $validated['coach_id'] === 'none') {
-            $validated['coach_id'] = null;
-        }
-
-        // Ensure owners array is properly formatted
-        if (isset($validated['owners'])) {
-            $validated['owners'] = array_map(function ($owner) {
-                return [
-                    'name' => $owner['name'],
-                    'email' => $owner['email'],
-                    'phone' => $owner['phone'],
-                    'address' => $owner['address'] ?? null,
-                    'facebook' => $owner['facebook'] ?? null,
-                    'birthdate' => $owner['birthdate'] ?? null,
-                ];
-            }, $validated['owners']);
-        }
-
-        return $validated;
     }
 }
