@@ -4,7 +4,6 @@ import { percentageFormatter } from '@/lib/formatter';
 import ComponentCard from '@/components/component-card';
 import CompanyLayout from '@/pages/companies/company/company-layout';
 import OnboardingChecklistItem from '@/components/companies/onboarding-checklist-item';
-import { Checkbox } from '@/components/ui/checkbox';
 
 interface Props {
     company: Company

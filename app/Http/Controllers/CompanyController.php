@@ -30,14 +30,14 @@ class CompanyController extends Controller
                     ->whereColumn('users.company_id', 'companies.id');
             }, 'owners_count')
             ->selectSub(function ($query) {
-                $query->from('company_checklists')
+                $query->from('company_onboarding_checklists')
                     ->selectRaw('
                 ROUND(
                     (SUM(is_completed) / NULLIF(COUNT(*), 0)),
                     4
                 )
             ')
-                    ->whereColumn('company_checklists.company_id', 'companies.id');
+                    ->whereColumn('company_onboarding_checklists.company_id', 'companies.id');
             }, 'onboarding_percentage')
             ->allowedFilters([
                 AllowedFilter::partial('search', 'name'),
@@ -246,12 +246,7 @@ class CompanyController extends Controller
     public function show(Company $company)
     {
         $company = $company->load('owners', 'coach:id,name,photo', 'sponsor:id,name,logo');
-        $totalChecklists = $company->onboardingChecklists()->count();
-        $completedChecklists = $company->onboardingChecklists()->where('is_completed', true)->count();
-
-        $company->onboarding_percentage = $totalChecklists > 0
-            ? $completedChecklists / $totalChecklists
-            : 0;
+        $company->onboarding_percentage = $company->getOnboardingPercentage();
 
         return Inertia::render('companies/company/detail-tab', [
             'company' => $company,

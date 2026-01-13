@@ -18,7 +18,7 @@ const CompanyOwnerCard = ({ owner }: Props) => {
             <p className="text-center text-sm font-medium">{owner.name}</p>
         </div>
 
-        <div className="text-xs grid grid-cols-2 gap-4 text-gray-800">
+        <div className="text-sm grid grid-cols-2 gap-4 text-gray-800">
             <p className="text-center flex space-x-2 items-center">
                 <Mail className="size-4"/>
                 <span>{owner.email}</span>

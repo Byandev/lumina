@@ -15,7 +15,8 @@ const OnboardingChecklistItem = ({ checklist }: Props) => {
     const onChange = (checked: CheckedState) => {
         data.is_completed = checked as boolean;
         put(`/companies/${checklist.company_id}/onboarding/${checklist.id}`, {
-            preserveScroll: true
+            preserveScroll: true,
+            preserveState: false
         })
     }
 
