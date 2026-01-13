@@ -88,165 +88,198 @@ class CompanyController extends Controller
     {
         DB::beginTransaction();
 
-        $uploadedFiles = [];
-        $createdCompany = null;
-
         try {
-            // 1) Company logo
-            $logoPath = null;
-            if ($request->hasFile('logo') && $request->file('logo')->isValid()) {
-                $logoFile = $request->file('logo');
-                $logoFileName = 'logo_'.uniqid().'_'.time().'.'.$logoFile->getClientOriginalExtension();
+            $company = Company::create(
+                collect($request->validated())
+                    ->except(['owners'])
+                    ->toArray()
+            );
 
-                $logoPath = $logoFile->storeAs('companies/logos', $logoFileName);
-                $uploadedFiles[] = $logoPath;
-            }
-
-            // 2) Create company
-            $company = Company::create([
-                'name' => trim($request->name),
-                'email' => $request->email ? trim($request->email) : null,
-                'phone' => $request->phone ? trim($request->phone) : null,
-                'address' => $request->address ? trim($request->address) : null,
-                'logo' => $logoPath,
-                'sponsor_id' => $request->sponsor_id ?: null,
-                'coach_id' => $request->coach_id ?: null,
-            ]);
-
-            // ATTACH CHECKLIST ITEMS TO COMPANY
-            $checklistItems = OnboardingChecklist::all();
-
-            foreach ($checklistItems as $checklistItem) {
-                $company->checklists()->attach($checklistItem->id, [
-                    'remark' => '',
-                    'is_completed' => false,
-                    'file' => null,
+            foreach ($request->validated()['owners'] as $owner) {
+                $owner = $company->owners()->create([
+                    'name' => $owner['name'],
+                    'email' => $owner['email'],
+                    'phone' => $owner['phone'],
+                    'address' => $owner['address'],
+                    'facebook' => $owner['facebook'],
+                    'birthdate' => $owner['birthdate'],
+                    'password' => bcrypt('password@123'),
+                    'company_id' => $company->id,
                 ]);
-            }
-
-            $createdCompany = $company;
-
-            // 3) Owners
-            if ($request->has('owners') && is_array($request->owners) && count($request->owners) > 0) {
-                foreach ($request->owners as $index => $ownerData) {
-
-                    // photo
-                    $ownerPhotoPath = null;
-                    if (
-                        isset($ownerData['photo']) &&
-                        $ownerData['photo'] instanceof UploadedFile &&
-                        $ownerData['photo']->isValid()
-                    ) {
-                        $photoFile = $ownerData['photo'];
-                        $photoFileName = 'photo_'.uniqid().'_'.time().'_'.$index.'.'.$photoFile->getClientOriginalExtension();
-
-                        $ownerPhotoPath = $photoFile->storeAs('owners/photos', $photoFileName);
-                        $uploadedFiles[] = $ownerPhotoPath;
-                    }
-
-                    // id file
-                    $idFilePath = null;
-                    $idFileOriginalName = null;
-                    if (
-                        isset($ownerData['id_file']) &&
-                        $ownerData['id_file'] instanceof UploadedFile &&
-                        $ownerData['id_file']->isValid()
-                    ) {
-                        $idFile = $ownerData['id_file'];
-                        $idFileOriginalName = $idFile->getClientOriginalName();
-                        $idFileName = 'id_'.uniqid().'_'.time().'_'.$index.'.'.$idFile->getClientOriginalExtension();
-
-                        $idFilePath = $idFile->storeAs('owners/ids', $idFileName);
-                        $uploadedFiles[] = $idFilePath;
-                    }
-
-                    // find existing owner by email
-                    $owner = User::where('email', trim($ownerData['email']))->first();
-
-                    if ($owner) {
-                        $updateData = [
-                            'name' => trim($ownerData['name']),
-                            'phone' => isset($ownerData['phone']) ? trim($ownerData['phone']) : null,
-                            'address' => isset($ownerData['address']) ? trim($ownerData['address']) : null,
-                            'facebook' => isset($ownerData['facebook']) ? trim($ownerData['facebook']) : null,
-                            'birthdate' => isset($ownerData['birthdate']) ? $ownerData['birthdate'] : null,
-                        ];
-
-                        // Replace photo (delete old from S3)
-                        if ($ownerPhotoPath) {
-                            if ($owner->photo && Storage::exists($owner->photo)) {
-                                Storage::delete($owner->photo);
-                            }
-                            $updateData['photo'] = $ownerPhotoPath;
-                        }
-
-                        // Replace ID (delete old from S3)
-                        if ($idFilePath) {
-                            // NOTE: your code uses $owner->id_file_path, but create uses 'ids'
-                            // Make sure your User model column names are consistent.
-                            $oldIdPath = $owner->id_file_path ?? $owner->ids ?? null;
-
-                            if ($oldIdPath && Storage::exists($oldIdPath)) {
-                                Storage::delete($oldIdPath);
-                            }
-
-                            $updateData['id_file_path'] = $idFilePath;
-                            $updateData['id_file_name'] = $idFileOriginalName;
-                        }
-
-                        $owner->update($updateData);
-                    } else {
-                        User::create([
-                            'name' => trim($ownerData['name']),
-                            'email' => trim($ownerData['email']),
-                            'password' => bcrypt('Password123`'),
-                            'phone' => isset($ownerData['phone']) ? trim($ownerData['phone']) : null,
-                            'address' => isset($ownerData['address']) ? trim($ownerData['address']) : null,
-                            'facebook' => isset($ownerData['facebook']) ? trim($ownerData['facebook']) : null,
-                            'birthdate' => isset($ownerData['birthdate']) ? $ownerData['birthdate'] : null,
-                            'role' => 'owner',
-                            'photo' => $ownerPhotoPath,
-                            'ids' => $idFilePath,
-                            'company_id' => $createdCompany->id,
-                        ]);
-                    }
-                }
             }
 
             DB::commit();
 
-            return redirect()->route('companies')
-                ->with('success', 'Company created successfully with '.count($request->owners ?? []).' owner(s).');
+            return redirect()->route('companies.index');
 
-        } catch (ValidationException $e) {
-            dd($e->getMessage());
-            DB::rollBack();
-            throw $e;
-        } catch (\Throwable $e) {
-            dd($e->getMessage());
+        } catch (\Exception $exception) {
             DB::rollBack();
 
-            // Cleanup: delete newly uploaded S3 objects
-            foreach ($uploadedFiles as $filePath) {
-                if ($filePath && Storage::exists($filePath)) {
-                    Storage::delete($filePath);
-                }
-            }
-
-            if ($createdCompany) {
-                $createdCompany->delete();
-            }
-
-            Log::error('Company creation failed: '.$e->getMessage(), [
-                'exception' => $e,
-                'trace' => $e->getTraceAsString(),
-                'request_data' => $request->except(['logo', 'owners.*.photo', 'owners.*.id_file']),
-            ]);
-
-            return back()->withErrors([
-                'server_error' => 'An error occurred while creating the company. Please try again. If the problem persists, contact support.',
-            ])->withInput();
+            return back()
+                ->withErrors([
+                    'server_error' => 'An error occurred while creating the company. Please try again. If the problem persists, contact support.',
+                ])->withInput();
         }
+        //        DB::beginTransaction();
+        //
+        //        $uploadedFiles = [];
+        //        $createdCompany = null;
+        //
+        //        try {
+        //            $logoPath = null;
+        //            if ($request->hasFile('logo') && $request->file('logo')->isValid()) {
+        //                $logoFile = $request->file('logo');
+        //                $logoFileName = 'logo_'.uniqid().'_'.time().'.'.$logoFile->getClientOriginalExtension();
+        //
+        //                $logoPath = $logoFile->storeAs('companies/logos', $logoFileName);
+        //                $uploadedFiles[] = $logoPath;
+        //            }
+        //
+        //            // 2) Create company
+        //            $company = Company::create([
+        //                'name' => trim($request->name),
+        //                'email' => $request->email ? trim($request->email) : null,
+        //                'phone' => $request->phone ? trim($request->phone) : null,
+        //                'address' => $request->address ? trim($request->address) : null,
+        //                'logo' => $logoPath,
+        //                'sponsor_id' => $request->sponsor_id ?: null,
+        //                'coach_id' => $request->coach_id ?: null,
+        //            ]);
+        //
+        //            // ATTACH CHECKLIST ITEMS TO COMPANY
+        //            $checklistItems = OnboardingChecklist::all();
+        //
+        //            foreach ($checklistItems as $checklistItem) {
+        //                $company->checklists()->attach($checklistItem->id, [
+        //                    'remark' => '',
+        //                    'is_completed' => false,
+        //                    'file' => null,
+        //                ]);
+        //            }
+        //
+        //            $createdCompany = $company;
+        //
+        //            // 3) Owners
+        //            if ($request->has('owners') && is_array($request->owners) && count($request->owners) > 0) {
+        //                foreach ($request->owners as $index => $ownerData) {
+        //
+        //                    // photo
+        //                    $ownerPhotoPath = null;
+        //                    if (
+        //                        isset($ownerData['photo']) &&
+        //                        $ownerData['photo'] instanceof UploadedFile &&
+        //                        $ownerData['photo']->isValid()
+        //                    ) {
+        //                        $photoFile = $ownerData['photo'];
+        //                        $photoFileName = 'photo_'.uniqid().'_'.time().'_'.$index.'.'.$photoFile->getClientOriginalExtension();
+        //
+        //                        $ownerPhotoPath = $photoFile->storeAs('owners/photos', $photoFileName);
+        //                        $uploadedFiles[] = $ownerPhotoPath;
+        //                    }
+        //
+        //                    // id file
+        //                    $idFilePath = null;
+        //                    $idFileOriginalName = null;
+        //                    if (
+        //                        isset($ownerData['id_file']) &&
+        //                        $ownerData['id_file'] instanceof UploadedFile &&
+        //                        $ownerData['id_file']->isValid()
+        //                    ) {
+        //                        $idFile = $ownerData['id_file'];
+        //                        $idFileOriginalName = $idFile->getClientOriginalName();
+        //                        $idFileName = 'id_'.uniqid().'_'.time().'_'.$index.'.'.$idFile->getClientOriginalExtension();
+        //
+        //                        $idFilePath = $idFile->storeAs('owners/ids', $idFileName);
+        //                        $uploadedFiles[] = $idFilePath;
+        //                    }
+        //
+        //                    // find existing owner by email
+        //                    $owner = User::where('email', trim($ownerData['email']))->first();
+        //
+        //                    if ($owner) {
+        //                        $updateData = [
+        //                            'name' => trim($ownerData['name']),
+        //                            'phone' => isset($ownerData['phone']) ? trim($ownerData['phone']) : null,
+        //                            'address' => isset($ownerData['address']) ? trim($ownerData['address']) : null,
+        //                            'facebook' => isset($ownerData['facebook']) ? trim($ownerData['facebook']) : null,
+        //                            'birthdate' => isset($ownerData['birthdate']) ? $ownerData['birthdate'] : null,
+        //                        ];
+        //
+        //                        // Replace photo (delete old from S3)
+        //                        if ($ownerPhotoPath) {
+        //                            if ($owner->photo && Storage::exists($owner->photo)) {
+        //                                Storage::delete($owner->photo);
+        //                            }
+        //                            $updateData['photo'] = $ownerPhotoPath;
+        //                        }
+        //
+        //                        // Replace ID (delete old from S3)
+        //                        if ($idFilePath) {
+        //                            // NOTE: your code uses $owner->id_file_path, but create uses 'ids'
+        //                            // Make sure your User model column names are consistent.
+        //                            $oldIdPath = $owner->id_file_path ?? $owner->ids ?? null;
+        //
+        //                            if ($oldIdPath && Storage::exists($oldIdPath)) {
+        //                                Storage::delete($oldIdPath);
+        //                            }
+        //
+        //                            $updateData['id_file_path'] = $idFilePath;
+        //                            $updateData['id_file_name'] = $idFileOriginalName;
+        //                        }
+        //
+        //                        $owner->update($updateData);
+        //                    } else {
+        //                        User::create([
+        //                            'name' => trim($ownerData['name']),
+        //                            'email' => trim($ownerData['email']),
+        //                            'password' => bcrypt('Password123`'),
+        //                            'phone' => isset($ownerData['phone']) ? trim($ownerData['phone']) : null,
+        //                            'address' => isset($ownerData['address']) ? trim($ownerData['address']) : null,
+        //                            'facebook' => isset($ownerData['facebook']) ? trim($ownerData['facebook']) : null,
+        //                            'birthdate' => isset($ownerData['birthdate']) ? $ownerData['birthdate'] : null,
+        //                            'role' => 'owner',
+        //                            'photo' => $ownerPhotoPath,
+        //                            'ids' => $idFilePath,
+        //                            'company_id' => $createdCompany->id,
+        //                        ]);
+        //                    }
+        //                }
+        //            }
+        //
+        //            DB::commit();
+        //
+        //            return redirect()->route('companies')
+        //                ->with('success', 'Company created successfully with '.count($request->owners ?? []).' owner(s).');
+        //
+        //        } catch (ValidationException $e) {
+        //            dd($e->getMessage());
+        //            DB::rollBack();
+        //            throw $e;
+        //        } catch (\Throwable $e) {
+        //            dd($e->getMessage());
+        //            DB::rollBack();
+        //
+        //            // Cleanup: delete newly uploaded S3 objects
+        //            foreach ($uploadedFiles as $filePath) {
+        //                if ($filePath && Storage::exists($filePath)) {
+        //                    Storage::delete($filePath);
+        //                }
+        //            }
+        //
+        //            if ($createdCompany) {
+        //                $createdCompany->delete();
+        //            }
+        //
+        //            Log::error('Company creation failed: '.$e->getMessage(), [
+        //                'exception' => $e,
+        //                'trace' => $e->getTraceAsString(),
+        //                'request_data' => $request->except(['logo', 'owners.*.photo', 'owners.*.id_file']),
+        //            ]);
+        //
+        //            return back()->withErrors([
+        //                'server_error' => 'An error occurred while creating the company. Please try again. If the problem persists, contact support.',
+        //            ])->withInput();
+        //        }
     }
 
     public function show(Company $company)

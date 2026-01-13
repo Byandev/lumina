@@ -8,7 +8,6 @@ import { Input } from '@/components/ui/input';
 import AppLayout from '@/layouts/app-layout';
 import { percentageFormatter } from '@/lib/formatter';
 import { toFrontendSort } from '@/lib/sort';
-import { companies } from '@/routes';
 import { type BreadcrumbItem, PaginatedData } from '@/types';
 import { Company } from '@/types/models/Company';
 import { Head, Link, router } from '@inertiajs/react';
@@ -33,7 +32,7 @@ interface CompaniesProps {
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Companies',
-        href: companies().url,
+        href: '/companies'
     },
 ];
 

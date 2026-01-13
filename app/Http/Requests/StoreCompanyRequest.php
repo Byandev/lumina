@@ -13,7 +13,7 @@ class StoreCompanyRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return true; // Change based on your authorization logic
+        return true;
     }
 
     /**
@@ -31,7 +31,7 @@ class StoreCompanyRequest extends FormRequest
                 'max:255',
             ],
             'email' => [
-                'nullable',
+                'required',
                 'email',
                 'max:255',
             ],
@@ -41,26 +41,19 @@ class StoreCompanyRequest extends FormRequest
                 'nullable',
                 'image',
                 'mimes:jpeg,png,jpg,gif,webp',
-                'max:5120', // 5MB
-                'dimensions:min_width=100,min_height=100,max_width=2000,max_height=2000',
+                'max:5120',
             ],
 
-            // Sponsor and Coach
             'sponsor_id' => [
                 'nullable',
                 'string',
-                Rule::exists('companies', 'id')->where(function ($query) {
-                    // Optional: Add additional conditions if needed
-                    return $query;
-                }),
+                Rule::exists('companies', 'id'),
             ],
             'coach_id' => [
                 'nullable',
                 'string',
                 Rule::exists('users', 'id')->where(function ($query) {
-                    // Optional: Add role-based filtering if needed
-                    // return $query->where('role', 'coach');
-                    return $query;
+                    return $query->whereNull('company_id');
                 }),
             ],
 
@@ -93,7 +86,7 @@ class StoreCompanyRequest extends FormRequest
                 'max:5120', // 5MB
             ],
             'owners.*.id_file' => [
-                'required',
+                'nullable',
                 'file',
                 'mimes:jpeg,png,jpg,pdf',
                 'max:10240', // 10MB for ID files

@@ -25,3 +25,23 @@ export interface Company {
     onboarding_percentage?: number
     onboarding_checklists?: OnboardingChecklist[]
 }
+
+export type OwnerPayload = Pick<User, 'name' | 'email' | 'phone' | 'facebook' | 'birthdate' | 'address'>;
+
+export type CompanyForm = Pick<
+    Company,
+    | 'name'
+    | 'email'
+    | 'phone'
+    | 'address'
+    | 'status'
+    | 'level'
+    | 'sales_activity'
+    | 'notarization_status'
+    | 'erp_status'
+> & {
+    sponsor_id: string;
+    coach_id: string;
+
+    owners: OwnerPayload[];
+};

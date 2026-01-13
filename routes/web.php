@@ -24,10 +24,9 @@ Route::post('/partnership-application', [CompanyController::class, 'submit'])->n
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', [\App\Http\Controllers\DashboardController::class, 'index'])->middleware(['auth'])->name('dashboard');
-
-    Route::get('companies', [CompanyController::class, 'index'])->name('companies');
+    Route::get('companies', [CompanyController::class, 'index'])->name('companies.index');
     Route::get('companies/create', [CompanyController::class, 'create'])->name('companies.create');
-    Route::post('companies/store', [CompanyController::class, 'store'])->name('companies.store');
+    Route::post('companies', [CompanyController::class, 'store'])->name('companies.store');
     Route::get('/events', [EventController::class, 'index'])->name('events');
     Route::post('/events', [EventController::class, 'store'])->name('events.store');
     Route::get('/events/{event}', [EventController::class, 'show'])->name('events.show');

@@ -52,6 +52,7 @@ interface User {
     role?: string;
     facebook?: string;
     birthdate?: string;
+    address?: string;
 }
 
 interface PaginatedResponse<T> {

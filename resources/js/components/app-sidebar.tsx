@@ -10,10 +10,10 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import { dashboard, companies, events, users } from '@/routes';
+import { dashboard, events, users } from '@/routes';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-import { Gauge, Building2, LayoutGrid, Users, Calendar } from 'lucide-react';
+import { Gauge, Building2, Users, Calendar } from 'lucide-react';
 import AppLogo from './app-logo';
 
 const mainNavItems: NavItem[] = [
@@ -24,7 +24,7 @@ const mainNavItems: NavItem[] = [
     },
     {
         title: 'Companies',
-        href: companies(),
+        href: '/companies',
         icon: Building2,
     },
     {
