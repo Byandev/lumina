@@ -1,3 +1,21 @@
+import { omit } from 'lodash';
+import { ColumnDef } from '@tanstack/react-table';
+import React, { useEffect, useState, useMemo } from 'react';
+import { Head, useForm, router, Link } from '@inertiajs/react';
+import { Plus, Search, Edit, Trash2, Eye } from 'lucide-react';
+
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import AppLayout from '@/layouts/app-layout';
+import type { BreadcrumbItem, PaginatedData } from '@/types';
+
+import { Event } from '@/types/models/Event';
+import { Company } from '@/types/models/Company';
+
+import FormModal from '@/components/events/form-modal';
+import ComponentCard from '@/components/component-card';
+import { DataTable, SortableHeader } from '@/components/ui/data-table';
+import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -8,267 +26,79 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-} from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
-import AppLayout from '@/layouts/app-layout';
-import { dashboard } from '@/routes';
-import type { BreadcrumbItem } from '@/types';
-import { Head, useForm, router, Link } from '@inertiajs/react';
-import { format } from 'date-fns';
-import {
-    Edit,
-    Plus,
-    Trash2,
-    Search,
-    X,
-    ChevronLeft,
-    ChevronRight,
-    Users,
-    Building,
-    Eye, Loader2,
-} from 'lucide-react';
-import React, { FormEvent, useEffect, useState, useCallback } from 'react';
-import { debounce } from 'lodash';
-import { route } from 'ziggy-js';
-import {
-    Tooltip,
-    TooltipContent,
-    TooltipProvider,
-    TooltipTrigger,
-} from '@/components/ui/tooltip';
-import ReactSelect from 'react-select';
-import makeAnimated from 'react-select/animated';
 
-interface Event {
-    id: number;
-    name: string;
-    date: string;
-    type: string;
-    location: string;
-    company_ids: string[];
-    companies?: {
-        id: number;
-        name: string;
-    }[];
-    created_at: string;
-    updated_at: string;
-}
+import { toFrontendSort } from '@/lib/sort';
+import company from '@/routes/company';
 
-interface Company {
-    id: number;
-    name: string;
-}
-
-interface PaginationLink {
-    url: string | null;
-    label: string;
-    active: boolean;
-}
 
 interface EventsPageProps {
-    events: {
-        data: Event[];
-        links: PaginationLink[];
-        current_page: number;
-        from: number;
-        last_page: number;
-        per_page: number;
-        to: number;
-        total: number;
-    };
+    events: PaginatedData<Event>;
     companies: Company[];
     search: string;
+    query?: {
+        sort?: string | null
+        perPage?: number | string
+        page?: number | string
+        filter?: {
+            search?: string
+        }
+    }
 }
 
-// For react-select animation
-const animatedComponents = makeAnimated();
-
-export default function index({
+export default function EventList({
     events,
     companies,
-    search: initialSearch = '',
+    query,
 }: EventsPageProps) {
+    console.log(events)
     const [isOpen, setIsOpen] = useState(false);
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-    const [editingEvent, setEditingEvent] = useState<Event | null>(null);
-    const [eventToDelete, setEventToDelete] = useState<Event | null>(null);
-    const [search, setSearch] = useState(initialSearch);
+    const [searchValue, setSearchValue] = useState(query?.filter?.search ?? '');
+    const [selectedEvent, setSelectedEvent] = useState<Event | null>(null)
 
-    // Convert companies to react-select options
-    const companyOptions = companies.map((company) => ({
-        value: company.id.toString(),
-        label: company.name,
-    }));
+    const { delete: destroy } = useForm();
 
-    const {
-        data,
-        setData,
-        post,
-        put,
-        delete: destroy,
-        errors,
-        reset,
-        processing,
-    } = useForm({
-        name: '',
-        date: '',
-        type: '',
-        location: '',
-        company_ids: [] as string[],
-    });
+    useEffect(() => {
+        const currentSearchParam = query?.filter?.search ?? '';
 
-    // Convert selected company_ids to react-select value format
-    const selectedCompanyValues = companyOptions.filter((option) =>
-        data.company_ids.includes(option.value),
-    );
+        if (searchValue === currentSearchParam) {
+            return;
+        }
 
-    // Handle company selection with react-select
-    const handleCompanyChange = (selectedOptions: any) => {
-        const selectedIds = selectedOptions
-            ? selectedOptions.map((option: any) => option.value)
-            : [];
-        setData('company_ids', selectedIds);
-    };
-
-    // Debounced search function
-    const debouncedSearch = useCallback(
-        debounce((value: string) => {
+        const timer = setTimeout(() => {
             router.get(
                 '/events',
-                { search: value, page: 1 },
+                {
+                    sort: query?.sort,
+                    'filter[search]': searchValue || undefined,
+                    page: 1,
+                },
                 {
                     preserveState: true,
                     replace: true,
                     preserveScroll: true,
                 },
             );
-        }, 500),
-        [],
-    );
+        }, 500);
 
-    // Clear search
-    const clearSearch = () => {
-        setSearch('');
-        router.get(
-            '/events',
-            {},
-            {
-                preserveState: true,
-                replace: true,
-                preserveScroll: true,
-            },
-        );
-    };
+        return () => clearTimeout(timer);
+    }, [searchValue, query?.filter?.search, query?.sort]);
 
-    // Handle search input change
-    const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const value = e.target.value;
-        setSearch(value);
-        debouncedSearch(value);
-    };
+    const initialSorting = useMemo(() => {
+        return toFrontendSort(query?.sort ?? null);
+    }, [query?.sort]);
 
-    // Handle page change
-    const handlePageChange = (url: string | null) => {
-        if (url) {
-            router.get(
-                url,
-                {},
-                {
-                    preserveState: true,
-                    preserveScroll: true,
-                },
-            );
-        }
-    };
-
-    useEffect(() => {
-        if (editingEvent) {
-            const companyIds =
-                editingEvent.company_ids ||
-                (editingEvent.companies
-                    ? editingEvent.companies.map((c) => c.id.toString())
-                    : []);
-
-            setData({
-                name: editingEvent.name,
-                date: editingEvent.date,
-                type: editingEvent.type,
-                location: editingEvent.location,
-                company_ids: companyIds,
-            });
-        } else {
-            setData('company_ids', []);
-        }
-    }, [editingEvent]);
-
-    const handleSubmit = (e: FormEvent) => {
-        e.preventDefault();
-
-        if (editingEvent) {
-            // Update existing event
-            put(`/events/${editingEvent.id}`, {
-                onSuccess: () => {
-                    reset();
-                    setIsOpen(false);
-                    setEditingEvent(null);
-                },
-                preserveScroll: true,
-            });
-        } else {
-            // Create new event
-            post(`/events`, {
-                onSuccess: () => {
-                    reset();
-                    setIsOpen(false);
-                },
-                preserveScroll: true,
-            });
-        }
-    };
-
-    const handleEdit = (event: Event) => {
-        setEditingEvent(event);
-        setIsOpen(true);
-    };
-
-    const handleDeleteClick = (event: Event) => {
-        setEventToDelete(event);
-        setIsDeleteDialogOpen(true);
-    };
 
     const handleDeleteConfirm = () => {
-        if (eventToDelete) {
-            destroy(`/events/${eventToDelete.id}`, {
+        if (selectedEvent) {
+            destroy(`/events/${selectedEvent.id}`, {
                 onSuccess: () => {
                     setIsDeleteDialogOpen(false);
-                    setEventToDelete(null);
+                    setSelectedEvent(null);
                 },
                 preserveScroll: true,
             });
         }
-    };
-
-    const handleCancel = () => {
-        setIsOpen(false);
-        setEditingEvent(null);
-        reset();
     };
 
     const breadcrumbs: BreadcrumbItem[] = [
@@ -278,292 +108,129 @@ export default function index({
         },
     ];
 
-    const eventTypes = ['Online', 'Face to Face'];
+    const columns: ColumnDef<Event>[] = [
+        {
+            accessorKey: 'name',
+            header: ({ column }) => (
+                <SortableHeader column={column} title={'Name'} />
+            ),
+        },
+        {
+            accessorKey: 'date',
+            header: ({ column }) => (
+                <SortableHeader column={column} title={'Name'} />
+            ),
+        },
+        {
+            accessorKey: 'type',
+            header: ({ column }) => (
+                <SortableHeader column={column} title={'Type'} />
+            ),
+        },
+        {
+            accessorKey: 'location',
+            header: ({ column }) => (
+                <SortableHeader column={column} title={'Location'} />
+            ),
+        },
+        {
+            accessorKey: 'id',
+            header: ({ column }) => (
+                <SortableHeader column={column} title={'Actions'} sortable={false} />
+            ),
+            cell: ({ row }) => {
+                return <div>
+                    <TooltipProvider>
+                        <div className="flex items-center justify-center gap-1.5">
+                            {/* Edit */}
+                            <Tooltip>
+                                <TooltipTrigger
+                                    asChild
+                                >
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        onClick={() =>{
+                                            setSelectedEvent(row.original)
+                                            setIsOpen(true)
+                                        }}
+                                        className="h-8 w-8"
+                                    >
+                                        <Edit className="h-4 w-4" />
+                                    </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    <p>
+                                        Edit event
+                                    </p>
+                                </TooltipContent>
+                            </Tooltip>
 
-    const selectStyles = {
-        control: (base: any, state: any) => ({
-            ...base,
-            minHeight: '40px',
-            borderColor: state.isFocused
-                ? 'hsl(var(--ring))'
-                : 'hsl(var(--input))',
-            backgroundColor: 'hsl(var(--background))',
-            '&:hover': {
-                borderColor: state.isFocused
-                    ? 'hsl(var(--ring))'
-                    : 'hsl(var(--input))',
-            },
-            boxShadow: state.isFocused ? '0 0 0 2px hsl(var(--ring))' : 'none',
-            borderRadius: 'calc(var(--radius) - 2px)',
-        }),
-        menu: (base: any) => ({
-            ...base,
-            backgroundColor: 'hsl(var(--popover))',
-            border: '1px solid hsl(var(--border))',
-            borderRadius: 'calc(var(--radius) - 2px)',
-            zIndex: 50,
-        }),
-        menuList: (base: any) => ({
-            ...base,
-            padding: '4px',
-            maxHeight: '200px',
-        }),
-        option: (base: any, state: any) => ({
-            ...base,
-            backgroundColor: state.isSelected
-                ? 'hsl(var(--primary))'
-                : state.isFocused
-                  ? 'hsl(var(--accent))'
-                  : 'transparent',
-            color: state.isSelected
-                ? 'hsl(var(--primary-foreground))'
-                : 'hsl(var(--foreground))',
-            borderRadius: 'calc(var(--radius) - 4px)',
-            padding: '8px 12px',
-            cursor: 'pointer',
-            '&:active': {
-                backgroundColor: 'hsl(var(--primary))',
-            },
-        }),
-        multiValue: (base: any) => ({
-            ...base,
-            backgroundColor: 'hsl(var(--secondary))',
-            borderRadius: 'calc(var(--radius) - 2px)',
-        }),
-        multiValueLabel: (base: any) => ({
-            ...base,
-            color: 'hsl(var(--secondary-foreground))',
-            padding: '2px 6px',
-        }),
-        multiValueRemove: (base: any) => ({
-            ...base,
-            color: 'hsl(var(--muted-foreground))',
-            borderRadius:
-                '0 calc(var(--radius) - 2px) calc(var(--radius) - 2px) 0',
-            '&:hover': {
-                backgroundColor: 'hsl(var(--destructive))',
-                color: 'hsl(var(--destructive-foreground))',
-            },
-        }),
-        placeholder: (base: any) => ({
-            ...base,
-            color: 'hsl(var(--muted-foreground))',
-        }),
-        noOptionsMessage: (base: any) => ({
-            ...base,
-            color: 'hsl(var(--muted-foreground))',
-        }),
-        clearIndicator: (base: any) => ({
-            ...base,
-            color: 'hsl(var(--muted-foreground))',
-            '&:hover': {
-                color: 'hsl(var(--foreground))',
-            },
-        }),
-        dropdownIndicator: (base: any) => ({
-            ...base,
-            color: 'hsl(var(--muted-foreground))',
-            '&:hover': {
-                color: 'hsl(var(--foreground))',
-            },
-        }),
-    };
+                            {/* Delete */}
+                            <Tooltip>
+                                <TooltipTrigger
+                                    asChild
+                                >
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        onClick={() => {
+                                                setSelectedEvent(row.original)
+                                                setIsDeleteDialogOpen(true)
+                                        }}
+                                        className="h-8 w-8 text-destructive hover:bg-destructive/10"
+                                    >
+                                        <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    <p>
+                                        Delete event
+                                    </p>
+                                </TooltipContent>
+                            </Tooltip>
+
+                            {/* View */}
+                            <Tooltip>
+                                <TooltipTrigger
+                                    asChild
+                                >
+                                    <Link
+                                        href={`/events/${row.original.id}`}
+                                        className="inline-flex h-8 w-8 items-center justify-center rounded-md hover:bg-muted"
+                                        aria-label="View event"
+                                    >
+                                        <Eye className="h-4 w-4" />
+                                    </Link>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    <p>
+                                        View event
+                                    </p>
+                                </TooltipContent>
+                            </Tooltip>
+                        </div>
+                    </TooltipProvider>
+                </div>
+            }
+         }
+
+    ];
+
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Events" />
 
-            {/* Add/Edit Event Dialog */}
-            <Dialog
+            <FormModal
                 open={isOpen}
-                onOpenChange={(open) => {
-                    if (!open) handleCancel();
-                    setIsOpen(open);
+                initialValue={selectedEvent}
+                companies={companies}
+                onOpenChange={(bool: boolean) => {
+                    setIsOpen(bool);
+                    setSelectedEvent(null);
                 }}
-            >
-                <DialogContent
-                    className="sm:max-w-[600px]"
-                    onPointerDownOutside={(e) => {
-                        e.preventDefault();
-                    }}
-                >
-                    <DialogHeader>
-                        <DialogTitle>
-                            {editingEvent ? 'Edit Event' : 'Add New Event'}
-                        </DialogTitle>
-                        <DialogDescription>
-                            {editingEvent
-                                ? 'Update the event details.'
-                                : 'Fill in the details to create a new event.'}
-                        </DialogDescription>
-                    </DialogHeader>
-                    <form onSubmit={handleSubmit} className="space-y-4">
-                        <div className="grid gap-2">
-                            <Label htmlFor="name">Event Name *</Label>
-                            <Input
-                                id="name"
-                                name="name"
-                                value={data.name}
-                                onChange={(e) =>
-                                    setData('name', e.target.value)
-                                }
-                                required
-                                placeholder="Enter event name"
-                                disabled={processing}
-                            />
-                            {errors.name && (
-                                <p className="text-sm text-red-500">
-                                    {errors.name}
-                                </p>
-                            )}
-                        </div>
-
-                        <div className="grid gap-2">
-                            <Label htmlFor="date">Date *</Label>
-                            <Input
-                                id="date"
-                                name="date"
-                                type="datetime-local"
-                                value={data.date}
-                                onChange={(e) =>
-                                    setData('date', e.target.value)
-                                }
-                                required
-                                disabled={processing}
-                            />
-                            {errors.date && (
-                                <p className="text-sm text-red-500">
-                                    {errors.date}
-                                </p>
-                            )}
-                        </div>
-
-                        <div className="grid gap-2">
-                            <Label htmlFor="type">Event Type *</Label>
-                            <Select
-                                value={data.type}
-                                onValueChange={(value) =>
-                                    setData('type', value)
-                                }
-                                required
-                                disabled={processing}
-                            >
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Select event type" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {eventTypes.map((type) => (
-                                        <SelectItem key={type} value={type}>
-                                            {type}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                            {errors.type && (
-                                <p className="text-sm text-red-500">
-                                    {errors.type}
-                                </p>
-                            )}
-                        </div>
-
-                        <div className="grid gap-2">
-                            <Label htmlFor="location">Location *</Label>
-                            <Input
-                                id="location"
-                                name="location"
-                                value={data.location}
-                                onChange={(e) =>
-                                    setData('location', e.target.value)
-                                }
-                                required
-                                placeholder="Enter event location"
-                                disabled={processing}
-                            />
-                            {errors.location && (
-                                <p className="text-sm text-red-500">
-                                    {errors.location}
-                                </p>
-                            )}
-                        </div>
-
-                        <div className="grid gap-2">
-                            <Label htmlFor="companies">Companies *</Label>
-                            <ReactSelect
-                                id="companies"
-                                name="companies"
-                                isMulti
-                                options={companyOptions}
-                                value={selectedCompanyValues}
-                                onChange={handleCompanyChange}
-                                closeMenuOnSelect={false}
-                                placeholder="Select companies..."
-                                noOptionsMessage={() => 'No companies found'}
-                                components={animatedComponents}
-                                isDisabled={processing}
-                                className="react-select-container"
-                                classNamePrefix="react-select"
-                                classNames={{
-                                    control: (state) =>
-                                        state.isFocused
-                                            ? 'border-ring ring-2 ring-ring'
-                                            : 'border-input',
-                                    menu: () =>
-                                        'bg-popover border border-border rounded-md shadow-lg',
-                                    option: (state) =>
-                                        state.isSelected
-                                            ? 'bg-primary text-primary-foreground'
-                                            : state.isFocused
-                                              ? 'bg-accent text-accent-foreground'
-                                              : 'bg-transparent',
-                                    multiValue: () =>
-                                        'bg-secondary text-secondary-foreground',
-                                    placeholder: () => 'text-muted-foreground',
-                                }}
-                            />
-                            {selectedCompanyValues.length > 0 && (
-                                <div className="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
-                                    <Users className="h-4 w-4" />
-                                    <span>
-                                        {selectedCompanyValues.length} company
-                                        {selectedCompanyValues.length !== 1
-                                            ? 'ies'
-                                            : ''}{' '}
-                                        selected
-                                    </span>
-                                </div>
-                            )}
-                            {errors.company_ids && (
-                                <p className="text-sm text-red-500">
-                                    {errors.company_ids}
-                                </p>
-                            )}
-                        </div>
-
-                        <DialogFooter>
-                            <Button
-                                type="button"
-                                variant="outline"
-                                onClick={handleCancel}
-                                disabled={processing}
-                            >
-                                Cancel
-                            </Button>
-                            <Button
-                                type="submit"
-                                disabled={
-                                    processing
-                                }
-                            >
-                                {processing
-                                    ? 'Saving...'
-                                    : editingEvent
-                                      ? 'Update Event'
-                                      : 'Add Event'}
-                            </Button>
-                        </DialogFooter>
-                    </form>
-                </DialogContent>
-            </Dialog>
+            />
 
             {/* Delete Confirmation Dialog */}
             <AlertDialog
@@ -575,7 +242,7 @@ export default function index({
                         <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                         <AlertDialogDescription>
                             This action cannot be undone. This will permanently
-                            delete the event "{eventToDelete?.name}" and remove
+                            delete the event "{selectedEvent?.name}" and remove
                             it from our servers.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
@@ -583,7 +250,7 @@ export default function index({
                         <AlertDialogCancel
                             onClick={() => {
                                 setIsDeleteDialogOpen(false);
-                                setEventToDelete(null);
+                                setSelectedEvent(null);
                             }}
                         >
                             Cancel
@@ -598,16 +265,14 @@ export default function index({
                 </AlertDialogContent>
             </AlertDialog>
 
+
             <div className="px-4 py-6">
                 <div className="mb-4">
-                    <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-center justify-between gap-3">
                         <div className="min-w-0">
                             <h1 className="text-lg font-semibold text-foreground">
                                 Events
                             </h1>
-                            <p className="mt-0.5 text-xs text-muted-foreground">
-                                Manage all events in your system
-                            </p>
                         </div>
                         <div className="flex items-end space-x-2">
                             <div className="relative max-w-md">
@@ -615,25 +280,14 @@ export default function index({
                                 <Input
                                     type="text"
                                     placeholder="Search events..."
-                                    value={search}
-                                    onChange={handleSearchChange}
+                                    value={searchValue}
+                                    onChange={(e) => setSearchValue(e.target.value)}
                                     className="h-9 pr-9 pl-9"
                                 />
-                                {search ? (
-                                    <button
-                                        type="button"
-                                        onClick={clearSearch}
-                                        className="absolute top-4.5 right-2 -translate-y-1/2 rounded p-1 text-muted-foreground hover:text-foreground"
-                                        aria-label="Clear search"
-                                    >
-                                        <X className="h-4 w-4" />
-                                    </button>
-                                ) : null}
                             </div>
                             <Button
                                 onClick={() => {
-                                    setEditingEvent(null);
-                                    reset();
+                                    setSelectedEvent(null);
                                     setIsOpen(true);
                                 }}
                             >
@@ -643,308 +297,31 @@ export default function index({
                         </div>
                     </div>
                 </div>
-                <div className='mb-2'>
-                    {search ? (
-                        <p className="mt-2 text-xs text-muted-foreground">
-                            Results for{' '}
-                            <span className="font-medium text-foreground">
-                                "{search}"
-                            </span>
-                        </p>
-                    ) : null}
-                </div>
 
-                {/* Events Table - Keeping borderless design */}
-                <div className="rounded-lg border">
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-sm">
-                            <thead className="bg-gray-100">
-                                <tr className="text-xs text-muted-foreground">
-                                    <th className="px-4 py-2 text-left font-medium">
-                                        Event
-                                    </th>
-                                    <th className="px-4 py-2 text-left font-medium">
-                                        Date
-                                    </th>
-                                    <th className="px-4 py-2 text-left font-medium">
-                                        Type
-                                    </th>
-                                    <th className="px-4 py-2 text-left font-medium">
-                                        Location
-                                    </th>
-                                    <th className="px-4 py-2 text-left font-medium">
-                                        Companies
-                                    </th>
-                                    <th className="px-4 py-2 text-right font-medium">
-                                        Actions
-                                    </th>
-                                </tr>
-                            </thead>
-
-                            <tbody className="divide-y divide-border/60">
-                                {events.data.length === 0 ? (
-                                    <tr>
-                                        <td
-                                            colSpan={6}
-                                            className="px-4 py-10 text-center text-sm text-muted-foreground"
-                                        >
-                                            {search && (
-                                                    <div className="flex flex-col items-center justify-center gap-3">
-                                                        <div className="rounded-full bg-gray-100 p-3">
-                                                            <Search className="h-6 w-6 text-gray-400" />
-                                                        </div>
-                                                        <div className="space-y-1 text-center">
-                                                            <p className="text-sm font-semibold text-gray-900">
-                                                                No events found
-                                                            </p>
-                                                            <p className="text-xs text-gray-500">
-                                                                Try adjusting
-                                                                your search
-                                                            </p>
-                                                        </div>
-                                                        <Button
-                                                            variant="outline"
-                                                            onClick={
-                                                                clearSearch
-                                                            }
-                                                            size="sm"
-                                                        >
-                                                            Clear Search
-                                                        </Button>
-                                                        </div>
-                                            )
-                                            }
-                                        </td>
-                                    </tr>
-                                ) : (
-                                    events.data.map((event) => (
-                                        <tr
-                                            key={event.id}
-                                            className="even:bg-gray-50/30 hover:bg-muted/30"
-                                        >
-                                            <td className="px-4 py-2">
-                                                <div className="font-medium text-foreground">
-                                                    {event.name}
-                                                </div>
-                                            </td>
-
-                                            <td className="px-4 py-2">
-                                                <div className="text-sm text-foreground">
-                                                    {format(
-                                                        new Date(event.date),
-                                                        'PPp',
-                                                    )}
-                                                </div>
-                                            </td>
-
-                                            <td className="px-4 py-2">
-                                                <Badge
-                                                    variant="outline"
-                                                    className="h-6 px-2 text-xs capitalize"
-                                                >
-                                                    {event.type}
-                                                </Badge>
-                                            </td>
-
-                                            <td className="px-4 py-2">
-                                                <div className="text-sm text-foreground">
-                                                    {event.location}
-                                                </div>
-                                            </td>
-
-                                            <td className="px-4 py-2">
-                                                {event.companies?.length ? (
-                                                    <div className="flex flex-wrap gap-1.5">
-                                                        {event.companies
-                                                            .slice(0, 3)
-                                                            .map((company) => (
-                                                                <Badge
-                                                                    key={
-                                                                        company.id
-                                                                    }
-                                                                    variant="secondary"
-                                                                    className="h-6 gap-1 px-2 text-xs"
-                                                                >
-                                                                    <Building className="h-3.5 w-3.5" />
-                                                                    {
-                                                                        company.name
-                                                                    }
-                                                                </Badge>
-                                                            ))}
-                                                        {event.companies
-                                                            .length > 3 ? (
-                                                            <Badge
-                                                                variant="outline"
-                                                                className="h-6 px-2 text-xs"
-                                                            >
-                                                                +
-                                                                {event.companies
-                                                                    .length - 3}
-                                                            </Badge>
-                                                        ) : null}
-                                                    </div>
-                                                ) : (
-                                                    <span className="text-xs text-muted-foreground">
-                                                        All companies
-                                                    </span>
-                                                )}
-                                            </td>
-
-                                            <td className="px-4 py-2">
-                                                <TooltipProvider>
-                                                    <div className="flex items-center justify-end gap-1.5">
-                                                        {/* Edit */}
-                                                        <Tooltip>
-                                                            <TooltipTrigger
-                                                                asChild
-                                                            >
-                                                                <Button
-                                                                    variant="ghost"
-                                                                    size="icon"
-                                                                    onClick={() =>
-                                                                        handleEdit(
-                                                                            event,
-                                                                        )
-                                                                    }
-                                                                    className="h-8 w-8"
-                                                                >
-                                                                    <Edit className="h-4 w-4" />
-                                                                </Button>
-                                                            </TooltipTrigger>
-                                                            <TooltipContent>
-                                                                <p>
-                                                                    Edit event
-                                                                </p>
-                                                            </TooltipContent>
-                                                        </Tooltip>
-
-                                                        {/* Delete */}
-                                                        <Tooltip>
-                                                            <TooltipTrigger
-                                                                asChild
-                                                            >
-                                                                <Button
-                                                                    variant="ghost"
-                                                                    size="icon"
-                                                                    onClick={() =>
-                                                                        handleDeleteClick(
-                                                                            event,
-                                                                        )
-                                                                    }
-                                                                    className="h-8 w-8 text-destructive hover:bg-destructive/10"
-                                                                >
-                                                                    <Trash2 className="h-4 w-4" />
-                                                                </Button>
-                                                            </TooltipTrigger>
-                                                            <TooltipContent>
-                                                                <p>
-                                                                    Delete event
-                                                                </p>
-                                                            </TooltipContent>
-                                                        </Tooltip>
-
-                                                        {/* View */}
-                                                        <Tooltip>
-                                                            <TooltipTrigger
-                                                                asChild
-                                                            >
-                                                                <Link
-                                                                    href={`/events/${event.id}`}
-                                                                    className="inline-flex h-8 w-8 items-center justify-center rounded-md hover:bg-muted"
-                                                                    aria-label="View event"
-                                                                >
-                                                                    <Eye className="h-4 w-4" />
-                                                                </Link>
-                                                            </TooltipTrigger>
-                                                            <TooltipContent>
-                                                                <p>
-                                                                    View event
-                                                                </p>
-                                                            </TooltipContent>
-                                                        </Tooltip>
-                                                    </div>
-                                                </TooltipProvider>
-                                            </td>
-                                        </tr>
-                                    ))
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
-
-                    {/* Compact pagination footer */}
-                    <div className=" flex flex-col items-center gap-2 border-t p-2  px-4 sm:flex-row md:justify-between">
-                        <div className="text-xs text-muted-foreground">
-                            Showing{' '}
-                            <span className="font-medium text-foreground">
-                                {events.from || 0}
-                            </span>
-                            –{' '}
-                            <span className="font-medium text-foreground">
-                                {events.to || 0}
-                            </span>{' '}
-                            of{' '}
-                            <span className="font-medium text-foreground">
-                                {events.total}
-                            </span>
-                        </div>
-
-                        <div className="mt-2 flex items-center gap-1">
-                            <Button
-                                variant="outline"
-                                size="icon"
-                                onClick={() =>
-                                    handlePageChange(
-                                        events.links[0]?.url ?? null,
-                                    )
-                                }
-                                disabled={!events.links[0]?.url}
-                                className="h-8 w-8"
-                            >
-                                <ChevronLeft className="h-4 w-4" />
-                            </Button>
-
-                            {events.links.slice(1, -1).map((link, index) => {
-                                const isEllipsis = link.label === '...';
-                                const isCurrent = link.active;
-
-                                return (
-                                    <Button
-                                        key={index}
-                                        variant={
-                                            isCurrent ? 'default' : 'outline'
-                                        }
-                                        size="icon"
-                                        onClick={() =>
-                                            handlePageChange(link.url)
-                                        }
-                                        disabled={!link.url || isEllipsis}
-                                        className="h-8 w-8 text-xs"
-                                    >
-                                        {isEllipsis ? '…' : link.label}
-                                    </Button>
-                                );
-                            })}
-
-                            <Button
-                                variant="outline"
-                                size="icon"
-                                onClick={() =>
-                                    handlePageChange(
-                                        events.links[events.links.length - 1]
-                                            ?.url ?? null,
-                                    )
-                                }
-                                disabled={
-                                    !events.links[events.links.length - 1]?.url
-                                }
-                                className="h-8 w-8"
-                            >
-                                <ChevronRight className="h-4 w-4" />
-                            </Button>
-                        </div>
-                    </div>
-                </div>
+                <ComponentCard desc={"Manage all events in your system"}>
+                    <DataTable
+                        columns={columns}
+                        enableInternalPagination={false}
+                        data={events.data || []}
+                        initialSorting={initialSorting}
+                        meta={{ ...omit(events, ['data'])  }}
+                        onFetch={(params) => {
+                            router.get(
+                                '/events',
+                                {
+                                    sort: params?.sort,
+                                    'filter[search]': searchValue || undefined,
+                                    page: params?.page ?? 1
+                                },
+                                {
+                                    preserveState: false,
+                                    replace: true,
+                                    preserveScroll: true,
+                                },
+                            );
+                        }}
+                    />
+                </ComponentCard>
             </div>
         </AppLayout>
     );

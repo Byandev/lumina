@@ -139,9 +139,10 @@ export function DataTable<TData, TValue>({
 type SortableHeaderProps<TData> = {
     column: Column<TData, unknown>
     title: string
+    sortable?: boolean
 }
 
-export function SortableHeader<TData>({ column, title }: SortableHeaderProps<TData>) {
+export function SortableHeader<TData>({ column, title, sortable = true }: SortableHeaderProps<TData>) {
     const sorted = useMemo(() => column.getIsSorted(), [column])
 
     return (
@@ -152,10 +153,10 @@ export function SortableHeader<TData>({ column, title }: SortableHeaderProps<TDa
             <p className="font-medium text-gray-700 text-theme-xs dark:text-gray-400">
                 {title}
             </p>
-            <button className="flex flex-col">
+            { sortable && <button className="flex flex-col">
                 <TriangleUpIcon className={`-mb-1 ${sorted === 'asc' ? 'text-brand-500': 'text-gray-300'}`}/>
                 <TriangleDownIcon className={`-mt-1 ${sorted === 'desc' ? 'text-brand-500': 'text-gray-300'}`}/>
-            </button>
+            </button>}
         </div>
     )
 }

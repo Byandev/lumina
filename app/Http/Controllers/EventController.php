@@ -10,6 +10,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redirect;
 use Inertia\Inertia;
+use Spatie\QueryBuilder\AllowedFilter;
+use Spatie\QueryBuilder\QueryBuilder;
 
 class EventController extends Controller
 {
@@ -19,16 +21,25 @@ class EventController extends Controller
 
         $companies = Company::get(['id', 'name']);
 
-        $events = Event::with('companies:id,name')
-            ->when($search, function ($query, $search) {
-                return $query->where('events.name', 'LIKE', "%{$search}%");
-            })
-            ->latest()
-            ->paginate(20)
-            ->withQueryString();
+        $events = QueryBuilder::for(Event::class)
+            ->with('companies')
+            ->allowedFilters([
+                AllowedFilter::partial('name', 'searcj'),
+            ])
+            ->allowedSorts([
+                'name',
+                'date',
+                'type',
+                'location',
+            ])
+            ->paginate();
 
         return Inertia::render('events/index', [
             'companies' => $companies,
+            'query' => [
+                ...$request->only(['sort', 'perPage', 'page']),
+                'filter' => $request->input('filter', []),
+            ],
             'events' => $events,
             'search' => $search,
         ]);
@@ -52,13 +63,13 @@ class EventController extends Controller
                 ]);
             }
 
-            return redirect()->back()->with('success', 'Event created successfully.');
+            return redirect('/events')->with('success', 'Event created successfully.');
 
         } catch (\Exception $exception) {
 
             \Log::error('Event creation failed: '.$exception->getMessage());
 
-            return Redirect::back()->withErrors($exception->getMessage());
+            return redirect('/events')->withErrors($exception->getMessage());
         }
 
     }

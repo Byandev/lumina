@@ -21,7 +21,6 @@ class StoreEventRequest extends FormRequest
                 'required',
                 'string',
                 'max:255',
-                Rule::unique('events', 'name')->ignore($eventId),
             ],
             'date' => [
                 'required',
