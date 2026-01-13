@@ -199,43 +199,39 @@ export default function CompaniesIndex({ companies, query }: CompaniesProps) {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Companies" />
 
-            <div className="px-4 py-2 md:py-6">
-                <div className="mb-4">
-                    <div className="flex flex-col items-center justify-between gap-3 md:flex-row">
-                        <div className="">
-                            <h1 className="text-lg font-semibold text-foreground md:text-xl">
-                                Companies
-                            </h1>
-                        </div>
+            <div className="px-8">
+                <div className="flex flex-col my-6 items-center justify-between gap-3 md:flex-row">
+                    <p className="font-semibold text-foreground text-3xl my-0">
+                        Companies
+                    </p>
 
-                        {/* Search + Add */}
-                        <div className="flex items-center gap-3">
-                            <form className="relative w-full sm:w-80">
-                                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                                    <Search className="z-10 h-4 w-4 text-gray-400" />
-                                </div>
+                    {/* Search + Add */}
+                    <div className="flex items-center gap-3">
+                        <form className="relative w-full sm:w-80">
+                            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                                <Search className="z-10 h-4 w-4 text-gray-400" />
+                            </div>
 
-                                <Input
-                                    type="text"
-                                    value={searchValue}
-                                    onChange={(e) =>
-                                        setSearchValue(e.target.value)
-                                    }
-                                    placeholder="Search companies..."
-                                    className="h-9 pl-8 text-sm"
-                                />
-                            </form>
+                            <Input
+                                type="text"
+                                value={searchValue}
+                                onChange={(e) =>
+                                    setSearchValue(e.target.value)
+                                }
+                                placeholder="Search companies..."
+                                className="h-9 pl-8 text-sm"
+                            />
+                        </form>
 
-                            <Link
-                                href="/companies/create"
-                                className="inline-flex items-center gap-2 rounded-md bg-gradient-to-r from-pink-500 via-blue-500 to-cyan-500 px-4 py-2 text-sm font-semibold text-white transition hover:scale-105"
-                            >
-                                <Plus className="h-4 w-4" />
-                                <span className="hidden md:block">
+                        <Link
+                            href="/companies/create"
+                            className="inline-flex items-center gap-2 rounded-md bg-gradient-to-r from-pink-500 via-blue-500 to-cyan-500 px-4 py-2 text-sm font-semibold text-white transition hover:scale-105"
+                        >
+                            <Plus className="h-4 w-4" />
+                            <span className="hidden md:block">
                                     Add Company
                                 </span>
-                            </Link>
-                        </div>
+                        </Link>
                     </div>
                 </div>
 
