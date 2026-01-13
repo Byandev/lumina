@@ -25,6 +25,13 @@ class PerformanceRecordController extends Controller
         ]);
     }
 
+    public function create(Company $company)
+    {
+        return Inertia::render('companies/company/performance/create', [
+            'company' => $company,
+        ]);
+    }
+
     public function store(Request $request, Company $company)
     {
         $validated = $request->validate($this->rules());
@@ -39,7 +46,9 @@ class PerformanceRecordController extends Controller
 
             DB::commit();
 
-            return back()->with('success', 'Performance record created successfully.');
+            return redirect()
+                ->route('companies.performance-records.index', $company->id)
+                ->with('success', 'Performance record created successfully.');
         } catch (\Throwable $e) {
             DB::rollBack();
 

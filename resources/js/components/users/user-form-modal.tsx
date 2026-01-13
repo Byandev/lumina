@@ -9,35 +9,24 @@ import { Loader2 } from 'lucide-react';
 interface FormModalProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
-    id: number | string | null;
 }
 
-export default function FormModal({
+export default function UserFormModal({
                                       open,
                                       onOpenChange,
-                                      id,
                                   }: FormModalProps) {
-    const { data, setData, put, processing, reset, errors, clearErrors } = useForm({
+    const { data, setData, post, processing, reset, errors} = useForm({
+        name: '',
+        email: '',
         password: '',
-        confirmPassword: '',
+        password_confirmation: '',
+        role: 'user',
     });
 
-    // Clear errors when modal opens or ID changes
-    useEffect(() => {
-        if (open) {
-            clearErrors();
-        }
-    }, [open, id, clearErrors]);
 
     const handleSubmit = (e: FormEvent) => {
-        e.preventDefault();
 
-        if (!id) {
-            console.error('No user ID provided');
-            return;
-        }
-
-        put(`/users/${id}/change-password`, {
+        post(`/users/`, {
             onSuccess: () => {
                 reset();
                 onOpenChange(false);
@@ -49,6 +38,7 @@ export default function FormModal({
             preserveScroll: true,
         });
     }
+
 
     const handleCancel = () => {
         reset();
@@ -82,7 +72,7 @@ export default function FormModal({
                     }
                 }}
             >
-                <DialogHeader className="border-b p-6"> 
+                <DialogHeader className="border-b p-6">
                     <DialogTitle>Change Password</DialogTitle>
                 </DialogHeader>
                 <form onSubmit={handleSubmit} className="space-y-6 p-6">

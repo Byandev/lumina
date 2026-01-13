@@ -42,7 +42,7 @@ import { percentageFormatter } from '@/lib/formatter';
 import StatusBadge from '@/components/companies/status-badge';
 import { omit } from 'lodash';
 import ComponentCard from '@/components/component-card';
-import FormModal from '@/components/users/form-modal';
+import ChangePasswordFormModal from '@/components/users/change-password-form-modal';
 
 interface User {
     id: number| string;
@@ -301,7 +301,7 @@ export default function Index({
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <FormModal
+            <ChangePasswordFormModal
                 open={isChangePasswordOpen}
                 onOpenChange={(bool: boolean) => {
                     setIsChangePasswordOpen(bool);

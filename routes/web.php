@@ -50,10 +50,11 @@ Route::prefix('companies/{company}')->group(function () {
     Route::get('/onboarding', [\App\Http\Controllers\OnboardingChecklistController::class, 'index'])->name('companies.onboarding');
     Route::post('/onboarding', [\App\Http\Controllers\CompanyChecklistController::class, 'remark'])->name('remark.store');
     Route::get('/attendance', [CompanyEventController::class, 'index'])->name('companies.attendance');
-    Route::get('performance-records', [PerformanceRecordController::class, 'index'])->name('companies.performance-records.store');
-    Route::post('performance-records', [PerformanceRecordController::class, 'store'])->name('companies.performance-records.store');
-    Route::post('performance-records/{performance}/', [PerformanceRecordController::class, 'update'])->name('companies.performance-records.update');
-    Route::delete('performance-records/{performance}', [PerformanceRecordController::class, 'destroy'])->name('companies.performance-records.destroy');
+    Route::get('/performance-records', [PerformanceRecordController::class, 'index'])->name('companies.performance-records.index');
+    Route::get('/performance-records/add-record', [PerformanceRecordController::class, 'create'])->name('companies.performance-records.create');
+    Route::post('/performance-records/add-record', [PerformanceRecordController::class, 'store'])->name('companies.performance-records.store');
+//    Route::post('performance-records/{performance}/', [PerformanceRecordController::class, 'update'])->name('companies.performance-records.update');
+//    Route::delete('performance-records/{performance}', [PerformanceRecordController::class, 'destroy'])->name('companies.performance-records.destroy');
 });
 
 require __DIR__.'/settings.php';
