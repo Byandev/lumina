@@ -68,15 +68,15 @@ export function DataTable<TData, TValue>({
 
 
     return (
-        <>
+        <div>
             <div className="max-w-full overflow-x-auto custom-scrollbar">
                 <Table>
-                    <TableHeader className="border-t border-gray-100 dark:border-white/[0.05]">
+                    <TableHeader className="border-t border-gray-100 dark:border-white/[0.05] rounded-t-xl">
                         {table.getHeaderGroups().map((headerGroup) => (
                             <TableRow key={headerGroup.id}>
                                 {headerGroup.headers.map((header) => {
                                     return (
-                                        <TableHead key={header.id} className="px-4 py-3 border border-gray-100 dark:border-white/[0.05]">
+                                        <TableHead key={header.id} className="px-4 py-3 border border-gray-100 dark:border-white/[0.05] rounded-t-xl">
                                             {header.isPlaceholder
                                                 ? null
                                                 : flexRender(
@@ -131,7 +131,7 @@ export function DataTable<TData, TValue>({
                     </div>
                 </div>
             }
-        </>
+        </div>
     )
 }
 
