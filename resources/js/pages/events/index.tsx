@@ -50,7 +50,6 @@ export default function EventList({
     companies,
     query,
 }: EventsPageProps) {
-    console.log(events)
     const [isOpen, setIsOpen] = useState(false);
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const [searchValue, setSearchValue] = useState(query?.filter?.search ?? '');
@@ -266,7 +265,7 @@ export default function EventList({
             </AlertDialog>
 
 
-            <div className="px-4 py-6">
+            <div className="px-4 sm:px-8">
                 <div className="mb-4">
                     <div className="flex items-center justify-between gap-3">
                         <div className="min-w-0">
