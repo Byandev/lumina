@@ -13,7 +13,9 @@ const OnboardingChecklistItem = ({ checklist }: Props) => {
     })
 
     const onChange = (checked: CheckedState) => {
+        // eslint-disable-next-line react-hooks/immutability
         data.is_completed = checked as boolean;
+
         put(`/companies/${checklist.company_id}/onboarding/${checklist.id}`, {
             preserveScroll: true,
             preserveState: false
@@ -22,7 +24,7 @@ const OnboardingChecklistItem = ({ checklist }: Props) => {
 
     return <div className='p-4 text-sm font-medium'>
         <div className='flex items-center gap-x-2'>
-            <Checkbox value={true} checked={checklist.is_completed} onCheckedChange={onChange}/>
+            <Checkbox checked={checklist.is_completed} onCheckedChange={onChange}/>
             <div>{checklist.title}</div>
         </div>
     </div>

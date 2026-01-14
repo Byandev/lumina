@@ -1,8 +1,9 @@
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import InputError from '@/components/input-error';
-import React from 'react';
+import React, { useState } from 'react';
 import { CompanyForm, OwnerPayload } from '@/types/models/Company';
+import { AvatarEditor } from '@/components/ui/avatar-editor';
 
 type Errors = Record<string, string>;
 
@@ -14,11 +15,12 @@ type Props = {
 };
 
 const CompanyOwnerForm = ({ index,  data, setData, errors }: Props) => {
+    const [imageUrl, setImageUrl] = useState<string | null>(null);
     const owner = data.owners[index] ?? {
         name: '', email: '', phone: '', address: '', birthdate: '', facebook: ''
     };
 
-    const setOwner = (field: 'name' | 'email' | 'phone' | 'address' | 'birthdate' | 'facebook' | 'profile_picture', value: string | File) => {
+    const setOwner = (field: 'name' | 'email' | 'phone' | 'address' | 'birthdate' | 'facebook' | 'profile_picture', value: string | File | null) => {
         const next = [...data.owners];
         next[index] = { ...owner, [field]: value };
         setData('owners', next);
@@ -39,18 +41,26 @@ const CompanyOwnerForm = ({ index,  data, setData, errors }: Props) => {
             </div>
 
             <div className="grid grid-cols-2 gap-6">
-                <div className="flex flex-col gap-2">
-                    <Label className="text-sm font-medium">Name</Label>
-                    <Input
-                        id={`owners-${index}-profile-picture`}
-                        type='file'
-                        onChange={(e) => {
-                            if (e.target.files?.length) {
-                                setOwner('profile_picture', e.target.files[0])
+                <div className="flex flex-col gap-2 col-span-2">
+                    <Label className="text-sm font-medium">Profile Picture</Label>
+
+                    <AvatarEditor
+                        fallbackText="O"
+                        value={{ url: imageUrl }}
+                        onChange={(result) => {
+                            if (!result) {
+                                setImageUrl(null);
+                                setOwner('profile_picture', null)
+                                return;
                             }
+
+                            setImageUrl(result.previewUrl)
+                            setOwner('profile_picture', result.file)
                         }}
+                        maxFileMB={5}
                     />
-                    <InputError message={errors.name} />
+
+                    <InputError message={errors[`owners.${index}.profile_picture`]} />
                 </div>
 
                 <Field

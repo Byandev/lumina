@@ -16,6 +16,7 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import CompanyOwnerForm from '@/components/companies/company-owner-form';
+import { AvatarEditor } from '@/components/ui/avatar-editor';
 
 
 interface Props {
@@ -29,6 +30,7 @@ const Create = ({ coaches, companies: sponsorCompanies }: Props) => {
         { title: 'Create', href: '/companies/create' },
     ];
 
+    const [logoUrl, setLogoUrl] = React.useState<string | null>(null);
     const { data, errors, setData, post, processing } = useForm<CompanyForm>({
         name: '',
         email: null,
@@ -76,18 +78,25 @@ const Create = ({ coaches, companies: sponsorCompanies }: Props) => {
                     <div className="space-y-6">
                         <ComponentCard title="Company Information" desc="Provide information about the company">
                             <div className="grid grid-cols-2 gap-6">
-                                <div className="flex flex-col gap-2">
-                                    <Label className="text-sm font-medium">Name</Label>
-                                    <Input
-                                        id="name"
-                                        type='file'
-                                        onChange={(e) => {
-                                            if (e.target.files?.length) {
-                                                setData('logo', e.target.files[0])
+                                <div className="flex flex-col gap-2 col-span-2">
+                                    <Label className="text-sm font-medium">Company Logo</Label>
+                                    <AvatarEditor
+                                        fallbackText="CL"
+                                        value={{ url: logoUrl }}
+                                        onChange={(result) => {
+                                            if (!result) {
+                                                setLogoUrl(null);
+                                                setData('logo', null)
+                                                return;
                                             }
+
+                                            setLogoUrl(result.previewUrl)
+                                            setData('logo', result.file)
                                         }}
+                                        maxFileMB={5}
                                     />
-                                    <InputError message={errors.name} />
+
+                                    <InputError message={errors.logo} />
                                 </div>
 
                                 <div className="flex flex-col gap-2">
