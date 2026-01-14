@@ -1,4 +1,4 @@
-import { dashboard, login } from '@/routes';
+import {  login } from '@/routes';
 import { type SharedData } from '@/types';
 import { Head, Link, usePage } from '@inertiajs/react';
 import {
@@ -173,7 +173,7 @@ export default function WelcomeHero() {
 
                             {auth.user ? (
                                 <Link
-                                    href={dashboard()}
+                                    href='/companies'
                                     className="group relative inline-flex items-center gap-3 rounded-xl border-2 border-gray-300 bg-white px-8 py-4 text-base font-semibold text-gray-700 shadow-lg transition-all duration-200 hover:border-blue-400 hover:shadow-xl"
                                 >
                                     <span className="relative z-10">
