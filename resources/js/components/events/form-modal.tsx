@@ -1,4 +1,4 @@
-import ReactSelect, { ActionMeta, MultiValue } from 'react-select';
+import ReactSelect, { MultiValue } from 'react-select';
 import { useForm } from '@inertiajs/react';
 import makeAnimated from 'react-select/animated';
 import React, { useMemo, useEffect, FormEvent } from 'react';
@@ -49,9 +49,6 @@ const FormModal = ({ companies, open, onOpenChange, initialValue } : FormModalPr
 
     // Handle company selection with react-select
     const handleCompanyChange =(selectedOptions: MultiValue<{
-        value: string;
-        label: string;
-    }>, actionMeta: ActionMeta<{
         value: string;
         label: string;
     }>) => {

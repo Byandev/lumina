@@ -1,6 +1,7 @@
 import { User } from '@/types';
 import { OnboardingChecklist } from '@/types/models/OnboardingChecklist';
 import { Media } from '@/types/models/Media';
+import { AttendanceStatus } from '@/types/models/Attendance';
 
 export interface Company {
     id: number;
@@ -28,6 +29,7 @@ export interface Company {
     company_logo?: Media
     coach_id: number | string | null;
     sponsor_id: number | string| null;
+    attendance_status: AttendanceStatus | null
 }
 
 export type OwnerPayload = Pick<User, 'name' | 'email' | 'phone' | 'facebook' | 'birthdate' | 'address' | 'profile_picture'> & {

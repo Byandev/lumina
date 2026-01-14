@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreEventRequest;
+use App\Http\Sorts\AttendanceStatusSort;
 use App\Models\Company;
 use App\Models\CompanyEvent;
 use App\Models\Event;
@@ -10,33 +11,19 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Spatie\QueryBuilder\AllowedFilter;
+use Spatie\QueryBuilder\AllowedSort;
 use Spatie\QueryBuilder\QueryBuilder;
 
 class EventController extends Controller
 {
     public function index(Request $request)
     {
-        $events = QueryBuilder::for(Event::query())
-            ->with('companies')
-            ->allowedFilters([
-                AllowedFilter::partial('search', 'name'),
-            ])
-            ->allowedSorts([
-                'name',
-                'date',
-                'type',
-                'location',
-            ])
-            ->defaultSort('-date')
-            ->paginate($request->integer('perPage', 20))
-            ->withQueryString();
-
         $companies = Company::all();
 
         $events = QueryBuilder::for(Event::class)
             ->with('companies')
             ->allowedFilters([
-                AllowedFilter::partial('name', 'searcj'),
+                AllowedFilter::partial('name', 'search'),
             ])
             ->allowedSorts([
                 'name',
@@ -87,29 +74,31 @@ class EventController extends Controller
 
     public function show(Request $request, Event $event)
     {
-        $search = (string) $request->query('search', '');
-
-        $companies = $event->companies()
-            ->select('companies.id', 'companies.name', 'companies.logo')
-            ->withPivot('event_id', 'company_id', 'status')
-            ->when($search, function ($q) use ($search) {
-                $q->where('companies.name', 'like', "%{$search}%");
-            })
-            ->orderBy('companies.name')
-            ->paginate(20)
-            ->withQueryString();
+        $companies = QueryBuilder::for(Company::class)
+            ->with(['companyLogo'])
+            ->select('companies.*')
+            ->selectSub(function ($query) use ($event) {
+                $query->from('attendances')
+                    ->selectRaw('status')
+                    ->whereColumn('attendances.company_id', 'companies.id')
+                    ->where('attendances.event_id', $event->id)
+                    ->limit(1);
+            }, 'attendance_status')
+            ->allowedFilters([
+                AllowedFilter::partial('search', 'name'),
+            ])
+            ->allowedSorts([
+                'name',
+                AllowedSort::custom('attendance_status', new AttendanceStatusSort),
+            ])
+            ->paginate(20);
 
         return Inertia::render('events/show', [
-            'event' => [
-                'id' => $event->id,
-                'name' => $event->name,
-                'date' => $event->date,
-                'type' => $event->type,
-                'location' => $event->location,
-            ],
+            'event' => $event,
             'companies' => $companies,
-            'filters' => [
-                'search' => $search,
+            'query' => [
+                ...$request->only(['sort', 'perPage', 'page']),
+                'filter' => $request->input('filter', []),
             ],
         ]);
     }

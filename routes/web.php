@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\CompanyEventController;
 use App\Http\Controllers\EventController;
@@ -34,6 +35,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/events/{event}', [EventController::class, 'show'])->name('events.show');
     Route::put('/events/{event}', [EventController::class, 'update'])->name('events.update');
     Route::delete('/events/{event}', [EventController::class, 'destroy'])->name('events.update');
+    Route::post('/attendances', [AttendanceController::class, 'store'])->name('attendance.store');
     Route::post('/events/{event}/attendance', [CompanyEventController::class, 'store'])->name('attendance.store');
     Route::post('/companies/{company}/records', [PerformanceRecordController::class, 'store'])->name('remark.store');
     Route::get('/users', [UserController::class, 'index'])->name('users');

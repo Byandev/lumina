@@ -33,6 +33,7 @@ const Edit = ({ company, coaches, companies: sponsorCompanies }: Props) => {
     ];
     const [logoUrl, setLogoUrl] = React.useState<string | null>(company.company_logo?.original_url ?? null);
 
+    // @ts-ignore
     const { data, errors, setData, put, processing } = useForm<CompanyForm>({
         name: company.name,
         email: company.email,
@@ -65,7 +66,7 @@ const Edit = ({ company, coaches, companies: sponsorCompanies }: Props) => {
     };
 
     const addNewOwner = () => {
-        setData('owners', [...data.owners, { name: '', email: '', phone: '', address: '', facebook: '', birthdate: '', profile_picture: null }])
+        setData('owners', [...data.owners, { name: '', email: '', phone: '', address: '', facebook: '', birthdate: '', profile_picture: null, new_profile_picture: null }])
     }
 
     return (

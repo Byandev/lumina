@@ -13,7 +13,7 @@ import { Company } from '@/types/models/Company';
 import { Head, Link, router } from '@inertiajs/react';
 import { ColumnDef } from '@tanstack/react-table';
 import { omit } from 'lodash';
-import { Edit, Eye, Mail, Plus, Search, Trash2 } from 'lucide-react';
+import { Edit, Eye, Mail, Plus, Search } from 'lucide-react';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useInitials } from '@/hooks/use-initials';
 import {
@@ -22,7 +22,6 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { Button } from '@/components/ui/button';
 
 interface CompaniesProps {
     companies: PaginatedData<Company>;
