@@ -17,11 +17,11 @@ import { Gauge, Building2, Users, Calendar } from 'lucide-react';
 import AppLogo from './app-logo';
 
 const mainNavItems: NavItem[] = [
-    {
-        title: 'Dashboard',
-        href: dashboard(),
-        icon: Gauge,
-    },
+    // {
+    //     title: 'Dashboard',
+    //     href: dashboard(),
+    //     icon: Gauge,
+    // },
     {
         title: 'Companies',
         href: '/companies',
