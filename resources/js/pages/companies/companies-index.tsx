@@ -21,7 +21,7 @@ import { Company } from '@/types/models/Company';
 import { Head, Link, router } from '@inertiajs/react';
 import { ColumnDef } from '@tanstack/react-table';
 import { omit } from 'lodash';
-import { Mail, Plus, RefreshCcw, Search } from 'lucide-react';
+import { Mail, Plus, RefreshCcw, Search, ListFilterPlus } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import {
     Tooltip,
@@ -29,6 +29,7 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from '@/components/ui/tooltip';
+
 
 interface CompaniesProps {
     companies: PaginatedData<Company>;
@@ -282,7 +283,7 @@ export default function CompaniesIndex({ companies, query }: CompaniesProps) {
             <Head title="Companies" />
 
             <div className="px-4 sm:px-8">
-                <div className="my-4 flex flex-col items-center justify-between gap-8 sm:my-8 lg:flex-row">
+                <div className="my-4 flex flex-row items-center justify-between gap-8 sm:my-8">
                     <p className="my-0 text-3xl font-semibold text-foreground">
                         Companies
                     </p>
@@ -297,13 +298,14 @@ export default function CompaniesIndex({ companies, query }: CompaniesProps) {
                         </Link>
                     </div>
                 </div>
-                <div className="flex justify-between">
+                <div className="flex flex-col justify-between gap-2 lg:flex-row">
                     <form className="relative w-full sm:w-64">
                         <div className="pointer-events-none absolute top-2.5 left-0 flex items-center pl-3">
                             <Search className="z-10 h-4 w-4 text-gray-400" />
                         </div>
 
                         <Input
+                            id="searchValue"
                             type="text"
                             value={searchValue}
                             onChange={(e) => setSearchValue(e.target.value)}
@@ -311,12 +313,15 @@ export default function CompaniesIndex({ companies, query }: CompaniesProps) {
                             className="h-9 pl-8 text-sm"
                         />
                     </form>
-                    <div className="mb-6 flex flex-wrap items-center gap-4">
+                    <div className="mb-6 flex items-center gap-4 overflow-auto pb-1">
+                        <div className="rounded-md border p-1.5">
+                            <ListFilterPlus />
+                        </div>
                         <Select
                             value={notarization}
                             onValueChange={setNotarization}
                         >
-                            <SelectTrigger className="w-[180px]">
+                            <SelectTrigger className="w-auto">
                                 <SelectValue placeholder="Notarization Status" />
                             </SelectTrigger>
                             <SelectContent>
@@ -326,6 +331,7 @@ export default function CompaniesIndex({ companies, query }: CompaniesProps) {
                                             <SelectItem
                                                 key={option.value}
                                                 value={option.value}
+                                                className="tex-xs"
                                             >
                                                 {option.label}
                                             </SelectItem>
@@ -336,7 +342,7 @@ export default function CompaniesIndex({ companies, query }: CompaniesProps) {
                         </Select>
 
                         <Select value={erp} onValueChange={setErp}>
-                            <SelectTrigger className="w-[180px]">
+                            <SelectTrigger className="w-auto">
                                 <SelectValue placeholder="ERP Status" />
                             </SelectTrigger>
                             <SelectContent>
@@ -345,6 +351,7 @@ export default function CompaniesIndex({ companies, query }: CompaniesProps) {
                                         <SelectItem
                                             key={option.value}
                                             value={option.value}
+                                            className="tex-xs"
                                         >
                                             {option.label}
                                         </SelectItem>
@@ -354,7 +361,7 @@ export default function CompaniesIndex({ companies, query }: CompaniesProps) {
                         </Select>
 
                         <Select value={sales} onValueChange={setSales}>
-                            <SelectTrigger className="w-[180px]">
+                            <SelectTrigger className="w-auto">
                                 <SelectValue placeholder="Sales Status" />
                             </SelectTrigger>
                             <SelectContent>
@@ -363,6 +370,7 @@ export default function CompaniesIndex({ companies, query }: CompaniesProps) {
                                         <SelectItem
                                             key={option.value}
                                             value={option.value}
+                                            className="tex-xs"
                                         >
                                             {option.label}
                                         </SelectItem>
@@ -372,7 +380,7 @@ export default function CompaniesIndex({ companies, query }: CompaniesProps) {
                         </Select>
 
                         <Select value={level} onValueChange={setLevel}>
-                            <SelectTrigger className="w-[180px]">
+                            <SelectTrigger className="w-auto">
                                 <SelectValue placeholder="Level" />
                             </SelectTrigger>
                             <SelectContent>
@@ -381,6 +389,7 @@ export default function CompaniesIndex({ companies, query }: CompaniesProps) {
                                         <SelectItem
                                             key={option.value}
                                             value={option.value}
+                                            className="tex-xs"
                                         >
                                             {option.label}
                                         </SelectItem>
