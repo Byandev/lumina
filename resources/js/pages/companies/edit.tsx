@@ -72,7 +72,7 @@ const Edit = ({ company, coaches, companies: sponsorCompanies }: Props) => {
         <AppLayout breadcrumbs={breadcrumbs}>
             <div className="px-4 sm:px-8 pb-8">
                 <div className="my-4 sm:my-8">
-                    <p className="font-semibold text-foreground text-3xl my-0">Create Company</p>
+                    <p className="font-semibold text-foreground text-3xl my-0">Edit {company.name}</p>
                 </div>
 
                 <form onSubmit={submit}>
@@ -251,7 +251,7 @@ const Edit = ({ company, coaches, companies: sponsorCompanies }: Props) => {
                                 disabled={processing}
                                 className="inline-flex items-center rounded-md px-4 py-2 text-sm font-medium bg-primary text-primary-foreground disabled:opacity-50"
                             >
-                                {processing ? 'Saving...' : 'Save Company'}
+                                {processing ? 'Updating...' : 'Update Company'}
                             </button>
                         </div>
                     </div>
