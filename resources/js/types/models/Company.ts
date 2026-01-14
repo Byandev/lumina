@@ -26,9 +26,13 @@ export interface Company {
     onboarding_percentage?: number
     onboarding_checklists?: OnboardingChecklist[]
     company_logo?: Media
+    coach_id: number | string | null;
+    sponsor_id: number | string| null;
 }
 
-export type OwnerPayload = Pick<User, 'name' | 'email' | 'phone' | 'facebook' | 'birthdate' | 'address' | 'profile_picture'>
+export type OwnerPayload = Pick<User, 'name' | 'email' | 'phone' | 'facebook' | 'birthdate' | 'address' | 'profile_picture'> & {
+    new_profile_picture: File | Media | null;
+};
 
 export type CompanyForm = Pick<
     Company,
@@ -41,9 +45,10 @@ export type CompanyForm = Pick<
     | 'sales_activity'
     | 'notarization_status'
     | 'erp_status'
+    | 'coach_id'
+    | 'sponsor_id'
 > & {
-    sponsor_id: string;
-    coach_id: string;
+    new_logo: File | Media | null;
     logo: File | Media | null;
     owners: OwnerPayload[];
 };

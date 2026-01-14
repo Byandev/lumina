@@ -3,16 +3,15 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreCompanyRequest;
+use App\Http\Requests\UpdateCompanyRequest;
 use App\Models\Company;
+use App\Models\CompanyOnboardingChecklist;
 use App\Models\OnboardingChecklist;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Spatie\QueryBuilder\AllowedFilter;
 use Spatie\QueryBuilder\QueryBuilder;
@@ -95,6 +94,17 @@ class CompanyController extends Controller
                     ->toArray()
             );
 
+            $companyOnboardingChecklist = [];
+
+            OnboardingChecklist::get()->each(function ($checklist) use ($company, &$companyOnboardingChecklist) {
+                $companyOnboardingChecklist[] = [
+                    'company_id' => $company->id,
+                    'title' => $checklist->title,
+                ];
+            });
+
+            CompanyOnboardingChecklist::insert($companyOnboardingChecklist);
+
             if ($request->hasFile('logo')) {
                 $company->addMediaFromRequest('logo')
                     ->toMediaCollection('COMPANY_LOGO');
@@ -145,51 +155,80 @@ class CompanyController extends Controller
         ]);
     }
 
+    public function edit(Company $company)
+    {
+        $company = $company->load('owners.profilePicture', 'coach:id,name,photo', 'sponsor:id,name,logo', 'companyLogo');
+
+        $companies = Company::select(['id', 'name'])
+            ->orderBy('name', 'asc')
+            ->get();
+
+        $coaches = User::select(['id', 'name'])
+            ->whereNull('company_id')
+            ->orderBy('name', 'asc')
+            ->get();
+
+        return Inertia::render('companies/edit', [
+            'company' => $company,
+            'companies' => $companies,
+            'coaches' => $coaches,
+        ]);
+    }
     // Performance tab
 
-    public function update(Request $request, $id)
+    public function update(UpdateCompanyRequest $request, Company $company)
     {
+        DB::beginTransaction();
 
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'max:255'],
-            'phone' => ['nullable', 'string', 'max:30'],
-            'address' => ['nullable', 'string', 'max:255'],
-            'status' => ['required'],
-            'notarization_status' => ['required'],
-            'erp_status' => ['required'],
-            'level' => ['required'],
-            'sponsor_id' => ['nullable', 'integer', 'exists:companies,id'],
-            'sales_activity' => ['nullable', 'string', 'max:255'],
-            'coach_id' => ['nullable', 'integer', 'exists:users,id'],
-        ]);
+        try {
+            $company->update(
+                collect($request->validated())
+                    ->except(['owners', 'logo', 'new_logo'])
+                    ->toArray()
+            );
 
-        $company = Company::findOrFail($id);
+            if ($request->hasFile('new_logo')) {
+                $company->companyLogo()->delete();
 
-        $logoPath = null;
-        if ($request->hasFile('logo') && $request->file('logo')->isValid()) {
-            $logoFile = $request->file('logo');
-            $logoFileName = 'logo_'.uniqid().'_'.time().'.'.$logoFile->getClientOriginalExtension();
-            $logoPath = $logoFile->storeAs('companies/logos', $logoFileName, 'public');
-            $uploadedFiles[] = $logoPath;
+                $company->addMediaFromRequest('new_logo')
+                    ->toMediaCollection('COMPANY_LOGO');
+            }
+
+            foreach ($request->validated()['owners'] as $owner) {
+                $companyOwner = User::updateOrCreate([
+                    'email' => $owner['email'],
+                    'company_id' => $company->id,
+                ], [
+                    'name' => $owner['name'],
+                    'email' => $owner['email'],
+                    'phone' => $owner['phone'],
+                    'address' => $owner['address'],
+                    'facebook' => $owner['facebook'],
+                    'birthdate' => $owner['birthdate'],
+                    'password' => bcrypt('password@123'),
+                ]);
+
+                if ($owner['new_profile_picture']) {
+                    $companyOwner->profilePicture()->delete();
+
+                    $companyOwner->addMedia($owner['new_profile_picture'])
+                        ->toMediaCollection('PROFILE_PICTURE');
+                }
+            }
+
+            DB::commit();
+
+            return redirect()->route('companies.edit', $company);
+
+        } catch (\Exception $exception) {
+            DB::rollBack();
+
+            return back()
+                ->withErrors([
+                    'error' => $exception->getMessage(),
+                    'server_error' => 'An error occurred while creating the company. Please try again. If the problem persists, contact support.',
+                ])->withInput();
         }
-
-        $company->update([
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'phone' => $validated['phone'] ?? null,
-            'address' => $validated['address'] ?? null,
-            'status' => $validated['status'],
-            'notarization_status' => $validated['notarization_status'],
-            'erp_status' => $validated['erp_status'],
-            'level' => $validated['level'],
-            'sales_activity' => $validated['sales_activity'] ?? null,
-            'sponsor_id' => $validated['sponsor_id'] ?? null,
-            'coach_id' => $validated['coach_id'] ?? null,
-            'logo' => $logoPath,
-        ]);
-
-        return back()->with('success', 'Company updated successfully.');
     }
 
     public function destroy(Company $company)

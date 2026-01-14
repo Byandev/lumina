@@ -13,9 +13,16 @@ import { Company } from '@/types/models/Company';
 import { Head, Link, router } from '@inertiajs/react';
 import { ColumnDef } from '@tanstack/react-table';
 import { omit } from 'lodash';
-import { Mail, Plus, Search } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { Edit, Eye, Mail, Plus, Search, Trash2 } from 'lucide-react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useInitials } from '@/hooks/use-initials';
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from '@/components/ui/tooltip';
+import { Button } from '@/components/ui/button';
 
 interface CompaniesProps {
     companies: PaginatedData<Company>;
@@ -97,12 +104,7 @@ export default function CompaniesIndex({ companies, query }: CompaniesProps) {
 
                         <div className="min-w-0">
                             <div className="max-w-[140px] truncate text-sm font-semibold text-gray-900 sm:max-w-[240px]">
-                                <Link
-                                    href={`/companies/${company.id}/details`}
-                                    className="font-light hover:underline"
-                                >
-                                    {company.name}
-                                </Link>
+                                {company.name}
                             </div>
                             {company.email && (
                                 <div className="mt-0.5 flex items-center gap-1 text-xs text-gray-500">
@@ -186,6 +188,53 @@ export default function CompaniesIndex({ companies, query }: CompaniesProps) {
                 <StatusBadge status={row.original.level as string} />
             ),
         },
+        {
+            accessorKey: 'id',
+            header: ({ column }) => (
+                <SortableHeader column={column} title={'Actions'} sortable={false} />
+            ),
+            cell: ({ row }) => {
+                return <div>
+                    <TooltipProvider>
+                        <div className="flex items-center justify-center gap-1.5">
+                            <Tooltip>
+                                <TooltipTrigger
+                                    asChild
+                                >
+                                    <Link
+                                        href={`/companies/${row.original.id}/details`}
+                                        className="inline-flex h-8 w-8 items-center justify-center rounded-md hover:bg-muted"
+                                        aria-label="View event"
+                                    >
+                                        <Eye className="h-4 w-4" />
+                                    </Link>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    View Company
+                                </TooltipContent>
+                            </Tooltip>
+
+                            <Tooltip>
+                                <TooltipTrigger
+                                    asChild
+                                >
+                                    <Link
+                                        href={`/companies/${row.original.id}/edit`}
+                                        className="inline-flex h-8 w-8 items-center justify-center rounded-md hover:bg-muted"
+                                        aria-label="View event"
+                                    >
+                                        <Edit className="h-4 w-4" />
+                                    </Link>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    Edit company
+                                </TooltipContent>
+                            </Tooltip>
+                        </div>
+                    </TooltipProvider>
+                </div>
+            }
+        }
     ];
 
     return (

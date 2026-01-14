@@ -17,50 +17,51 @@ import {
 } from '@/components/ui/select';
 import CompanyOwnerForm from '@/components/companies/company-owner-form';
 import { AvatarEditor } from '@/components/ui/avatar-editor';
+import { startCase } from 'lodash';
 
 
 interface Props {
+    company: Company;
     companies: Company[];
     coaches: User[];
 }
 
-const Create = ({ coaches, companies: sponsorCompanies }: Props) => {
+const Edit = ({ company, coaches, companies: sponsorCompanies }: Props) => {
     const breadcrumbs: BreadcrumbItem[] = [
         { title: 'Companies', href: '/companies' },
-        { title: 'Create', href: '/companies/create' },
+        { title: 'Edit', href: '/companies/create' },
     ];
+    const [logoUrl, setLogoUrl] = React.useState<string | null>(company.company_logo?.original_url ?? null);
 
-    const [logoUrl, setLogoUrl] = React.useState<string | null>(null);
-    const { data, errors, setData, post, processing } = useForm<CompanyForm>({
-        name: '',
-        email: null,
-        phone: null,
-        address: null,
-        sponsor_id: '',
-        coach_id: '',
-        status: '',
-        level: '',
-        sales_activity: '',
-        notarization_status: '',
-        erp_status: '',
-        logo: null,
-        owners: [
-            {
-                name: '',
-                email: '',
-                phone: '',
-                address: '',
-                facebook: '',
-                birthdate: '',
-                profile_picture: null
-            }
-        ],
+    const { data, errors, setData, put, processing } = useForm<CompanyForm>({
+        name: company.name,
+        email: company.email,
+        phone: company.phone,
+        address: company.address,
+        sponsor_id: company.sponsor_id?.toString() ?? '',
+        coach_id: company.coach_id?.toString() ?? '',
+        status: company.status,
+        level: company.level,
+        sales_activity: company.sales_activity,
+        notarization_status: company.notarization_status,
+        erp_status: company.erp_status,
+        logo: company.company_logo,
+        new_logo: null,
+        owners: (company.owners ?? []).map((owner) => ({
+            name: owner.name,
+            email: owner.email,
+            phone: owner.phone,
+            address: owner.address,
+            facebook: owner.facebook,
+            birthdate: owner.birthdate,
+            profile_picture: owner.profile_picture,
+            new_profile_picture: null
+        }))
     });
 
     const submit = (e: React.FormEvent) => {
         e.preventDefault();
-        console.log(data)
-        post('/companies'); // change to route if needed
+        put('/companies/' + company.id); // change to route if needed
     };
 
     const addNewOwner = () => {
@@ -86,12 +87,12 @@ const Create = ({ coaches, companies: sponsorCompanies }: Props) => {
                                         onChange={(result) => {
                                             if (!result) {
                                                 setLogoUrl(null);
-                                                setData('logo', null)
+                                                setData('new_logo', null)
                                                 return;
                                             }
 
                                             setLogoUrl(result.previewUrl)
-                                            setData('logo', result.file)
+                                            setData('new_logo', result.file)
                                         }}
                                         maxFileMB={5}
                                     />
@@ -235,7 +236,7 @@ const Create = ({ coaches, companies: sponsorCompanies }: Props) => {
                             <div className="space-y-4">
                                 {
                                     data.owners
-                                        .map((owner, i)  => <CompanyOwnerForm key={`owner-form-${i}`} index={i} data={data} setData={setData} errors={errors} />)
+                                        .map((owner, i)  => <CompanyOwnerForm isEditing={true} key={`owner-form-${i}`} index={i} data={data} setData={setData} errors={errors} />)
                                 }
                             </div>
 
@@ -260,7 +261,7 @@ const Create = ({ coaches, companies: sponsorCompanies }: Props) => {
     );
 };
 
-export default Create;
+export default Edit;
 
 function SelectField(props: {
     label: string;
@@ -280,7 +281,7 @@ function SelectField(props: {
                     <SelectGroup>
                         {props.options.map((opt) => (
                             <SelectItem key={opt} value={opt.toLowerCase()}>
-                                {opt}
+                                {startCase(opt)}
                             </SelectItem>
                         ))}
                     </SelectGroup>

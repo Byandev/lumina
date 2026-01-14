@@ -12,15 +12,19 @@ type Props = {
     data: CompanyForm;
     setData: (key: string, value: OwnerPayload[] ) => void;
     errors: Errors;
+    isEditing?: boolean
 };
 
-const CompanyOwnerForm = ({ index,  data, setData, errors }: Props) => {
-    const [imageUrl, setImageUrl] = useState<string | null>(null);
+const CompanyOwnerForm = ({ index,  data, setData, errors, isEditing = false }: Props) => {
+    const [imageUrl, setImageUrl] = useState<string | null>(
+        data.owners[index] ? data.owners[index].profile_picture?.original_url : null
+    );
+
     const owner = data.owners[index] ?? {
         name: '', email: '', phone: '', address: '', birthdate: '', facebook: ''
     };
 
-    const setOwner = (field: 'name' | 'email' | 'phone' | 'address' | 'birthdate' | 'facebook' | 'profile_picture', value: string | File | null) => {
+    const setOwner = (field: 'name' | 'email' | 'phone' | 'address' | 'birthdate' | 'facebook' | 'profile_picture' | 'new_profile_picture', value: string | File | null) => {
         const next = [...data.owners];
         next[index] = { ...owner, [field]: value };
         setData('owners', next);
@@ -50,12 +54,12 @@ const CompanyOwnerForm = ({ index,  data, setData, errors }: Props) => {
                         onChange={(result) => {
                             if (!result) {
                                 setImageUrl(null);
-                                setOwner('profile_picture', null)
+                                setOwner(isEditing ? 'new_profile_picture' : 'profile_picture', null)
                                 return;
                             }
 
                             setImageUrl(result.previewUrl)
-                            setOwner('profile_picture', result.file)
+                            setOwner(isEditing ? 'new_profile_picture' : 'profile_picture', result.file)
                         }}
                         maxFileMB={5}
                     />
