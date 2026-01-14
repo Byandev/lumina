@@ -29,6 +29,7 @@ import {
 
 import { toFrontendSort } from '@/lib/sort';
 import company from '@/routes/company';
+import EventTypeBadge from '@/components/events/type-badge';
 
 
 interface EventsPageProps {
@@ -125,6 +126,9 @@ export default function EventList({
             header: ({ column }) => (
                 <SortableHeader column={column} title={'Type'} />
             ),
+            cell: ({ row }) => {
+                return <EventTypeBadge type={row.original.type} />
+            }
         },
         {
             accessorKey: 'location',

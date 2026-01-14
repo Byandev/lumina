@@ -77,6 +77,11 @@ class EventController extends Controller
         $companies = QueryBuilder::for(Company::class)
             ->with(['companyLogo'])
             ->select('companies.*')
+            ->when($event->companies()->exists(), function ($query) use ($event) {
+                $query->whereHas('events', function ($q) use ($event) {
+                    $q->where('events.id', $event->id);
+                });
+            })
             ->selectSub(function ($query) use ($event) {
                 $query->from('attendances')
                     ->selectRaw('status')

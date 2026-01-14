@@ -52,7 +52,7 @@ Route::prefix('companies/{company}')->group(function () {
     Route::get('/onboarding', [\App\Http\Controllers\OnboardingChecklistController::class, 'index'])->name('companies.onboarding');
     Route::put('/onboarding/{onboardingChecklist}', [\App\Http\Controllers\OnboardingChecklistController::class, 'update'])->name('companies.onboarding');
     Route::post('/onboarding', [\App\Http\Controllers\CompanyChecklistController::class, 'remark'])->name('remark.store');
-    Route::get('/attendance', [CompanyEventController::class, 'index'])->name('companies.attendance');
+    Route::get('/attendance', [\App\Http\Controllers\Company\AttendanceController::class, 'index'])->name('companies.attendance');
     Route::get('performance-records', [PerformanceRecordController::class, 'index'])->name('companies.performance-records.store');
     Route::post('performance-records', [PerformanceRecordController::class, 'store'])->name('companies.performance-records.store');
     Route::post('performance-records/{performance}/', [PerformanceRecordController::class, 'update'])->name('companies.performance-records.update');
