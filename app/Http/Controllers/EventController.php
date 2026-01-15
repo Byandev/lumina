@@ -33,7 +33,7 @@ class EventController extends Controller
             ])
             ->paginate();
 
-        return Inertia::render('events/index', [
+        return Inertia::render('events/performance', [
             'events' => $events,
             'companies' => $companies,
             'query' => [

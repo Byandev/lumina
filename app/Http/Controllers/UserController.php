@@ -34,7 +34,7 @@ class UserController extends Controller
             ->paginate($request->integer('perPage', 20))
             ->withQueryString();
 
-        return Inertia::render('users/index', [
+        return Inertia::render('users/performance', [
             'users' => $users,
             'query' => [
                 ...$request->only(['sort', 'perPage', 'page']),

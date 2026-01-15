@@ -130,7 +130,7 @@ class CompanyController extends Controller
 
             DB::commit();
 
-            return redirect()->route('companies.index');
+            return redirect()->route('companies.performance');
 
         } catch (\Exception $exception) {
             DB::rollBack();
@@ -174,7 +174,7 @@ class CompanyController extends Controller
             'coaches' => $coaches,
         ]);
     }
-    // Performance tab
+    // Index tab
 
     public function update(UpdateCompanyRequest $request, Company $company)
     {

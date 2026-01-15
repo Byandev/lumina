@@ -71,7 +71,7 @@ class PerformanceRecordController extends Controller
 
             DB::commit();
 
-            return back()->with('success', 'Performance record updated successfully.');
+            return back()->with('success', 'Index record updated successfully.');
         } catch (\Throwable $e) {
             DB::rollBack();
 
@@ -80,7 +80,7 @@ class PerformanceRecordController extends Controller
                 $this->deleteAttachment($validated['attachment_path']);
             }
 
-            \Log::error('Performance record update failed: '.$e->getMessage());
+            \Log::error('Index record update failed: '.$e->getMessage());
 
             return back()->with('error', 'Failed to update performance record. Please try again.');
         }
@@ -89,7 +89,7 @@ class PerformanceRecordController extends Controller
     public function destroy(Company $company, PerformanceRecord $performance)
     {
         if ($performance->company_id !== $company->id) {
-            return back()->with('error', 'Performance record not found for this company.');
+            return back()->with('error', 'Index record not found for this company.');
         }
 
         DB::beginTransaction();
@@ -105,11 +105,11 @@ class PerformanceRecordController extends Controller
 
             DB::commit();
 
-            return back()->with('success', 'Performance record deleted successfully.');
+            return back()->with('success', 'Index record deleted successfully.');
         } catch (\Throwable $e) {
             DB::rollBack();
 
-            \Log::error('Performance record deletion failed: '.$e->getMessage());
+            \Log::error('Index record deletion failed: '.$e->getMessage());
 
             return back()->with('error', 'Failed to delete performance record. Please try again.');
         }

@@ -784,7 +784,7 @@ export default function Dashboard({
 
                 {/* Bottom Row */}
                 <div className="mt-4 grid grid-cols-1 gap-4 sm:mt-6 sm:gap-6 lg:grid-cols-2">
-                    {/* Recent Performance */}
+                    {/* Recent Index */}
                     <div className="rounded-xl border  border-gray-100 bg-white p-3   sm:p-4">
                         <div className="mb-3 flex items-center justify-between sm:mb-4">
                             <div>

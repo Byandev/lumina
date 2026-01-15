@@ -25,7 +25,7 @@ Route::post('/partnership-application', [CompanyController::class, 'submit'])->n
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', [\App\Http\Controllers\DashboardController::class, 'index'])->middleware(['auth'])->name('dashboard');
-    Route::get('companies', [CompanyController::class, 'index'])->name('companies.index');
+    Route::get('companies', [CompanyController::class, 'index'])->name('companies.performance');
     Route::get('companies/create', [CompanyController::class, 'create'])->name('companies.create');
     Route::get('companies/{company}/edit', [CompanyController::class, 'edit'])->name('companies.edit');
     Route::put('companies/{company}', [CompanyController::class, 'update'])->name('companies.update');
