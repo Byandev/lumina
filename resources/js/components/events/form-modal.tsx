@@ -31,7 +31,6 @@ const FormModal = ({ companies, open, onOpenChange, initialValue } : FormModalPr
         }))
     }, [companies])
 
-
     const { data, setData, post, put, processing, errors, reset } = useForm({
         id: 0,
         name: initialValue?.name || '',

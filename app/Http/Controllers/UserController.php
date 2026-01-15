@@ -12,12 +12,10 @@ use Spatie\QueryBuilder\QueryBuilder;
 
 class UserController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index(Request $request)
     {
         $users = QueryBuilder::for(User::query())
+            ->whereNull('company_id')
             ->allowedFilters([
                 AllowedFilter::callback('search', function ($query, $value) {
                     $query->where(function ($q) use ($value) {
@@ -69,13 +67,11 @@ class UserController extends Controller
     public function update(Request $request, User $user)
     {
         $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|lowercase|email|max:255|unique:users,email,'.$user->id,
+            'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
         $user->update([
-            'name' => $request->name,
-            'email' => $request->email,
+            'password' => Hash::make($request->password),
         ]);
 
         return redirect()->back()->with('success', 'User updated successfully.');

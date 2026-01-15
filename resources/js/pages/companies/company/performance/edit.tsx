@@ -32,14 +32,14 @@ const Edit = ({ record, company }: Props) => {
         start_date: record.start_date,
         end_date: record.end_date,
         phase: record.phase,
-        no_of_items: record.no_of_items,
-        avg_ads_spent: record.avg_ads_spent,
-        roas: record.roas,
-        rts: record.rts,
+        no_of_items: String(record.no_of_items),
+        avg_ads_spent: String(record.avg_ads_spent),
+        roas: String(record.roas),
+        rts: String(record.rts),
         highlights: record.highlights,
         challenges: record.challenges,
         action_plan: record.action_plan,
-        attachment: null
+        attachment: null,
     });
 
     const onSubmit = (e: React.FormEvent) => {
