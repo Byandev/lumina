@@ -15,50 +15,37 @@ class PerformanceRecordController extends Controller
 {
     public function index(Company $company)
     {
-
         $records = PerformanceRecord::where('company_id', $company->id)
             ->latest()
             ->paginate(10);
 
-        return Inertia::render('companies/company/performance-tab', [
+        return Inertia::render('companies/company/performance/index', [
             'records' => $records,
             'company' => $company,
         ]);
     }
 
-    public function store(Request $request, Company $company)
+    public function create(Company $company)
     {
-        $validated = $request->validate($this->rules());
+        return Inertia::render('companies/company/performance/create', [
+            'company' => $company,
+        ]);
+    }
 
-        DB::beginTransaction();
+    public function store(StorePerformanceRecordRequest $request, Company $company)
+    {
+        PerformanceRecord::create([
+            'company_id' => $company->id,
+            ...collect($request->validated())->except('attachment')->toArray(),
+        ]);
 
-        try {
-            $validated['company_id'] = $company->id;
-            $validated['attachment_path'] = $this->uploadAttachment($request, $company);
-
-            PerformanceRecord::create($validated);
-
-            DB::commit();
-
-            return back()->with('success', 'Performance record created successfully.');
-        } catch (\Throwable $e) {
-            DB::rollBack();
-
-            // If a file was uploaded, remove it
-            if (! empty($validated['attachment_path'])) {
-                $this->deleteAttachment($validated['attachment_path']);
-            }
-
-            \Log::error('Performance record creation failed: '.$e->getMessage());
-
-            return back()->with('error', 'Failed to create performance record. Please try again.');
-        }
+        return redirect()->route('companies.performance-records.index', ['company' => $company]);
     }
 
     public function update(Request $request, Company $company, PerformanceRecord $performance)
     {
         if ($performance->company_id !== $company->id) {
-            return back()->with('error', 'Performance record not found for this company.');
+            return back()->with('error', 'Index record not found for this company.');
         }
 
         $validated = $request->validate($this->rules());
