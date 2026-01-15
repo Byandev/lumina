@@ -36,7 +36,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::put('/events/{event}', [EventController::class, 'update'])->name('events.update');
     Route::delete('/events/{event}', [EventController::class, 'destroy'])->name('events.destroy');
     Route::post('/attendances', [AttendanceController::class, 'store'])->name('attendance.store');
-    Route::post('/events/{event}/attendance', [CompanyEventController::class, 'store'])->name('attendance.store');
+//    Route::post('/events/{event}/attendance', [CompanyEventController::class, 'store'])->name('attendance.store');
     Route::post('/companies/{company}/records', [PerformanceRecordController::class, 'store'])->name('remark.store');
     Route::get('/users', [UserController::class, 'index'])->name('users');
     Route::post('/users', [UserController::class, 'store'])->name('users.store');
