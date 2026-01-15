@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Company\StorePerformanceRecordRequest;
 use App\Models\Company;
 use App\Models\PerformanceRecord;
 use Illuminate\Http\Request;
