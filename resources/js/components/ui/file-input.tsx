@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 type FileInputProps = {
     label: string;
     accept?: string;
-    value: File | null;
+    value: File | Media | null;
     onChange: (file: File | null) => void;
     error?: string;
     required?: boolean;
@@ -47,6 +47,20 @@ export default function FileInput({
         if (fileInputRef.current) fileInputRef.current.value = '';
     };
 
+    function truncateFileName(name: string, maxLength = 100) {
+        if (name.length <= maxLength) return name;
+
+        const extIndex = name.lastIndexOf('.');
+        if (extIndex === -1) {
+            return name.slice(0, maxLength) + '…';
+        }
+
+        const ext = name.slice(extIndex);
+        const base = name.slice(0, maxLength - ext.length - 1);
+
+        return `${base}…${ext}`;
+    }
+
     return (
         <div className="space-y-2">
             <Label className="text-sm font-medium text-zinc-800">
@@ -84,17 +98,13 @@ export default function FileInput({
 
                                 <div className="min-w-0">
                                     <p className="truncate text-sm font-semibold text-zinc-900">
-                                        {value.name}
+                                        {truncateFileName(value.name, 30)}
                                     </p>
                                     <p className="text-xs text-zinc-500">
                                         {(value.size / 1024 / 1024).toFixed(2)} MB
                                     </p>
                                 </div>
                             </div>
-
-                            <span className="text-xs font-medium text-zinc-500 group-hover:text-zinc-700">
-                Click to replace
-              </span>
                         </div>
                     ) : (
                         <div className="flex items-center gap-4">

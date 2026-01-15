@@ -36,7 +36,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::put('/events/{event}', [EventController::class, 'update'])->name('events.update');
     Route::delete('/events/{event}', [EventController::class, 'destroy'])->name('events.destroy');
     Route::post('/attendances', [AttendanceController::class, 'store'])->name('attendance.store');
-//    Route::post('/events/{event}/attendance', [CompanyEventController::class, 'store'])->name('attendance.store');
+    //    Route::post('/events/{event}/attendance', [CompanyEventController::class, 'store'])->name('attendance.store');
     Route::post('/companies/{company}/records', [PerformanceRecordController::class, 'store'])->name('remark.store');
     Route::get('/users', [UserController::class, 'index'])->name('users');
     Route::post('/users', [UserController::class, 'store'])->name('users.store');
@@ -46,13 +46,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 Route::prefix('companies/{company}')->group(function () {
     Route::get('/details', [CompanyController::class, 'show'])->name('companies.show');
-//    Route::put('/details', [CompanyController::class, 'update'])->name('companies.update');
+    //    Route::put('/details', [CompanyController::class, 'update'])->name('companies.update');
     Route::post('/owners', [OwnerController::class, 'store'])->name('owners.store');
     Route::put('/owners/{id}', [OwnerController::class, 'update'])->name('owners.update');
     Route::delete('/owners/{id}', [OwnerController::class, 'destroy'])->name('owners.delete');
     Route::get('/onboarding', [\App\Http\Controllers\OnboardingChecklistController::class, 'index'])->name('companies.onboarding');
     Route::put('/onboarding/{onboardingChecklist}', [\App\Http\Controllers\OnboardingChecklistController::class, 'update'])->name('companies.onboarding.update');
-//    Route::post('/onboarding', [\App\Http\Controllers\CompanyChecklistController::class, 'remark'])->name('remark.store');
+    //    Route::post('/onboarding', [\App\Http\Controllers\CompanyChecklistController::class, 'remark'])->name('remark.store');
     Route::get('/attendance', [\App\Http\Controllers\Company\AttendanceController::class, 'index'])->name('companies.attendance');
     Route::get('performance-records', [PerformanceRecordController::class, 'index'])->name('companies.performance-records.index');
     Route::get('performance-records/create', [PerformanceRecordController::class, 'create'])->name('companies.performance-records.create');

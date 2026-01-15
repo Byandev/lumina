@@ -1,6 +1,5 @@
 import { OnboardingChecklist } from '@/types/models/OnboardingChecklist';
 import { useForm } from '@inertiajs/react';
-import { Media } from '@/types/models/Media';
 import {
     Dialog,
     DialogContent,
@@ -9,7 +8,6 @@ import {
     DialogTitle,
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
@@ -21,29 +19,32 @@ interface Props {
     checklist: OnboardingChecklist;
 }
 const OnboardingRemark = ({ open, onOpenChange, checklist }: Props) => {
-    const { data, setData, processing, errors, put, setError, reset } =
+    const { data, setData, processing, errors, put, setError } =
         useForm<{
             remark: string;
             new_attachment: File | null;
         }>({
-            remark: '',
+            remark: checklist.remark ?? '',
             new_attachment: null,
         });
 
     const handleSubmit = () => {
-
+        put(`/companies/${checklist.company_id}/onboarding/${checklist.id}`, {
+            preserveScroll: true,
+            preserveState: false,
+        });
     }
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-lg">
+            <DialogContent className="sm:max-w-lg w-full">
                 <DialogHeader>
                     <DialogTitle className="text-lg">
                         {checklist.title}
                     </DialogTitle>
                 </DialogHeader>
 
-                <form onSubmit={handleSubmit}>
+                <form onSubmit={handleSubmit} className='w-full'>
                     <div className="space-y-4 py-3">
                         <div className="flex flex-col space-y-1.5">
                             <Label htmlFor="name" className="text-sm">
@@ -70,7 +71,7 @@ const OnboardingRemark = ({ open, onOpenChange, checklist }: Props) => {
                             <FileInput
                                 label="Attachment"
                                 accept="image/*,.pdf"
-                                value={data.new_attachment}
+                                value={data.new_attachment ?? checklist.attachment ?? null}
                                 onChange={(file) =>
                                     setData('new_attachment', file)
                                 }
