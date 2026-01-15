@@ -46,7 +46,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 Route::prefix('companies/{company}')->group(function () {
     Route::get('/details', [CompanyController::class, 'show'])->name('companies.show');
-    Route::put('/details', [CompanyController::class, 'update'])->name('companies.update');
+//    Route::put('/details', [CompanyController::class, 'update'])->name('companies.update');
     Route::post('/owners', [OwnerController::class, 'store'])->name('owners.store');
     Route::put('/owners/{id}', [OwnerController::class, 'update'])->name('owners.update');
     Route::delete('/owners/{id}', [OwnerController::class, 'destroy'])->name('owners.delete');
