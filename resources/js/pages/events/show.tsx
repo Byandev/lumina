@@ -11,7 +11,7 @@ import AppLayout from '@/layouts/app-layout';
 import { DataTable, SortableHeader } from '@/components/ui/data-table';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
-import { PaginatedData } from '@/types';
+import { type BreadcrumbItem, PaginatedData } from '@/types';
 import { toFrontendSort } from '@/lib/sort';
 import { useInitials } from '@/hooks/use-initials';
 
@@ -109,7 +109,18 @@ const Show = ({ event, companies, query }: Props) => {
         },
     ];
 
-    return <AppLayout breadcrumbs={[]}>
+    const breadcrumbs: BreadcrumbItem[] = [
+        {
+            title: 'Events',
+            href: `/events`,
+        },
+        {
+            title: event.name,
+            href: `/events/${event.id}`,
+        },
+    ];
+
+    return <AppLayout breadcrumbs={breadcrumbs}>
         <Head title="Events" />
 
         <div className="p-4 sm:p-8">
