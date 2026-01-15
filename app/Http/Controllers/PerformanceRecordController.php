@@ -42,6 +42,14 @@ class PerformanceRecordController extends Controller
         return redirect()->route('companies.performance-records.index', ['company' => $company]);
     }
 
+    public function show(Company $company, PerformanceRecord $record)
+    {
+        return Inertia::render('companies/company/performance/show', [
+            'record' => $record,
+            'company' => $company,
+        ]);
+    }
+
     public function update(Request $request, Company $company, PerformanceRecord $performance)
     {
         if ($performance->company_id !== $company->id) {

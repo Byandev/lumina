@@ -6,14 +6,20 @@ import { PaginatedData } from '@/types';
 import { PerformanceRecord } from '@/types/models/PerformanceRecord';
 import { ColumnDef } from '@tanstack/react-table';
 import { DataTable, SortableHeader } from '@/components/ui/data-table';
-import CompanyOwnersAvatar from '@/components/companies/company-owners-avatar';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { omit } from 'lodash';
 import { Link, router } from '@inertiajs/react';
 import { toFrontendSort } from '@/lib/sort';
 import moment from 'moment';
 import PerformancePhaseBadge from '@/components/companies/performance-phase-badge';
 import { currencyFormatter, percentageFormatter } from '@/lib/formatter';
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from '@/components/ui/tooltip';
+import { Edit, Eye } from 'lucide-react';
 
 interface Props {
     company: Company;
@@ -99,7 +105,59 @@ const Index = ({ company, records, query }: Props) => {
             header: ({ column }) => (
                 <SortableHeader column={column} title={'RTS'} />
             ),
-            cell: ({ row }) => row.original.rts ? percentageFormatter(row.original.rts / 100) : '-',
+            cell: ({ row }) =>
+                row.original.rts
+                    ? percentageFormatter(row.original.rts / 100)
+                    : '-',
+        },
+        {
+            accessorKey: 'id',
+            header: ({ column }) => (
+                <SortableHeader
+                    column={column}
+                    title={'Actions'}
+                    sortable={false}
+                />
+            ),
+            cell: ({ row }) => {
+                return (
+                    <div>
+                        <TooltipProvider>
+                            <div className="flex items-center justify-center gap-1.5">
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <Link
+                                            href={`/companies/${row.original.company_id}/performance-records/${row.original.id}`}
+                                            className="inline-flex h-8 w-8 items-center justify-center rounded-md hover:bg-muted"
+                                            aria-label="View event"
+                                        >
+                                            <Eye className="h-4 w-4" />
+                                        </Link>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                        View Record
+                                    </TooltipContent>
+                                </Tooltip>
+
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <Link
+                                            href={`/companies/${row.original.company_id}/performance-records/${row.original.id}/edit`}
+                                            className="inline-flex h-8 w-8 items-center justify-center rounded-md hover:bg-muted"
+                                            aria-label="View event"
+                                        >
+                                            <Edit className="h-4 w-4" />
+                                        </Link>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                        Edit record
+                                    </TooltipContent>
+                                </Tooltip>
+                            </div>
+                        </TooltipProvider>
+                    </div>
+                );
+            },
         },
     ];
 
