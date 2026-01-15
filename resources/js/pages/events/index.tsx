@@ -236,14 +236,13 @@ export default function EventList({
                 onConfirm={() => handleDeleteConfirm()}
             />
 
-            <div className="px-4 sm:px-8">
-                <div className="mb-4">
-                    <div className="flex items-center justify-between gap-3">
-                        <div className="min-w-0">
-                            <h1 className="text-lg font-semibold text-foreground md:text-xl">
-                                Events
-                            </h1>
-                        </div>
+            <div className="min-h-screen p-4 sm:p-8">
+                <p className="my-0 pb-6 text-3xl font-semibold text-foreground">
+                    Events
+                </p>
+
+                <ComponentCard desc={'Manage all events in your system'}>
+                    <div className="mb-6 flex justify-between">
                         <div className="flex items-end space-x-2">
                             <div className="relative max-w-md">
                                 <Search className="pointer-events-none absolute top-4.5 left-3 z-10 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -257,20 +256,19 @@ export default function EventList({
                                     className="h-9 pr-9 pl-9"
                                 />
                             </div>
-                            <Button
-                                onClick={() => {
-                                    setSelectedEvent(null);
-                                    setIsOpen(true);
-                                }}
-                            >
-                                <Plus className="mr-1.5 h-4 w-4" />
-                                Add New Event
-                            </Button>
                         </div>
-                    </div>
-                </div>
 
-                <ComponentCard desc={'Manage all events in your system'}>
+                        <Button
+                            onClick={() => {
+                                setSelectedEvent(null);
+                                setIsOpen(true);
+                            }}
+                        >
+                            <Plus className="mr-1.5 h-4 w-4" />
+                            Add New Event
+                        </Button>
+                    </div>
+
                     <DataTable
                         columns={columns}
                         enableInternalPagination={false}

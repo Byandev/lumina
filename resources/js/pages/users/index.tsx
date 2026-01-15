@@ -224,7 +224,11 @@ export default function Index({ users, query }: UsersPageProps) {
         <AppLayout breadcrumbs={breadcrumbs}>
             <FormModal open={openFormModal} onOpenChange={setOpenFormModal} />
 
-            <ChangePasswordModal open={openChangePasswordModal} onOpenChange={setOpenChangePasswordModal} user={selectedUser}/>
+            <ChangePasswordModal
+                open={openChangePasswordModal}
+                onOpenChange={setOpenChangePasswordModal}
+                user={selectedUser}
+            />
 
             <ConfirmationDialog
                 isOpen={openConfirmationModal}
@@ -237,14 +241,10 @@ export default function Index({ users, query }: UsersPageProps) {
                 onConfirm={() => handleDeleteConfirm()}
             />
 
-            <div className="min-h-screen p-4 md:py-6">
-                <div className="mb-4 flex flex-col items-center gap-3 sm:flex-row sm:justify-between">
-                    <div className="min-w-0">
-                        <h1 className="text-lg font-semibold text-foreground md:text-xl">
-                            Users
-                        </h1>
-                    </div>
-                </div>
+            <div className="min-h-screen p-4 sm:p-8">
+                <p className="my-0 pb-6 text-3xl font-semibold text-foreground">
+                    Users
+                </p>
 
                 <ComponentCard desc="Manage all users in your system">
                     <div className="mb-6 flex justify-between">

@@ -240,14 +240,13 @@ export default function CompaniesIndex({ companies, query }: CompaniesProps) {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Companies" />
 
-            <div className="px-4 sm:px-8">
-                <div className="flex flex-col my-4 sm:my-8 items-center justify-between gap-8 lg:flex-row">
-                    <p className="font-semibold text-foreground text-3xl my-0">
-                        Companies
-                    </p>
+            <div className="min-h-screen p-4 sm:p-8">
+                <p className="my-0 pb-6 text-3xl font-semibold text-foreground">
+                    Companies
+                </p>
 
-                    {/* Search + Add */}
-                    <div className="flex items-center gap-3">
+                <ComponentCard desc="Manage all companies in your system">
+                    <div className="mb-6 flex items-center justify-between">
                         <form className="relative w-full sm:w-64">
                             <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
                                 <Search className="z-10 h-4 w-4 text-gray-400" />
@@ -256,9 +255,7 @@ export default function CompaniesIndex({ companies, query }: CompaniesProps) {
                             <Input
                                 type="text"
                                 value={searchValue}
-                                onChange={(e) =>
-                                    setSearchValue(e.target.value)
-                                }
+                                onChange={(e) => setSearchValue(e.target.value)}
                                 placeholder="Search companies..."
                                 className="h-9 pl-8 text-sm"
                             />
@@ -272,9 +269,7 @@ export default function CompaniesIndex({ companies, query }: CompaniesProps) {
                             <span>Add Company</span>
                         </Link>
                     </div>
-                </div>
 
-                <ComponentCard desc="Manage all companies in your system">
                     <DataTable
                         columns={columns}
                         enableInternalPagination={false}
