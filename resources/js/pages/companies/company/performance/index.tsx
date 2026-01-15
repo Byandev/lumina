@@ -6,9 +6,9 @@ import { PaginatedData } from '@/types';
 import { PerformanceRecord } from '@/types/models/PerformanceRecord';
 import { ColumnDef } from '@tanstack/react-table';
 import { DataTable, SortableHeader } from '@/components/ui/data-table';
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { omit } from 'lodash';
-import { Link, router } from '@inertiajs/react';
+import { Link, router, useForm } from '@inertiajs/react';
 import { toFrontendSort } from '@/lib/sort';
 import moment from 'moment';
 import PerformancePhaseBadge from '@/components/companies/performance-phase-badge';
@@ -19,7 +19,8 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { Edit, Eye } from 'lucide-react';
+import { Edit, Eye, Trash2 } from 'lucide-react';
+import ConfirmationDialog from '@/components/confirmation-dialog';
 
 interface Props {
     company: Company;
@@ -35,6 +36,14 @@ interface Props {
 }
 
 const Index = ({ company, records, query }: Props) => {
+    const { delete: destroy } = useForm();
+    const [isDeleteConfirmationOpen, setIsDeleteConfirmationOpen] = useState(false);
+    const [selectedRecord, setSelectedRecord] = useState<PerformanceRecord | null>(null);
+
+    const initialSorting = useMemo(() => {
+        return toFrontendSort(query?.sort ?? null);
+    }, [query?.sort]);
+
     useEffect(() => {
         const timer = setTimeout(() => {
             router.get(
@@ -54,9 +63,18 @@ const Index = ({ company, records, query }: Props) => {
         return () => clearTimeout(timer);
     }, [query?.filter?.search, query?.sort, company.id]);
 
-    const initialSorting = useMemo(() => {
-        return toFrontendSort(query?.sort ?? null);
-    }, [query?.sort]);
+
+    const handleDeleteConfirm = () => {
+        if (selectedRecord) {
+            destroy(`/companies/${company.id}/performance-records/${selectedRecord?.id}`, {
+                onSuccess: () => {
+                    setIsDeleteConfirmationOpen(false);
+                    setSelectedRecord(null);
+                },
+                preserveScroll: true,
+            });
+        }
+    };
 
     const columns: ColumnDef<PerformanceRecord>[] = [
         {
@@ -134,9 +152,7 @@ const Index = ({ company, records, query }: Props) => {
                                             <Eye className="h-4 w-4" />
                                         </Link>
                                     </TooltipTrigger>
-                                    <TooltipContent>
-                                        View Record
-                                    </TooltipContent>
+                                    <TooltipContent>View Record</TooltipContent>
                                 </Tooltip>
 
                                 <Tooltip>
@@ -149,8 +165,26 @@ const Index = ({ company, records, query }: Props) => {
                                             <Edit className="h-4 w-4" />
                                         </Link>
                                     </TooltipTrigger>
+                                    <TooltipContent>Edit record</TooltipContent>
+                                </Tooltip>
+
+                                {/* Delete */}
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            onClick={() => {
+                                                setSelectedRecord(row.original);
+                                                setIsDeleteConfirmationOpen(true);
+                                            }}
+                                            className="h-8 w-8 text-destructive hover:bg-destructive/10"
+                                        >
+                                            <Trash2 className="h-4 w-4" />
+                                        </Button>
+                                    </TooltipTrigger>
                                     <TooltipContent>
-                                        Edit record
+                                        <p>Delete record</p>
                                     </TooltipContent>
                                 </Tooltip>
                             </div>
@@ -163,10 +197,23 @@ const Index = ({ company, records, query }: Props) => {
 
     return (
         <CompanyLayout company={company}>
+            <ConfirmationDialog
+                isOpen={isDeleteConfirmationOpen}
+                onOpenChange={setIsDeleteConfirmationOpen}
+                onCancel={() => {
+                    setIsDeleteConfirmationOpen(false);
+                    setSelectedRecord(null);
+                }}
+                description={`This action cannot be undone. This will permanently delete the record and remove it from our servers.`}
+                onConfirm={() => handleDeleteConfirm()}
+            />
+
             <ComponentCard
                 desc={'Track company performance'}
                 rightHeader={
-                    <Link href={`/companies/${company.id}/performance-records/create`}>
+                    <Link
+                        href={`/companies/${company.id}/performance-records/create`}
+                    >
                         <Button>Add new Record</Button>
                     </Link>
                 }

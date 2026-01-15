@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Storage;
 
 class PerformanceRecord extends Model
 {
@@ -25,8 +24,8 @@ class PerformanceRecord extends Model
     ];
 
     protected $casts = [
-        'start_date' => 'date',
-        'end_date' => 'date',
+        'start_date' => 'date:Y-m-d',
+        'end_date' => 'date:Y-m-d',
         'no_of_items' => 'integer',
         'avg_ads_spent' => 'decimal:2',
         'roas' => 'decimal:2',
@@ -34,29 +33,10 @@ class PerformanceRecord extends Model
         'total_revenue' => 'decimal:2',
         'gross_profit' => 'decimal:2',
         'profit_margin' => 'decimal:2',
-        'highlights' => 'string',
-        'challenges' => 'string',
-        'action_plan' => 'string',
     ];
 
-    protected $appends = [
-        'attachment_path_url',
-    ];
-
-    public function company()
+    public function company(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(Company::class);
-    }
-
-    public function getAttachmentPathUrlAttribute(): ?string
-    {
-        if (! $this->attachment_path) {
-            return null;
-        }
-
-        return Storage::disk('s3')->temporaryUrl(
-            $this->attachment_path,
-            now()->addMinutes(10)
-        );
     }
 }

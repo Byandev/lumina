@@ -6,7 +6,6 @@ use App\Http\Requests\Company\StorePerformanceRecordRequest;
 use App\Models\Company;
 use App\Models\PerformanceRecord;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
@@ -50,77 +49,34 @@ class PerformanceRecordController extends Controller
         ]);
     }
 
-    public function update(Request $request, Company $company, PerformanceRecord $performance)
+    public function edit(Company $company, PerformanceRecord $record)
     {
-        if ($performance->company_id !== $company->id) {
-            return back()->with('error', 'Index record not found for this company.');
-        }
-
-        $validated = $request->validate($this->rules());
-
-        DB::beginTransaction();
-
-        try {
-            $oldPath = $performance->attachment_path;
-
-            // Upload new file only if provided, otherwise keep old path
-            $newPath = $request->hasFile('attachment')
-                ? $this->uploadAttachment($request, $company)
-                : $oldPath;
-
-            $validated['attachment_path'] = $newPath;
-
-            $performance->update($validated);
-
-            // Only delete old after DB update succeeded
-            if ($request->hasFile('attachment') && $oldPath && $oldPath !== $newPath) {
-                $this->deleteAttachment($oldPath);
-            }
-
-            DB::commit();
-
-            return back()->with('success', 'Index record updated successfully.');
-        } catch (\Throwable $e) {
-            DB::rollBack();
-
-            // If we uploaded a new file in this request, delete it
-            if ($request->hasFile('attachment') && ! empty($validated['attachment_path'])) {
-                $this->deleteAttachment($validated['attachment_path']);
-            }
-
-            \Log::error('Index record update failed: '.$e->getMessage());
-
-            return back()->with('error', 'Failed to update performance record. Please try again.');
-        }
+        return Inertia::render('companies/company/performance/edit', [
+            'record' => $record,
+            'company' => $company,
+        ]);
     }
 
-    public function destroy(Company $company, PerformanceRecord $performance)
+    public function update(StorePerformanceRecordRequest $request, Company $company, PerformanceRecord $record)
     {
-        if ($performance->company_id !== $company->id) {
+        if ($record->company_id !== $company->id) {
             return back()->with('error', 'Index record not found for this company.');
         }
 
-        DB::beginTransaction();
+        $record->update(collect($request->validated())->except('attachment')->toArray());
 
-        try {
-            $path = $performance->attachment_path;
+        return redirect()->route('companies.performance-records.index', ['company' => $company]);
+    }
 
-            $performance->delete();
-
-            if ($path) {
-                $this->deleteAttachment($path);
-            }
-
-            DB::commit();
-
-            return back()->with('success', 'Index record deleted successfully.');
-        } catch (\Throwable $e) {
-            DB::rollBack();
-
-            \Log::error('Index record deletion failed: '.$e->getMessage());
-
-            return back()->with('error', 'Failed to delete performance record. Please try again.');
+    public function destroy(Company $company, PerformanceRecord $record)
+    {
+        if ($record->company_id !== $company->id) {
+            return back()->with('error', 'Index record not found for this company.');
         }
+
+        $record->delete();
+
+        return redirect()->route('companies.performance-records.index', ['company' => $company]);
     }
 
     private function rules(): array

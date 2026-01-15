@@ -16,19 +16,10 @@ import FormModal from '@/components/events/form-modal';
 import ComponentCard from '@/components/component-card';
 import { DataTable, SortableHeader } from '@/components/ui/data-table';
 import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
 
 import { toFrontendSort } from '@/lib/sort';
 import EventTypeBadge from '@/components/events/type-badge';
+import ConfirmationDialog from '@/components/confirmation-dialog';
 
 
 interface EventsPageProps {
@@ -234,39 +225,16 @@ export default function EventList({
                 }}
             />
 
-            {/* Delete Confirmation Dialog */}
-            <AlertDialog
-                open={isDeleteDialogOpen}
+            <ConfirmationDialog
+                isOpen={isDeleteDialogOpen}
                 onOpenChange={setIsDeleteDialogOpen}
-            >
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            This action cannot be undone. This will permanently
-                            delete the event "{selectedEvent?.name}" and remove
-                            it from our servers.
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel
-                            onClick={() => {
-                                setIsDeleteDialogOpen(false);
-                                setSelectedEvent(null);
-                            }}
-                        >
-                            Cancel
-                        </AlertDialogCancel>
-                        <AlertDialogAction
-                            onClick={handleDeleteConfirm}
-                            className="bg-red-600 hover:bg-red-700"
-                        >
-                            Delete
-                        </AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
-
+                onCancel={() => {
+                    setIsDeleteDialogOpen(false);
+                    setSelectedEvent(null);
+                }}
+                description={`This action cannot be undone. This will permanently delete the event "${selectedEvent?.name}" and remove it from our servers.`}
+                onConfirm={() => handleDeleteConfirm()}
+            />
 
             <div className="px-4 sm:px-8">
                 <div className="mb-4">
@@ -283,7 +251,9 @@ export default function EventList({
                                     type="text"
                                     placeholder="Search events..."
                                     value={searchValue}
-                                    onChange={(e) => setSearchValue(e.target.value)}
+                                    onChange={(e) =>
+                                        setSearchValue(e.target.value)
+                                    }
                                     className="h-9 pr-9 pl-9"
                                 />
                             </div>
@@ -300,20 +270,20 @@ export default function EventList({
                     </div>
                 </div>
 
-                <ComponentCard desc={"Manage all events in your system"}>
+                <ComponentCard desc={'Manage all events in your system'}>
                     <DataTable
                         columns={columns}
                         enableInternalPagination={false}
                         data={events.data || []}
                         initialSorting={initialSorting}
-                        meta={{ ...omit(events, ['data'])  }}
+                        meta={{ ...omit(events, ['data']) }}
                         onFetch={(params) => {
                             router.get(
                                 '/events',
                                 {
                                     sort: params?.sort,
                                     'filter[search]': searchValue || undefined,
-                                    page: params?.page ?? 1
+                                    page: params?.page ?? 1,
                                 },
                                 {
                                     preserveState: false,

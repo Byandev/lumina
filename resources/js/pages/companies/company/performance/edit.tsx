@@ -1,40 +1,51 @@
-import { Company } from '@/types/models/Company';
-import CompanyLayout from '@/pages/companies/company/company-layout';
-import ComponentCard from '@/components/component-card';
-import { useForm } from '@inertiajs/react';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import InputError from '@/components/input-error';
 import React from 'react';
-import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea'
+import { useForm } from '@inertiajs/react';
+
+import CompanyLayout from '@/pages/companies/company/company-layout';
+
+import {
+    Select,
+    SelectContent,
+    SelectGroup,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
+import InputError from '@/components/input-error';
+import { Textarea } from '@/components/ui/textarea';
+import ComponentCard from '@/components/component-card';
+
+import { Company } from '@/types/models/Company';
+import { PerformanceRecord } from '@/types/models/PerformanceRecord';
 
 interface Props {
-    company: Company
+    company: Company;
+    record: PerformanceRecord
 }
 
-const Create = ({ company }: Props) => {
-    const { data, setData, errors, post } = useForm({
+const Edit = ({ record, company }: Props) => {
+    const { data, setData, errors, put } = useForm({
         company_id: company.id,
-        start_date: '',
-        end_date: '',
-        phase: '',
-        no_of_items: '',
-        avg_ads_spent: '',
-        roas: '',
-        rts: '',
-        highlights: '',
-        challenges: '',
-        action_plan: '',
+        start_date: record.start_date,
+        end_date: record.end_date,
+        phase: record.phase,
+        no_of_items: record.no_of_items,
+        avg_ads_spent: record.avg_ads_spent,
+        roas: record.roas,
+        rts: record.rts,
+        highlights: record.highlights,
+        challenges: record.challenges,
+        action_plan: record.action_plan,
         attachment: null
     });
-
 
     const onSubmit = (e: React.FormEvent) => {
         e.preventDefault();
 
-        post(`/companies/${company.id}/performance-records`);
+        put(`/companies/${company.id}/performance-records/${record.id}`);
     };
 
     return (
@@ -174,6 +185,7 @@ const Create = ({ company }: Props) => {
                             </Label>
 
                             <Textarea
+                                value={data.highlights}
                                 onChange={(e) =>
                                     setData('highlights', e.target.value)
                                 }
@@ -187,6 +199,7 @@ const Create = ({ company }: Props) => {
                             </Label>
 
                             <Textarea
+                                value={data.challenges}
                                 onChange={(e) =>
                                     setData('challenges', e.target.value)
                                 }
@@ -200,6 +213,7 @@ const Create = ({ company }: Props) => {
                             </Label>
 
                             <Textarea
+                                value={data.action_plan}
                                 onChange={(e) =>
                                     setData('action_plan', e.target.value)
                                 }
@@ -210,7 +224,7 @@ const Create = ({ company }: Props) => {
 
                     <div className="my-5 flex justify-end">
                         <Button type={'submit'} variant={'default'}>
-                            Submit
+                            Update
                         </Button>
                     </div>
                 </form>
@@ -219,4 +233,4 @@ const Create = ({ company }: Props) => {
     );
 }
 
-export default Create;
+export default Edit;

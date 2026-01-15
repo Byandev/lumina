@@ -8,7 +8,7 @@ export interface PerformanceRecord {
     avg_ads_spent: number;
     roas: number;
     rts: number;
-    highlights: number;
-    challenges: number;
-    action_plan: number;
+    highlights: string;
+    challenges: string;
+    action_plan: string;
 }

@@ -1,39 +1,35 @@
-import { Company } from '@/types/models/Company';
-import CompanyLayout from '@/pages/companies/company/company-layout';
-import ComponentCard from '@/components/component-card';
-import { PerformanceRecord } from '@/types/models/PerformanceRecord';
-import { Label } from '@/components/ui/label';
 import React from 'react';
 import moment from 'moment/moment';
+
+import { Company } from '@/types/models/Company';
+import { PerformanceRecord } from '@/types/models/PerformanceRecord';
+import CompanyLayout from '@/pages/companies/company/company-layout';
+
+import { Label } from '@/components/ui/label';
+import ComponentCard from '@/components/component-card';
 import PerformancePhaseBadge from '@/components/companies/performance-phase-badge';
 import { currencyFormatter, percentageFormatter } from '@/lib/formatter';
 
 interface Props {
     company: Company;
-    record: PerformanceRecord
+    record: PerformanceRecord;
 }
-
-// start_date: string;
-// end_date: string;
-// phase: string;
-// no_of_items: number;
-// avg_ads_spent: number;
-// roas: number;
-// rts: number;
-
 
 const Show = ({ company, record }: Props) => {
     return (
         <CompanyLayout company={company}>
             <ComponentCard desc={'Record Details'}>
-                <div className="grid grid-cols-2 gap-5 mb-5 text-sm font-medium">
+                <div className="mb-5 grid grid-cols-2 gap-5 text-sm font-medium">
                     <div>{`Date: ${moment(record.start_date).format('YYYY-MM-DD')} to ${moment(record.end_date).format('YYYY-MM-DD')}`}</div>
                     <div className="flex space-x-2">
                         <p>Phase:</p>
                         <PerformancePhaseBadge phase={record.phase} />
                     </div>
                     <div>{record.no_of_items} items tested</div>
-                    <div>{currencyFormatter(record.avg_ads_spent)} average ad spent</div>
+                    <div>
+                        {currencyFormatter(record.avg_ads_spent)} average ad
+                        spent
+                    </div>
                     <div>{record.roas} ROAS</div>
                     <div>{percentageFormatter(record.rts / 100)} RTS</div>
                 </div>
@@ -71,6 +67,6 @@ const Show = ({ company, record }: Props) => {
             </ComponentCard>
         </CompanyLayout>
     );
-}
+};
 
-export default Show
+export default Show;

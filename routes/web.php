@@ -56,9 +56,10 @@ Route::prefix('companies/{company}')->group(function () {
     Route::get('performance-records', [PerformanceRecordController::class, 'index'])->name('companies.performance-records.index');
     Route::get('performance-records/create', [PerformanceRecordController::class, 'create'])->name('companies.performance-records.create');
     Route::get('performance-records/{record}', [PerformanceRecordController::class, 'show'])->name('companies.performance-records.create');
+    Route::get('performance-records/{record}/edit', [PerformanceRecordController::class, 'edit'])->name('companies.performance-records.edit');
     Route::post('performance-records', [PerformanceRecordController::class, 'store'])->name('companies.performance-records.store');
-    Route::post('performance-records/{performance}/', [PerformanceRecordController::class, 'update'])->name('companies.performance-records.update');
-    Route::delete('performance-records/{performance}', [PerformanceRecordController::class, 'destroy'])->name('companies.performance-records.destroy');
+    Route::put('performance-records/{record}', [PerformanceRecordController::class, 'update'])->name('companies.performance-records.update');
+    Route::delete('performance-records/{record}', [PerformanceRecordController::class, 'destroy'])->name('companies.performance-records.destroy');
 });
 
 require __DIR__.'/settings.php';
