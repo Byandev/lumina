@@ -246,7 +246,7 @@ export default function CompaniesIndex({ companies, query }: CompaniesProps) {
                 </p>
 
                 <ComponentCard desc="Manage all companies in your system">
-                    <div className="mb-6 flex items-center justify-between">
+                    <div className="mb-6 flex items-center gap-x-2 justify-between">
                         <form className="relative w-full sm:w-64">
                             <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
                                 <Search className="z-10 h-4 w-4 text-gray-400" />
@@ -266,7 +266,7 @@ export default function CompaniesIndex({ companies, query }: CompaniesProps) {
                             className="inline-flex items-center gap-2 rounded-md bg-gradient-to-r from-pink-500 via-blue-500 to-cyan-500 px-4 py-2 text-sm font-semibold text-white transition hover:scale-105"
                         >
                             <Plus className="h-4 w-4" />
-                            <span>Add Company</span>
+                            <span className='hidden sm:block '>Add Company</span>
                         </Link>
                     </div>
 

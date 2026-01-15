@@ -14,7 +14,7 @@ class OnboardingChecklistController extends Controller
         $company = $company->load('onboardingChecklists');
         $company->onboarding_percentage = $company->getOnboardingPercentage();
 
-        return Inertia::render('companies/company/onboarding-tab', [
+        return Inertia::render('companies/company/onboarding', [
             'company' => $company,
         ]);
     }

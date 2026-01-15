@@ -9,7 +9,7 @@ interface Props {
     company: Company
 }
 
-const OnboardingTab  = ({ company}: Props) => {
+const Onboarding  = ({ company}: Props) => {
     return <CompanyLayout company={company}>
         <div className="space-y-6">
             <ComponentCard desc={`Onboarding summary progress: ${percentageFormatter(company.onboarding_percentage as number)}`}>
@@ -25,4 +25,4 @@ const OnboardingTab  = ({ company}: Props) => {
     </CompanyLayout>
 }
 
-export default OnboardingTab
+export default Onboarding
