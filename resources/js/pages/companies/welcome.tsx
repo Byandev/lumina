@@ -104,9 +104,7 @@ export default function Welcome() {
             preserveScroll: true,
         });
     };
-
-
-
+    
     return (
         <>
             <Head title="Partnership Application" />
@@ -114,7 +112,7 @@ export default function Welcome() {
             <div className="min-h-screen bg-zinc-50">
                 {/* Top bar */}
                 <div className="border-b border-zinc-200 bg-white">
-                    <div className="mx-auto sticky flex w-full max-w-5xl items-center justify-between px-4 py-5">
+                    <div className="sticky mx-auto flex w-full max-w-5xl items-center justify-between px-4 py-5">
                         <div className="flex items-center gap-3">
                             <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-zinc-200 bg-white">
                                 <img
@@ -645,6 +643,13 @@ export default function Welcome() {
                                                         className="h-11"
                                                         required
                                                     />
+                                                    <InputError
+                                                        message={
+                                                            errors[
+                                                                `owners.${index}.name`
+                                                            ]
+                                                        }
+                                                    />
                                                 </div>
 
                                                 <div className="space-y-2">
@@ -663,7 +668,7 @@ export default function Welcome() {
                                                             ];
                                                             owners[
                                                                 index
-                                                                ].email =
+                                                            ].email =
                                                                 e.target.value;
                                                             setData(
                                                                 'owners',
@@ -673,6 +678,13 @@ export default function Welcome() {
                                                         placeholder="owner@email.com"
                                                         className="h-11"
                                                         required
+                                                    />
+                                                    <InputError
+                                                        message={
+                                                            errors[
+                                                                `owners.${index}.email`
+                                                            ]
+                                                        }
                                                     />
                                                 </div>
 
@@ -691,7 +703,7 @@ export default function Welcome() {
                                                             ];
                                                             owners[
                                                                 index
-                                                                ].phone =
+                                                            ].phone =
                                                                 e.target.value;
                                                             setData(
                                                                 'owners',
@@ -701,6 +713,13 @@ export default function Welcome() {
                                                         placeholder="+63 XXX XXX XXXX"
                                                         className="h-11"
                                                         required
+                                                    />
+                                                    <InputError
+                                                        message={
+                                                            errors[
+                                                                `owners.${index}.phone`
+                                                            ]
+                                                        }
                                                     />
                                                 </div>
 
@@ -720,7 +739,7 @@ export default function Welcome() {
                                                             ];
                                                             owners[
                                                                 index
-                                                                ].birthdate =
+                                                            ].birthdate =
                                                                 e.target.value;
                                                             setData(
                                                                 'owners',
@@ -729,6 +748,13 @@ export default function Welcome() {
                                                         }}
                                                         className="h-11"
                                                         required
+                                                    />
+                                                    <InputError
+                                                        message={
+                                                            errors[
+                                                                `owners.${index}.birthdate`
+                                                            ]
+                                                        }
                                                     />
                                                 </div>
 
@@ -746,7 +772,7 @@ export default function Welcome() {
                                                             ];
                                                             owners[
                                                                 index
-                                                                ].facebook_link =
+                                                            ].facebook_link =
                                                                 e.target.value;
                                                             setData(
                                                                 'owners',
@@ -755,6 +781,13 @@ export default function Welcome() {
                                                         }}
                                                         placeholder="facebook.com/username"
                                                         className="h-11"
+                                                    />
+                                                    <InputError
+                                                        message={
+                                                            errors[
+                                                                `owners.${index}.facebook_link`
+                                                            ]
+                                                        }
                                                     />
                                                 </div>
 
@@ -773,7 +806,7 @@ export default function Welcome() {
                                                                 url:
                                                                     ownerPhotoUrls[
                                                                         index
-                                                                        ] || null,
+                                                                    ] || null,
                                                             }}
                                                             onChange={(
                                                                 result,
@@ -799,7 +832,7 @@ export default function Welcome() {
                                                                     (prev) => ({
                                                                         ...prev,
                                                                         [index]:
-                                                                        result.previewUrl,
+                                                                            result.previewUrl,
                                                                     }),
                                                                 );
                                                                 updateOwnerFile(
@@ -809,6 +842,13 @@ export default function Welcome() {
                                                                 );
                                                             }}
                                                             maxFileMB={5}
+                                                        />
+                                                        <InputError
+                                                            message={
+                                                                errors[
+                                                                    `owners.${index}.photo`
+                                                                ]
+                                                            }
                                                         />
                                                     </div>
                                                 </div>
@@ -828,7 +868,7 @@ export default function Welcome() {
                                                             ];
                                                             owners[
                                                                 index
-                                                                ].address =
+                                                            ].address =
                                                                 e.target.value;
                                                             setData(
                                                                 'owners',
@@ -839,6 +879,13 @@ export default function Welcome() {
                                                         rows={2}
                                                         className="w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 shadow-sm outline-none placeholder:text-zinc-400 focus:border-zinc-900 focus:ring-2 focus:ring-zinc-900/10"
                                                         required
+                                                    />
+                                                    <InputError
+                                                        message={
+                                                            errors[
+                                                                `owners.${index}.address`
+                                                            ]
+                                                        }
                                                     />
                                                 </div>
 
@@ -858,6 +905,13 @@ export default function Welcome() {
                                                         }
                                                         required
                                                         description="Valid ID with 3 different signatures (JPEG/PNG/PDF)"
+                                                    />
+                                                    <InputError
+                                                        message={
+                                                            errors[
+                                                                `owners.${index}.id_with_signature`
+                                                            ]
+                                                        }
                                                     />
                                                 </div>
                                             </div>
