@@ -52,7 +52,7 @@ Route::prefix('companies/{company}')->group(function () {
     Route::delete('/owners/{id}', [OwnerController::class, 'destroy'])->name('owners.delete');
     Route::get('/onboarding', [\App\Http\Controllers\OnboardingChecklistController::class, 'index'])->name('companies.onboarding');
     Route::put('/onboarding/{onboardingChecklist}', [\App\Http\Controllers\OnboardingChecklistController::class, 'update'])->name('companies.onboarding.update');
-    Route::post('/onboarding', [\App\Http\Controllers\CompanyChecklistController::class, 'remark'])->name('remark.store');
+//    Route::post('/onboarding', [\App\Http\Controllers\CompanyChecklistController::class, 'remark'])->name('remark.store');
     Route::get('/attendance', [\App\Http\Controllers\Company\AttendanceController::class, 'index'])->name('companies.attendance');
     Route::get('performance-records', [PerformanceRecordController::class, 'index'])->name('companies.performance-records.index');
     Route::get('performance-records/create', [PerformanceRecordController::class, 'create'])->name('companies.performance-records.create');
