@@ -56,7 +56,7 @@ Route::prefix('companies/{company}')->group(function () {
     Route::get('/attendance', [\App\Http\Controllers\Company\AttendanceController::class, 'index'])->name('companies.attendance');
     Route::get('performance-records', [PerformanceRecordController::class, 'index'])->name('companies.performance-records.index');
     Route::get('performance-records/create', [PerformanceRecordController::class, 'create'])->name('companies.performance-records.create');
-    Route::get('performance-records/{record}', [PerformanceRecordController::class, 'show'])->name('companies.performance-records.create');
+    Route::get('performance-records/{record}', [PerformanceRecordController::class, 'show'])->name('companies.performance-records.show');
     Route::get('performance-records/{record}/edit', [PerformanceRecordController::class, 'edit'])->name('companies.performance-records.edit');
     Route::post('performance-records', [PerformanceRecordController::class, 'store'])->name('companies.performance-records.store');
     Route::put('performance-records/{record}', [PerformanceRecordController::class, 'update'])->name('companies.performance-records.update');
