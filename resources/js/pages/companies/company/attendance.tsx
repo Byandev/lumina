@@ -99,7 +99,7 @@ const CompanyAttendance = ({ company, query, events }: Props) => {
     ]
 
     return <CompanyLayout company={company}>
-        <ComponentCard title={"Track company attendance to events"}>
+        <ComponentCard desc={"Track company attendance to events"}>
             <form className="relative w-full sm:w-64 pb-4">
                 <Input
                     type="text"

@@ -16,7 +16,7 @@ const DetailTab = ({ company }: Props) => {
 
     return <CompanyLayout company={company}>
         <div className="space-y-6">
-            <ComponentCard title={"Company Information"}>
+            <ComponentCard desc={"Company Information"}>
                 <div>
                     <div className='flex flex-col md:flex-row items-center gap-x-2'>
                         <Avatar className="size-20">
@@ -51,7 +51,7 @@ const DetailTab = ({ company }: Props) => {
                 </div>
             </ComponentCard>
 
-            <ComponentCard title={"Company Status"}>
+            <ComponentCard desc={"Company Status"}>
                 <div className="grid grid-cols-2 lg:grid-cols-3 gap-6">
                     <div className="flex flex-col gap-2">
                         <Label className="text-sm font-medium">Status</Label>
@@ -95,7 +95,7 @@ const DetailTab = ({ company }: Props) => {
                 </div>
             </ComponentCard>
 
-            <ComponentCard title={"Company Owners"}>
+            <ComponentCard desc={"Company Owners"}>
                 <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-2 gap-4">
                     {(company.owners ?? [])?.map(owner => <CompanyOwnerCard key={owner.id} owner={owner}/>)}
                 </div>
