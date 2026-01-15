@@ -18,12 +18,13 @@ class EventController extends Controller
 {
     public function index(Request $request)
     {
+
         $companies = Company::all();
 
         $events = QueryBuilder::for(Event::class)
             ->with('companies')
             ->allowedFilters([
-                AllowedFilter::partial('name', 'search'),
+                AllowedFilter::partial('search', 'name'),
             ])
             ->allowedSorts([
                 'name',

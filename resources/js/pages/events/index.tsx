@@ -14,7 +14,11 @@ import { Company } from '@/types/models/Company';
 
 import FormModal from '@/components/events/form-modal';
 import ComponentCard from '@/components/component-card';
-import { DataTable, SortableHeader } from '@/components/ui/data-table';
+import {
+    DataTable,
+    NormalHeader,
+    SortableHeader,
+} from '@/components/ui/data-table';
 import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 
 import { toFrontendSort } from '@/lib/sort';
@@ -129,7 +133,7 @@ export default function EventList({
         {
             accessorKey: 'id',
             header: ({ column }) => (
-                <SortableHeader column={column} title={'Actions'} sortable={false} />
+                <NormalHeader column={column} title={'Actions'}  />
             ),
             cell: ({ row }) => {
                 return <div>
