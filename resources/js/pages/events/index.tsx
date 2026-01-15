@@ -28,7 +28,6 @@ import {
 } from '@/components/ui/alert-dialog';
 
 import { toFrontendSort } from '@/lib/sort';
-import company from '@/routes/company';
 import EventTypeBadge from '@/components/events/type-badge';
 
 
