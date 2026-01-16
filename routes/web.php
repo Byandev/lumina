@@ -9,7 +9,6 @@ use App\Http\Controllers\PerformanceRecordController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
-use Laravel\Fortify\Features;
 
 Route::get('/', function () {
     return redirect()->route('companies.index');

@@ -62,7 +62,9 @@ const Edit = ({ company, coaches, companies: sponsorCompanies }: Props) => {
 
     const submit = (e: React.FormEvent) => {
         e.preventDefault();
-        put('/companies/' + company.id); // change to route if needed
+        put('/companies/' + company.id, {
+            preserveState: false
+        });
     };
 
     const addNewOwner = () => {
@@ -71,29 +73,36 @@ const Edit = ({ company, coaches, companies: sponsorCompanies }: Props) => {
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <div className="px-4 sm:px-8 pb-8">
+            <div className="px-4 pb-8 sm:px-8">
                 <div className="my-4 sm:my-8">
-                    <p className="font-semibold text-foreground text-3xl my-0">Edit {company.name}</p>
+                    <p className="my-0 text-3xl font-semibold text-foreground">
+                        Edit {company.name}
+                    </p>
                 </div>
 
                 <form onSubmit={submit}>
                     <div className="space-y-6">
-                        <ComponentCard title="Company Information" desc="Provide information about the company">
+                        <ComponentCard
+                            title="Company Information"
+                            desc="Provide information about the company"
+                        >
                             <div className="grid grid-cols-2 gap-6">
-                                <div className="flex flex-col gap-2 col-span-2">
-                                    <Label className="text-sm font-medium">Company Logo</Label>
+                                <div className="col-span-2 flex flex-col gap-2">
+                                    <Label className="text-sm font-medium">
+                                        Company Logo
+                                    </Label>
                                     <AvatarEditor
                                         fallbackText="CL"
                                         value={{ url: logoUrl }}
                                         onChange={(result) => {
                                             if (!result) {
                                                 setLogoUrl(null);
-                                                setData('new_logo', null)
+                                                setData('new_logo', null);
                                                 return;
                                             }
 
-                                            setLogoUrl(result.previewUrl)
-                                            setData('new_logo', result.file)
+                                            setLogoUrl(result.previewUrl);
+                                            setData('new_logo', result.file);
                                         }}
                                         maxFileMB={5}
                                     />
@@ -102,63 +111,95 @@ const Edit = ({ company, coaches, companies: sponsorCompanies }: Props) => {
                                 </div>
 
                                 <div className="flex flex-col gap-2">
-                                    <Label className="text-sm font-medium">Name</Label>
+                                    <Label className="text-sm font-medium">
+                                        Name
+                                    </Label>
                                     <Input
                                         id="name"
                                         value={data.name}
                                         placeholder="Company Name"
-                                        onChange={(e) => setData('name', e.target.value)}
+                                        onChange={(e) =>
+                                            setData('name', e.target.value)
+                                        }
                                     />
                                     <InputError message={errors.name} />
                                 </div>
 
                                 <div className="flex flex-col gap-2">
-                                    <Label className="text-sm font-medium">Email</Label>
+                                    <Label className="text-sm font-medium">
+                                        Email
+                                    </Label>
                                     <Input
                                         id="email"
                                         type="email"
                                         value={data.email ?? ''}
                                         placeholder="Company Email"
-                                        onChange={(e) => setData('email', e.target.value)}
+                                        onChange={(e) =>
+                                            setData('email', e.target.value)
+                                        }
                                     />
                                     <InputError message={errors.email} />
                                 </div>
 
                                 <div className="flex flex-col gap-2">
-                                    <Label className="text-sm font-medium">Phone Number</Label>
+                                    <Label className="text-sm font-medium">
+                                        Phone Number
+                                    </Label>
                                     <Input
                                         id="phone"
                                         value={data.phone ?? ''}
                                         placeholder="Company Phone"
-                                        onChange={(e) => setData('phone', e.target.value)}
+                                        onChange={(e) =>
+                                            setData('phone', e.target.value)
+                                        }
                                     />
                                     <InputError message={errors.phone} />
                                 </div>
 
                                 <div className="flex flex-col gap-2">
-                                    <Label className="text-sm font-medium">Address</Label>
+                                    <Label className="text-sm font-medium">
+                                        Address
+                                    </Label>
                                     <Input
                                         id="address"
                                         value={data.address ?? ''}
                                         placeholder="Company address"
-                                        onChange={(e) => setData('address', e.target.value)}
+                                        onChange={(e) =>
+                                            setData('address', e.target.value)
+                                        }
                                     />
                                     <InputError message={errors.address} />
                                 </div>
 
                                 <div className="flex flex-col gap-2">
-                                    <Label className="text-sm font-medium">Sponsor Company</Label>
+                                    <Label className="text-sm font-medium">
+                                        Sponsor Company
+                                    </Label>
                                     <Select
-                                        value={data.sponsor_id as string}
-                                        onValueChange={(v) => setData('sponsor_id', v)}
+                                        value={
+                                            (data.sponsor_id ??
+                                                'none') as string
+                                        }
+                                        onValueChange={(v) =>
+                                            setData(
+                                                'sponsor_id',
+                                                v === 'none' ? null : v,
+                                            )
+                                        }
                                     >
                                         <SelectTrigger className="w-full">
                                             <SelectValue placeholder="Select sponsor company" />
                                         </SelectTrigger>
                                         <SelectContent>
                                             <SelectGroup>
+                                                <SelectItem value="none">
+                                                    No Sponsor
+                                                </SelectItem>
                                                 {sponsorCompanies.map((c) => (
-                                                    <SelectItem key={c.id} value={String(c.id)}>
+                                                    <SelectItem
+                                                        key={c.id}
+                                                        value={String(c.id)}
+                                                    >
                                                         {c.name}
                                                     </SelectItem>
                                                 ))}
@@ -169,15 +210,33 @@ const Edit = ({ company, coaches, companies: sponsorCompanies }: Props) => {
                                 </div>
 
                                 <div className="flex flex-col gap-2">
-                                    <Label className="text-sm font-medium">Assigned Coach</Label>
-                                    <Select value={data.coach_id as string} onValueChange={(v) => setData('coach_id', v)}>
+                                    <Label className="text-sm font-medium">
+                                        Assigned Coach
+                                    </Label>
+                                    <Select
+                                        value={
+                                            (data.coach_id ?? 'none') as string
+                                        }
+                                        onValueChange={(v) =>
+                                            setData(
+                                                'coach_id',
+                                                v === 'none' ? null : v,
+                                            )
+                                        }
+                                    >
                                         <SelectTrigger className="w-full">
                                             <SelectValue placeholder="Select coach" />
                                         </SelectTrigger>
                                         <SelectContent>
                                             <SelectGroup>
+                                                <SelectItem value="none">
+                                                    Unassigned
+                                                </SelectItem>
                                                 {coaches.map((coach) => (
-                                                    <SelectItem key={coach.id} value={String(coach.id)}>
+                                                    <SelectItem
+                                                        key={coach.id}
+                                                        value={String(coach.id)}
+                                                    >
                                                         {coach.name}
                                                     </SelectItem>
                                                 ))}
@@ -189,13 +248,20 @@ const Edit = ({ company, coaches, companies: sponsorCompanies }: Props) => {
                             </div>
                         </ComponentCard>
 
-                        <ComponentCard title="Company Status" desc="Provide information about the company statuses">
+                        <ComponentCard
+                            title="Company Status"
+                            desc="Provide information about the company statuses"
+                        >
                             <div className="grid grid-cols-2 gap-6">
                                 <SelectField
                                     label="Status"
                                     value={data.status ?? ''}
                                     onChange={(v) => setData('status', v)}
-                                    options={['active', 'inactive', 'terminated']}
+                                    options={[
+                                        'active',
+                                        'inactive',
+                                        'terminated',
+                                    ]}
                                     error={errors.status}
                                 />
 
@@ -203,22 +269,35 @@ const Edit = ({ company, coaches, companies: sponsorCompanies }: Props) => {
                                     label="Level"
                                     value={data.level ?? ''}
                                     onChange={(v) => setData('level', v)}
-                                    options={['educate', 'empowerment', 'enterprise', 'exponential']}
+                                    options={[
+                                        'educate',
+                                        'empowerment',
+                                        'enterprise',
+                                        'exponential',
+                                    ]}
                                     error={errors.level}
                                 />
 
                                 <SelectField
                                     label="Sales Activity"
                                     value={data.sales_activity ?? ''}
-                                    onChange={(v) => setData('sales_activity', v)}
-                                    options={['generating', 'inactive', 'testing']}
+                                    onChange={(v) =>
+                                        setData('sales_activity', v)
+                                    }
+                                    options={[
+                                        'generating',
+                                        'inactive',
+                                        'testing',
+                                    ]}
                                     error={errors.sales_activity}
                                 />
 
                                 <SelectField
                                     label="Notarization Status"
                                     value={data.notarization_status ?? ''}
-                                    onChange={(v) => setData('notarization_status', v)}
+                                    onChange={(v) =>
+                                        setData('notarization_status', v)
+                                    }
                                     options={['pending', 'done']}
                                     error={errors.notarization_status}
                                 />
@@ -233,16 +312,30 @@ const Edit = ({ company, coaches, companies: sponsorCompanies }: Props) => {
                             </div>
                         </ComponentCard>
 
-                        <ComponentCard title="Company Owners" desc="Provide information about the company owners">
+                        <ComponentCard
+                            title="Company Owners"
+                            desc="Provide information about the company owners"
+                        >
                             <div className="space-y-4">
-                                {
-                                    data.owners
-                                        .map((owner, i)  => <CompanyOwnerForm isEditing={true} key={`owner-form-${i}`} index={i} data={data} setData={setData} errors={errors} />)
-                                }
+                                {data.owners.map((owner, i) => (
+                                    <CompanyOwnerForm
+                                        isEditing={true}
+                                        key={`owner-form-${i}`}
+                                        index={i}
+                                        data={data}
+                                        setData={setData}
+                                        errors={errors}
+                                    />
+                                ))}
                             </div>
 
-                            <div className="border-2 border-dashed mt-5 p-4 rounded-xl">
-                                <p className="text-center font-bold text-gray-800 text-sm cursor-pointer" onClick={addNewOwner}>Add new Owner</p>
+                            <div className="mt-5 rounded-xl border-2 border-dashed p-4">
+                                <p
+                                    className="cursor-pointer text-center text-sm font-bold text-gray-800"
+                                    onClick={addNewOwner}
+                                >
+                                    Add new Owner
+                                </p>
                             </div>
                         </ComponentCard>
 
@@ -250,7 +343,7 @@ const Edit = ({ company, coaches, companies: sponsorCompanies }: Props) => {
                             <button
                                 type="submit"
                                 disabled={processing}
-                                className="inline-flex items-center rounded-md px-4 py-2 text-sm font-medium bg-primary text-primary-foreground disabled:opacity-50"
+                                className="inline-flex items-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground disabled:opacity-50"
                             >
                                 {processing ? 'Updating...' : 'Update Company'}
                             </button>

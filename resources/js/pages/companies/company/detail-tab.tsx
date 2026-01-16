@@ -66,7 +66,7 @@ const DetailTab = ({ company }: Props) => {
                                     Sponsor Company
                                 </Label>
                                 <Label className="font-normal text-gray-800">
-                                    {company.sponsor?.name}
+                                    {company.sponsor?.name ?? 'No Sponsor'}
                                 </Label>
                             </div>
 
@@ -75,7 +75,7 @@ const DetailTab = ({ company }: Props) => {
                                     Assigned Coach
                                 </Label>
                                 <Label className="font-normal text-gray-800">
-                                    {company.coach?.name}
+                                    {company.coach?.name ?? 'Unassigned'}
                                 </Label>
                             </div>
                         </div>
