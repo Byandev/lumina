@@ -47,165 +47,17 @@ Notes: [Any additional observations]
 ---
 
 ## Authentication & User Management
-
-### TC-AUTH-001: User Registration (New User Signup)
-
-**Category**: Authentication
-**Priority**: P0 - Critical
-**Prerequisites**:
-- Application is running and accessible
-- Database is empty or no user exists with test email
-- Email service is configured
-
-**Test Data**:
-- Name: `John Doe`
-- Email: `johndoe@example.com`
-- Password: `SecurePass123!`
-- Password Confirmation: `SecurePass123!`
-
-**Steps**:
-
-1. Navigate to the application homepage
-   - **URL**: `http://[base-url]/`
-   - **Expected**: Welcome page loads with Register link visible
-
-2. Click on "Register" or "Sign Up" link
-   - **Expected**: Registration form page loads
-   - **Expected**: Form contains fields: Name, Email, Password, Password Confirmation
-   - **Expected**: Terms and conditions checkbox present
-
-3. Enter Name: `John Doe`
-   - **Expected**: Field accepts text input, no errors
-
-4. Enter Email: `johndoe@example.com`
-   - **Expected**: Field accepts valid email format
-   - **Expected**: No validation error shown
-
-5. Enter Password: `SecurePass123!`
-   - **Expected**: Password field masks input (shows dots/asterisks)
-   - **Expected**: Password strength indicator appears (if implemented)
-
-6. Enter Password Confirmation: `SecurePass123!`
-   - **Expected**: Field masks input
-   - **Expected**: No mismatch error shown
-
-7. Check "I agree to terms and conditions" checkbox
-   - **Expected**: Checkbox becomes checked
-
-8. Click "Register" or "Create Account" button
-   - **Expected**: Form submits
-   - **Expected**: Loading indicator appears briefly
-   - **Expected**: Redirect to email verification notice page
-   - **Expected**: Success message: "Registration successful! Please verify your email."
-
-9. Check email inbox for verification email
-   - **Expected**: Email received within 2 minutes
-   - **Expected**: Email contains verification link
-   - **Expected**: Email from: noreply@lumina.com (or configured sender)
-   - **Expected**: Subject line mentions email verification
-
-10. Click verification link in email
-    - **Expected**: Redirect to application
-    - **Expected**: Email verified confirmation message
-    - **Expected**: Redirect to login page or dashboard
-
-11. Verify user can now login
-    - **Expected**: Login with registered credentials succeeds
-
-**Actual Result**: _[To be filled by tester]_
-
-**Status**: _[Pass/Fail/Blocked]_
-
-**Post-conditions**:
-- New user record created in database
-- User email is verified
-- User can authenticate with created credentials
-
-**Notes**:
-- Test variations with invalid data (see TC-AUTH-002)
-- Verify email uniqueness constraint (see TC-AUTH-003)
-
----
-
-### TC-AUTH-002: User Registration with Invalid Data
-
-**Category**: Authentication
-**Priority**: P0 - Critical
-**Prerequisites**: Application is running
-
-**Test Data**:
-- Invalid Email: `notanemail`
-- Weak Password: `123`
-- Mismatched Password: `Pass123!` vs `Pass456!`
-
-**Steps**:
-
-1. Navigate to registration page
-   - **URL**: `http://[base-url]/register`
-
-2. **Subtest A: Invalid Email Format**
-   - Enter Name: `Test User`
-   - Enter Email: `notanemail` (invalid format)
-   - Enter Password: `SecurePass123!`
-   - Enter Password Confirmation: `SecurePass123!`
-   - Click "Register"
-   - **Expected**: Validation error displayed
-   - **Expected**: Error message: "Please enter a valid email address"
-   - **Expected**: Form does not submit
-   - **Expected**: Email field highlighted in red
-
-3. **Subtest B: Password Too Short**
-   - Enter Name: `Test User`
-   - Enter Email: `testuser@example.com`
-   - Enter Password: `123` (too short)
-   - Enter Password Confirmation: `123`
-   - Click "Register"
-   - **Expected**: Validation error displayed
-   - **Expected**: Error message: "Password must be at least 8 characters"
-   - **Expected**: Form does not submit
-   - **Expected**: Password field highlighted in red
-
-4. **Subtest C: Password Mismatch**
-   - Enter Name: `Test User`
-   - Enter Email: `testuser@example.com`
-   - Enter Password: `SecurePass123!`
-   - Enter Password Confirmation: `DifferentPass456!`
-   - Click "Register"
-   - **Expected**: Validation error displayed
-   - **Expected**: Error message: "Passwords do not match"
-   - **Expected**: Form does not submit
-   - **Expected**: Password confirmation field highlighted
-
-5. **Subtest D: Empty Required Fields**
-   - Leave Name field empty
-   - Leave Email field empty
-   - Leave Password field empty
-   - Click "Register"
-   - **Expected**: Multiple validation errors displayed
-   - **Expected**: All empty required fields highlighted
-   - **Expected**: Error messages appear above or next to each field
-
-**Actual Result**: _[To be filled by tester]_
-
-**Status**: _[Pass/Fail/Blocked]_
-
-**Notes**:
-- Verify client-side and server-side validation both work
-- Check that error messages are user-friendly
-
----
-
-### TC-AUTH-003: User Login with Valid Credentials
+### TC-AUTH-001: User Login with Valid Credentials
 
 **Category**: Authentication
 **Priority**: P0 - Critical
 **Prerequisites**:
 - User account exists and is verified
-- Test user credentials: `admin@lumina.com` / `password123`
+- Test user credentials: `test@example.com` / `password`
 
 **Test Data**:
-- Email: `admin@lumina.com`
-- Password: `password123`
+- Email: `test@example.com`
+- Password: `password`
 
 **Steps**:
 
@@ -214,13 +66,12 @@ Notes: [Any additional observations]
    - **Expected**: Login form loads
    - **Expected**: Email and Password fields visible
    - **Expected**: "Remember Me" checkbox visible
-   - **Expected**: "Forgot Password?" link visible
 
-2. Enter Email: `admin@lumina.com`
+2. Enter Email: `test@example.com`
    - **Expected**: Field accepts input
    - **Expected**: No validation errors
 
-3. Enter Password: `password123`
+3. Enter Password: `password`
    - **Expected**: Password masked
    - **Expected**: No validation errors
 
@@ -244,7 +95,7 @@ Notes: [Any additional observations]
 
 8. Verify authentication middleware
    - **Expected**: User can access protected routes
-   - **Expected**: Try accessing `/dashboard` - should succeed
+   - **Expected**: Try accessing `/companies` - should succeed
 
 **Actual Result**: _[To be filled by tester]_
 
@@ -260,7 +111,7 @@ Notes: [Any additional observations]
 
 ---
 
-### TC-AUTH-004: User Login with Invalid Credentials
+### TC-AUTH-002: User Login with Invalid Credentials
 
 **Category**: Authentication
 **Priority**: P0 - Critical
@@ -307,162 +158,6 @@ Notes: [Any additional observations]
 **Notes**:
 - Verify rate limiting after multiple failed attempts
 - Generic error messages prevent username enumeration
-
----
-
-### TC-AUTH-005: Password Reset Flow
-
-**Category**: Authentication
-**Priority**: P1 - High
-**Prerequisites**:
-- User account exists: `testuser@example.com`
-- Email service configured
-
-**Test Data**:
-- Email: `testuser@example.com`
-- New Password: `NewSecurePass123!`
-
-**Steps**:
-
-1. Navigate to login page
-   - **URL**: `http://[base-url]/login`
-
-2. Click "Forgot Password?" link
-   - **Expected**: Redirect to password reset request page
-   - **Expected**: URL: `/forgot-password`
-   - **Expected**: Email input field displayed
-
-3. Enter Email: `testuser@example.com`
-   - **Expected**: Field accepts input
-
-4. Click "Send Password Reset Link" button
-   - **Expected**: Success message: "Password reset link sent to your email"
-   - **Expected**: Form submitted successfully
-   - **Expected**: Stay on same page or redirect to confirmation
-
-5. Check email inbox
-   - **Expected**: Email received within 2 minutes
-   - **Expected**: Subject: "Reset Password Notification"
-   - **Expected**: Email contains reset link
-   - **Expected**: Link format: `http://[base-url]/reset-password?token=...`
-
-6. Click reset link in email
-   - **Expected**: Redirect to password reset form
-   - **Expected**: Email field pre-filled
-   - **Expected**: New password fields visible
-   - **Expected**: Token embedded in URL or form
-
-7. Enter New Password: `NewSecurePass123!`
-   - **Expected**: Password field accepts input
-
-8. Enter Password Confirmation: `NewSecurePass123!`
-   - **Expected**: Confirmation field accepts input
-
-9. Click "Reset Password" button
-   - **Expected**: Success message: "Password has been reset successfully"
-   - **Expected**: Redirect to login page
-
-10. Login with new password
-    - Email: `testuser@example.com`
-    - Password: `NewSecurePass123!`
-    - **Expected**: Login successful
-    - **Expected**: Redirect to dashboard/companies page
-
-11. Verify old password no longer works
-    - Logout
-    - Try logging in with old password
-    - **Expected**: Login fails with error message
-
-**Actual Result**: _[To be filled by tester]_
-
-**Status**: _[Pass/Fail/Blocked]_
-
-**Post-conditions**:
-- Password updated in database
-- Old password invalidated
-- Reset token consumed/expired
-
-**Notes**:
-- Test token expiration (tokens should expire after configured time, e.g., 60 minutes)
-- Verify token can only be used once
-
----
-
-### TC-AUTH-006: Two-Factor Authentication Setup
-
-**Category**: Authentication
-**Priority**: P1 - High
-**Prerequisites**:
-- User logged in as `admin@lumina.com`
-- 2FA not yet enabled for this account
-- Authenticator app available (Google Authenticator, Authy, etc.)
-
-**Steps**:
-
-1. Login as admin user
-   - **URL**: `http://[base-url]/login`
-   - Use credentials: `admin@lumina.com` / `password123`
-
-2. Navigate to user settings/profile
-   - Click on user avatar/menu in header
-   - Click "Settings" or "Profile"
-   - **Expected**: Settings page loads
-   - **Expected**: URL: `/user/profile` or `/settings`
-
-3. Find Two-Factor Authentication section
-   - **Expected**: Section visible with "Enable 2FA" button
-   - **Expected**: Status shows "Disabled" or "Not Enabled"
-
-4. Click "Enable Two-Factor Authentication" button
-   - **Expected**: Modal or page section expands
-   - **Expected**: QR code displayed
-   - **Expected**: Text-based secret key displayed (for manual entry)
-   - **Expected**: Instructions for scanning QR code
-
-5. Open authenticator app on mobile device
-   - Use Google Authenticator, Authy, or similar app
-   - **Expected**: App is ready to add new account
-
-6. Scan QR code with authenticator app
-   - **Expected**: App adds account: "LUMINA (admin@lumina.com)"
-   - **Expected**: 6-digit code begins generating
-
-7. Enter 6-digit code from authenticator app
-   - Input field for confirmation code should be visible
-   - Enter current 6-digit code
-   - **Expected**: Field accepts 6 digits
-
-8. Click "Confirm" or "Enable" button
-   - **Expected**: Success message: "Two-factor authentication enabled"
-   - **Expected**: 2FA status changes to "Enabled"
-   - **Expected**: Recovery codes displayed (save these)
-
-9. Logout and attempt to login again
-   - Navigate to `/logout`
-   - Return to login page
-   - Enter email and password
-   - **Expected**: Additional step: "Enter 2FA Code"
-   - **Expected**: 6-digit code input field displayed
-
-10. Enter 6-digit code from authenticator app
-    - Get current code from app
-    - Enter the code
-    - Click "Verify"
-    - **Expected**: Login successful
-    - **Expected**: Redirect to companies page
-
-**Actual Result**: _[To be filled by tester]_
-
-**Status**: _[Pass/Fail/Blocked]_
-
-**Post-conditions**:
-- 2FA enabled for user account
-- Login requires both password and 2FA code
-- Recovery codes generated and can be used
-
-**Notes**:
-- Test with invalid 2FA code to verify rejection
-- Test recovery code functionality if implemented
 
 ---
 
@@ -1165,91 +860,6 @@ Signature/ID: robert-id.pdf
 - Verify performance with large dataset
 
 ---
-
-### TC-COMP-006: Delete Company
-
-**Category**: Company Management
-**Priority**: P1 - High
-**Prerequisites**:
-- Logged in as admin
-- Test company exists that can be deleted
-- Company has associated data (owners, onboarding records)
-
-**Test Data**:
-- Company to delete: "Test Company for Deletion" (ID: 99)
-
-**Steps**:
-
-1. Navigate to Companies list
-   - **URL**: `http://[base-url]/companies`
-
-2. Find test company
-   - Search or scroll to: "Test Company for Deletion"
-   - **Expected**: Company row visible
-
-3. Locate Delete button
-   - **Expected**: Delete button/icon in actions column
-   - **Expected**: Usually red trash icon or "Delete" text
-
-4. Click Delete button
-   - **Expected**: Confirmation dialog appears
-   - **Expected**: Dialog message: "Are you sure you want to delete this company?"
-   - **Expected**: Warning about permanent action
-   - **Expected**: List of associated data that will be deleted:
-     - Owners
-     - Onboarding records
-     - Performance records
-     - Attendance records
-
-5. Click "Cancel" first (test cancellation)
-   - **Expected**: Dialog closes
-   - **Expected**: Company not deleted
-   - **Expected**: Company still in list
-
-6. Click Delete button again
-   - Confirmation dialog appears again
-
-7. Click "Delete" or "Confirm" in dialog
-   - **Expected**: Loading indicator
-   - **Expected**: Dialog closes
-   - **Expected**: Success message: "Company deleted successfully"
-
-8. Verify company removed from list
-   - **Expected**: Company no longer visible in list
-   - **Expected**: Row disappears
-   - **Expected**: Company count decreases by 1
-
-9. Attempt to access deleted company details
-   - Navigate to: `/companies/99/details`
-   - **Expected**: 404 Not Found error
-   - OR **Expected**: "Company not found" message
-   - OR **Expected**: Redirect to companies list with error
-
-10. Verify associated data deleted (database check or admin verification)
-    - Owners deleted or orphaned
-    - Onboarding records removed
-    - Performance records removed
-    - Files deleted from S3/media library
-
-**Actual Result**: _[To be filled by tester]_
-
-**Status**: _[Pass/Fail/Blocked]_
-
-**Post-conditions**:
-- Company record deleted from database
-- Associated owners deleted/unlinked
-- Related records cleaned up
-- Files removed from storage
-- Cannot be recovered (unless soft delete)
-
-**Notes**:
-- Verify cascade deletion works correctly
-- Check if soft delete is implemented (deleted_at timestamp)
-- Test deletion with companies that have performance records, events, etc.
-- Verify coach no longer sees company after deletion
-
----
-
 ## Company Owners Management
 
 ### TC-OWNER-001: Add Owner to Existing Company
@@ -1346,20 +956,7 @@ Profile Picture: sarah-photo.jpg
    - **Expected**: Phone: `+1-555-2222`
    - **Expected**: Profile picture displayed
    - **Expected**: Edit and Delete buttons available
-
-8. Verify auto-generated credentials
-   - **Expected**: Owner has login credentials created
-   - **Expected**: Temporary password generated
-   - **Expected**: Email sent to owner with login info (optional)
-
-9. Test owner login
-   - Logout as admin
-   - Login as: `sarah.williams@techinnovators.com`
-   - Use provided/auto-generated password
-   - **Expected**: Login successful
-   - **Expected**: Owner sees their company dashboard
-   - **Expected**: Owner role permissions active
-
+   - 
 **Actual Result**: _[To be filled by tester]_
 
 **Status**: _[Pass/Fail/Blocked]_
@@ -1368,7 +965,6 @@ Profile Picture: sarah-photo.jpg
 - Owner record created and linked to company
 - User account created for owner
 - Profile picture uploaded to media library
-- Owner can authenticate
 
 **Notes**:
 - Test adding multiple owners to same company
@@ -1487,14 +1083,6 @@ Profile Picture: sarah-photo.jpg
    - **Expected**: Owner count decreased by 1
    - **Expected**: Remaining owners still visible
 
-9. Verify owner user account status
-   - Owner's login credentials deactivated
-   - OR Owner can no longer access this company
-   - (Depends on implementation)
-
-10. Attempt to access owner's profile directly (if applicable)
-    - **Expected**: Owner not found or access denied
-
 **Actual Result**: _[To be filled by tester]_
 
 **Status**: _[Pass/Fail/Blocked]_
@@ -1502,8 +1090,6 @@ Profile Picture: sarah-photo.jpg
 **Post-conditions**:
 - Owner unlinked from company
 - Owner record deleted or soft-deleted
-- Profile picture removed from media library
-- User account deactivated or deleted
 
 **Notes**:
 - Test: Cannot delete last owner (should show error if company requires at least one owner)
@@ -1729,8 +1315,7 @@ Profile Picture: sarah-photo.jpg
    - Click "Add Remark" again
    - Enter: `Owner approved logo on Jan 16`
    - Save
-   - **Expected**: Second remark appears
-   - **Expected**: Multiple remarks visible in chronological order
+   - **Expected**: New remark appears
 
 8. Refresh and verify
    - Reload page
@@ -1744,7 +1329,6 @@ Profile Picture: sarah-photo.jpg
 **Post-conditions**:
 - Remark saved in database
 - Remark linked to checklist item
-- Timestamp and author recorded
 
 ---
 
@@ -2395,194 +1979,10 @@ Companies: Select 3-5 companies
    - **Expected**: All events company assigned to listed
    - **Expected**: Status color-coded (green=present, red=absent, etc.)
 
-5. Verify attendance statistics (if implemented)
-   - **Expected**: Total events: count
-   - **Expected**: Present: count
-   - **Expected**: Absent: count
-   - **Expected**: Attendance rate: percentage
-
-6. Filter/Sort attendance (if available)
+5. Filter/Sort attendance (if available)
    - Sort by date
    - Filter by status
    - **Expected**: Filters work correctly
-
-**Actual Result**: _[To be filled by tester]_
-
-**Status**: _[Pass/Fail/Blocked]_
-
----
-
-## Dashboard Analytics
-
-### TC-DASH-001: View Admin Dashboard
-
-**Category**: Dashboard
-**Priority**: P1 - High
-**Prerequisites**:
-- Logged in as admin
-- Multiple companies and users exist
-
-**Steps**:
-
-1. Login as admin
-
-2. Navigate to dashboard
-   - **URL**: `/dashboard`
-   - **Expected**: Dashboard page loads
-   - **Expected**: Multiple widgets/cards visible
-
-3. Verify statistics widgets:
-
-   **Widget 1: Total Companies**
-   - **Expected**: Card labeled "Total Companies"
-   - **Expected**: Number displayed (e.g., 45)
-   - **Expected**: Count matches actual company count
-
-   **Widget 2: Active Companies**
-   - **Expected**: Card labeled "Active Companies"
-   - **Expected**: Number displayed (e.g., 38)
-   - **Expected**: Only counts companies with "active" status
-
-   **Widget 3: New Companies**
-   - **Expected**: Card labeled "New Companies" or "New This Period"
-   - **Expected**: Number displayed (e.g., 5)
-   - **Expected**: Time period indicated (week/month)
-   - **Expected**: Growth indicator (arrow up/down, percentage)
-
-   **Widget 4: Pending Notarization**
-   - **Expected**: Number of companies awaiting notarization
-   - **Expected**: Count accurate
-
-   **Widget 5: Total Users**
-   - **Expected**: User count displayed
-   - **Expected**: Matches user table count
-
-   **Widget 6: Onboarding Rate**
-   - **Expected**: Percentage displayed (e.g., 65%)
-   - **Expected**: Calculation: average onboarding completion
-
-4. Verify charts/visualizations:
-
-   **Chart 1: Company Creation Trend**
-   - **Expected**: Line or area chart visible
-   - **Expected**: X-axis: Time (days/months)
-   - **Expected**: Y-axis: Number of companies
-   - **Expected**: Data points for selected period
-
-   **Chart 2: Status Distribution**
-   - **Expected**: Pie or bar chart
-   - **Expected**: Shows breakdown: Active, Inactive, Terminated
-   - **Expected**: Percentages add up to 100%
-
-   **Chart 3: Level Distribution**
-   - **Expected**: Chart showing company tiers
-   - **Expected**: Educate, Empowerment, Enterprise, Exponential
-
-   **Chart 4: Top Performers**
-   - **Expected**: List or table of top companies
-   - **Expected**: Ranked by ROAS
-   - **Expected**: Shows company name and ROAS value
-
-5. Verify time range selector
-   - **Expected**: Dropdown or tabs: Week, Month, Quarter, Year
-   - **Expected**: Default selection visible
-
-6. Change time range to "Month"
-   - Select "Month" from dropdown
-   - **Expected**: All widgets update
-   - **Expected**: "New Companies" shows month data
-   - **Expected**: Charts adjust to monthly view
-
-7. Change to "Week"
-   - **Expected**: Data updates to week view
-   - **Expected**: Chart shows daily data points
-
-8. Verify growth indicators
-   - **Expected**: Each metric shows comparison to previous period
-   - **Expected**: Green up arrow for growth
-   - **Expected**: Red down arrow for decline
-   - **Expected**: Percentage change displayed
-
-**Actual Result**: _[To be filled by tester]_
-
-**Status**: _[Pass/Fail/Blocked]_
-
-**Notes**:
-- Verify real-time or near-real-time updates
-- Check dashboard responsiveness on mobile
-
----
-
-### TC-DASH-002: View Coach Dashboard
-
-**Category**: Dashboard
-**Priority**: P1 - High
-**Prerequisites**:
-- Logged in as coach
-- Coach has companies assigned
-
-**Steps**:
-
-1. Login as coach
-   - Use: `coach.mike@lumina.com`
-
-2. Navigate to dashboard
-   - **URL**: `/dashboard`
-
-3. Verify coach-specific view
-   - **Expected**: Dashboard shows only assigned companies data
-   - **Expected**: "My Companies" count (not all companies)
-   - **Expected**: Statistics filtered to coach's companies only
-
-4. Verify limited access
-   - **Expected**: No system-wide statistics
-   - **Expected**: No total users count (if restricted)
-   - **Expected**: Only relevant metrics visible
-
-5. Verify company list
-   - **Expected**: Quick list of assigned companies
-   - **Expected**: Can click to view company details
-
-6. Check navigation restrictions
-   - Try accessing all companies list
-   - **Expected**: Only sees assigned companies
-   - **Expected**: Or access denied to company management features
-
-**Actual Result**: _[To be filled by tester]_
-
-**Status**: _[Pass/Fail/Blocked]_
-
----
-
-### TC-DASH-003: Dashboard Data Accuracy
-
-**Category**: Dashboard
-**Priority**: P0 - Critical
-**Prerequisites**:
-- Known data in database
-
-**Steps**:
-
-1. Manually count companies in database
-   - Note: Total companies = X
-   - Active companies = Y
-   - New companies (this month) = Z
-
-2. View dashboard
-   - **Expected**: Total Companies widget shows X
-   - **Expected**: Active Companies widget shows Y
-   - **Expected**: New Companies widget shows Z
-
-3. Verify calculations match
-   - **Expected**: All counts accurate
-   - **Expected**: Percentages calculated correctly
-
-4. Create new company
-
-5. Refresh dashboard
-   - **Expected**: Total Companies increases by 1
-   - **Expected**: New Companies increases by 1
-   - **Expected**: Dashboard reflects change
 
 **Actual Result**: _[To be filled by tester]_
 
@@ -2629,20 +2029,6 @@ Companies: Select 3-5 companies
 6. Click "Save" or "Update Profile"
    - **Expected**: Success message
    - **Expected**: Changes saved
-
-7. Verify email verification requirement
-   - **Expected**: If email changed, verification email sent
-   - **Expected**: Message: "Please verify your new email address"
-
-8. Check email and verify
-   - Open verification email
-   - Click verification link
-   - **Expected**: Email verified
-   - **Expected**: Can use new email to login
-
-9. Verify name change reflected
-   - **Expected**: Name updates in header/navigation
-   - **Expected**: Name displays: "John Michael Doe"
 
 **Actual Result**: _[To be filled by tester]_
 
@@ -2767,151 +2153,6 @@ Companies: Select 3-5 companies
 **Actual Result**: _[To be filled by tester]_
 
 **Status**: _[Pass/Fail/Blocked]_
-
----
-
-### TC-PROFILE-005: Delete Account
-
-**Category**: User Settings
-**Priority**: P2 - Medium
-**Prerequisites**:
-- Test user account (not critical account)
-
-**Steps**:
-
-1. Navigate to user settings
-
-2. Locate account deletion section
-   - **Expected**: "Delete Account" or "Danger Zone" section
-   - **Expected**: Warning message about permanent deletion
-
-3. Click "Delete My Account" button
-   - **Expected**: Confirmation dialog appears
-   - **Expected**: Strong warning message
-   - **Expected**: "Are you sure?" prompt
-
-4. Click "Cancel" first
-   - **Expected**: Dialog closes
-   - **Expected**: Account not deleted
-
-5. Click "Delete My Account" again
-
-6. Confirm deletion (may require password)
-   - Enter password if required
-   - Click "Yes, Delete My Account"
-   - **Expected**: Account deletion process starts
-
-7. Verify account deleted
-   - **Expected**: Logout automatically
-   - **Expected**: Redirect to homepage or goodbye page
-
-8. Try logging in with deleted account
-   - **Expected**: Login fails
-   - **Expected**: Error: "Invalid credentials" or "Account not found"
-
-9. Verify data cleaned up (admin check)
-   - User record deleted or soft-deleted
-   - Associated data handled appropriately
-
-**Actual Result**: _[To be filled by tester]_
-
-**Status**: _[Pass/Fail/Blocked]_
-
----
-
-## Search, Filter & Sort
-
-### TC-FILTER-001: Combine Multiple Filters
-
-**Category**: Filtering
-**Priority**: P2 - Medium
-**Prerequisites**:
-- On companies page with many companies
-
-**Steps**:
-
-1. Navigate to Companies page
-
-2. Apply multiple filters simultaneously:
-   - Status: Active
-   - Level: Empowerment
-   - Sales Activity: Generating
-
-3. Verify results match ALL criteria
-   - **Expected**: Only companies matching all 3 filters shown
-
-4. Add search term: `tech`
-   - **Expected**: Results further filtered by name
-
-5. Verify URL parameters
-   - **Expected**: URL contains all filter parameters
-   - Example: `?filter[status]=active&filter[level]=empowerment&search=tech`
-
-6. Share or bookmark URL
-
-7. Open URL in new tab
-   - **Expected**: Filters pre-applied
-   - **Expected**: Same filtered results shown
-
-**Actual Result**: _[To be filled by tester]_
-
-**Status**: _[Pass/Fail/Blocked]_
-
----
-
-### TC-FILTER-002: Pagination with Filters Active
-
-**Category**: Filtering
-**Priority**: P2 - Medium
-
-**Steps**:
-
-1. Apply filters that return 30+ results
-
-2. Verify pagination
-   - **Expected**: Page 1 shows first 20 results
-   - **Expected**: "Next" button enabled
-
-3. Click "Next Page"
-   - **Expected**: Filters remain active
-   - **Expected**: Next 20 filtered results shown
-   - **Expected**: URL updates: `?filter[status]=active&page=2`
-
-4. Click "Previous"
-   - **Expected**: Return to page 1
-   - **Expected**: Filters still active
-
-**Actual Result**: _[To be filled by tester]_
-
-**Status**: _[Pass/Fail/Blocked]_
-
----
-
-### TC-FILTER-003: Sort with Filters Active
-
-**Category**: Filtering & Sorting
-**Priority**: P2 - Medium
-
-**Steps**:
-
-1. Apply status filter: Active
-
-2. Sort by Name (A-Z)
-   - **Expected**: Active companies sorted alphabetically
-
-3. Verify sort persists
-   - Navigate to page 2
-   - **Expected**: Results still sorted
-   - **Expected**: Filter still active
-
-4. Change sort to Name (Z-A)
-   - **Expected**: Reverse alphabetical order
-   - **Expected**: Filter remains
-
-**Actual Result**: _[To be filled by tester]_
-
-**Status**: _[Pass/Fail/Blocked]_
-
 ---
 
 ## Test Data Requirements
@@ -3100,5 +2341,5 @@ Additional Notes:
 
 **Version**: 1.0
 **Total Test Cases**: 50+
-**Estimated Testing Time**: 40-60 hours (full regression)
+**Estimated Testing Time**:
 **Last Updated**: 2026-01-16
