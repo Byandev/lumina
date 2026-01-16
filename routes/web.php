@@ -12,9 +12,7 @@ use Inertia\Inertia;
 use Laravel\Fortify\Features;
 
 Route::get('/', function () {
-    return Inertia::render('welcome', [
-        'canRegister' => Features::enabled(Features::registration()),
-    ]);
+    return redirect()->route('companies.index');
 })->name('home');
 
 Route::get('/companies/onboarding', function () {
@@ -25,9 +23,9 @@ Route::post('/companies/onboarding', [CompanyController::class, 'submit'])->name
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', [\App\Http\Controllers\DashboardController::class, 'index'])->middleware(['auth'])->name('dashboard');
-    Route::get('companies', [CompanyController::class, 'index'])->name('companies.performance');
-    Route::get('companies/unverified', [CompanyController::class, 'unverified'])->name('companies.unverified');
-    Route::get('companies/unverified/{company}', [CompanyController::class, 'showUnverified'])->name('companies.unverified');
+    Route::get('companies', [CompanyController::class, 'index'])->name('companies.index');
+    Route::get('companies/unverified', [CompanyController::class, 'unverified'])->name('companies.unverified.index');
+    Route::get('companies/unverified/{company}', [CompanyController::class, 'showUnverified'])->name('companies.unverified.show');
     Route::get('companies/create', [CompanyController::class, 'create'])->name('companies.create');
     Route::get('companies/{company}/edit', [CompanyController::class, 'edit'])->name('companies.edit');
     Route::put('companies/{company}', [CompanyController::class, 'update'])->name('companies.update');
