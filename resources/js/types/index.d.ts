@@ -44,8 +44,9 @@ export interface User {
     facebook?: string;
     birthdate?: string;
     phone?: string;
-    address?: string
-    profile_picture?: Media | null
+    address?: string;
+    profile_picture?: Media | null;
+    signature?: Media | null;
 }
 
 export interface PaginatedData<T> {

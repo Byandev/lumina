@@ -23,6 +23,7 @@ export type AvatarEditorProps = {
     maxFileMB?: number;
     disabled?: boolean;
     className?: string;
+    removable?: boolean
 };
 
 export function AvatarEditor({
@@ -33,6 +34,7 @@ export function AvatarEditor({
                                  maxFileMB = 5,
                                  disabled,
                                  className,
+                                 removable = true
                              }: AvatarEditorProps) {
     const inputRef = React.useRef<HTMLInputElement | null>(null);
 
@@ -117,14 +119,16 @@ export function AvatarEditor({
                     Choose image
                 </Button>
 
-                <Button
-                    type="button"
-                    variant="outline"
-                    onClick={handleRemove}
-                    disabled={disabled || !displayUrl}
-                >
-                    Remove
-                </Button>
+                {
+                    removable && <Button
+                        type="button"
+                        variant="outline"
+                        onClick={handleRemove}
+                        disabled={disabled || !displayUrl}
+                    >
+                        Remove
+                    </Button>
+                }
 
                 <Input
                     ref={inputRef}

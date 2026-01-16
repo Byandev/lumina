@@ -66,4 +66,10 @@ class User extends Authenticatable implements HasMedia
         return $this->morphOne(Media::class, 'model')
             ->where('collection_name', 'PROFILE_PICTURE');
     }
+
+    public function signature(): MorphOne
+    {
+        return $this->morphOne(Media::class, 'model')
+            ->where('collection_name', 'SIGNATURE');
+    }
 }

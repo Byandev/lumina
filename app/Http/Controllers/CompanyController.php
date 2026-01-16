@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\OnboardingCompanyRequest;
 use App\Http\Requests\StoreCompanyRequest;
 use App\Http\Requests\UpdateCompanyRequest;
 use App\Models\Company;
@@ -22,6 +23,7 @@ class CompanyController extends Controller
     {
         $companies = QueryBuilder::for(Company::class)
             ->with(['owners.profilePicture', 'companyLogo'])
+            ->where('is_verified', true)
             ->select('companies.*')
             ->selectSub(function ($query) {
                 $query->from('users')
@@ -88,11 +90,12 @@ class CompanyController extends Controller
         DB::beginTransaction();
 
         try {
-            $company = Company::create(
-                collect($request->validated())
+            $company = Company::create([
+                ...collect($request->validated())
                     ->except(['owners', 'logo'])
-                    ->toArray()
-            );
+                    ->toArray(),
+                'is_verified' => true,
+            ]);
 
             $companyOnboardingChecklist = [];
 
@@ -152,6 +155,15 @@ class CompanyController extends Controller
             'company' => $company,
             'sponsors' => \App\Models\Company::all(),
             'coaches' => \App\Models\User::all(),
+        ]);
+    }
+
+    public function showUnverified(Company $company)
+    {
+        $company = $company->load('owners.signature', 'owners.profilePicture', 'proofOfPayment', 'companyLogo');
+
+        return Inertia::render('companies/show', [
+            'company' => $company,
         ]);
     }
 
@@ -246,113 +258,104 @@ class CompanyController extends Controller
             ->with('success', 'Company deleted successfully.');
     }
 
-    public function submit(Request $request)
+    public function submit(OnboardingCompanyRequest $request)
     {
-        $validated = $request->validate([
-            'company_name' => ['required', 'string', 'max:255'],
-            'company_email' => ['nullable', 'email', 'max:255'],
-            'company_phone' => ['nullable', 'string', 'max:20'],
-            'address' => ['nullable', 'string', 'max:500'],
-            'has_existing_ecomm_process' => ['required', 'in:yes,no'],
-
-            'company_logo' => ['nullable', 'image', 'max:5120'],
-            'company_owners_image' => ['nullable', 'image', 'max:5120'],
-            'proof_of_payment' => ['required', 'file', 'max:10240'],
-            'e_signature' => ['required', 'file', 'max:5120'],
-
-            'owners' => ['required', 'array', 'min:1'],
-            'owners.*.name' => ['required', 'string', 'max:255'],
-            'owners.*.email' => ['required', 'email', 'max:255'],
-            'owners.*.phone' => ['required', 'string', 'max:20'],
-            'owners.*.address' => ['nullable', 'string', 'max:500'],
-            'owners.*.facebook_link' => ['nullable', 'url', 'max:255'],
-            'owners.*.birthdate' => ['nullable', 'date'],
-            'owners.*.photo' => ['required', 'image', 'max:5120'],
-            'owners.*.id_with_signature' => ['required', 'file', 'max:10240'],
-        ]);
-
-        $storedFiles = [];
-        $companyLogoPath = null;
-        $ownersImagePath = null;
-
-        if ($request->hasFile('company_logo')) {
-            $companyLogoPath = $request->file('company_logo')->store('companies/logos', 's3');
-            $storedFiles[] = $companyLogoPath;
-        }
-
-        if ($request->hasFile('company_owners_image')) {
-            $ownersImagePath = $request->file('company_owners_image')->store('companies/owners-group', 's3');
-            $storedFiles[] = $ownersImagePath;
-        }
-
-        $proofPath = $request->file('proof_of_payment')->store('companies/payments', 's3');
-        $storedFiles[] = $proofPath;
-
-        $signaturePath = $request->file('e_signature')->store('companies/signatures', 's3');
-        $storedFiles[] = $signaturePath;
+        DB::beginTransaction();
 
         try {
-            // CREATE COMPANY
             $company = Company::create([
-                'name' => $validated['company_name'],
-                'email' => $validated['company_email'] ?? null,
-                'phone' => $validated['company_phone'] ?? null,
-                'address' => $validated['address'] ?? null,
-                'has_existing_ecomm_process' => $validated['has_existing_ecomm_process'],
-                'logo' => $companyLogoPath,
-                'owner_photo' => $ownersImagePath,
-                'proof_of_payment' => $proofPath,
-                'e_signature' => $signaturePath,
+                ...collect($request->validated())
+                    ->except(['owners', 'logo', 'proof_of_payment'])
+                    ->toArray(),
+                'is_verified' => false,
+                'status' => 'active',
+                'erp_status' => 'inactive',
+                'sales_activity' => 'inactive',
+                'notarization_status' => 'pending',
             ]);
 
-            // CREATE OWNERS
-            foreach ($validated['owners'] as $index => $ownerData) {
-                $photoPath = $request->file("owners.$index.photo")->store('owners/photos', 's3');
-                $storedFiles[] = $photoPath;
+            if ($request->hasFile('logo')) {
+                $company->addMediaFromRequest('logo')
+                    ->toMediaCollection('COMPANY_LOGO');
+            }
 
-                $idPath = $request->file("owners.$index.id_with_signature")->store('owners/ids', 's3');
-                $storedFiles[] = $idPath;
+            if ($request->hasFile('proof_of_payment')) {
+                $company->addMediaFromRequest('proof_of_payment')
+                    ->toMediaCollection('PROOF_OF_PAYMENT');
+            }
 
-                User::create([
-                    'name' => $ownerData['name'],
-                    'email' => $ownerData['email'],
-                    'password' => bcrypt('password'),
-                    'phone' => $ownerData['phone'],
-                    'address' => $ownerData['address'] ?? null,
-                    'facebook' => $ownerData['facebook_link'] ?? null,
-                    'birthdate' => $ownerData['birthdate'] ?? null,
-                    'photo' => $photoPath,
-                    'role' => 'owner',
-                    'ids' => $idPath,
+            foreach ($request->validated()['owners'] as $owner) {
+                $companyOwner = $company->owners()->create([
+                    'name' => $owner['name'],
+                    'email' => $owner['email'],
+                    'phone' => $owner['phone'],
+                    'address' => $owner['address'],
+                    'facebook' => $owner['facebook'],
+                    'birthdate' => $owner['birthdate'],
+                    'password' => bcrypt('password@123'),
                     'company_id' => $company->id,
                 ]);
-            }
 
-            // ATTACH CHECKLIST ITEMS TO COMPANY
-            $checklistItems = OnboardingChecklist::all();
+                if ($owner['profile_picture']) {
+                    $companyOwner->addMedia($owner['profile_picture'])
+                        ->toMediaCollection('PROFILE_PICTURE');
+                }
 
-            foreach ($checklistItems as $checklistItem) {
-                $company->onboardingChecklists()->create([
-                    'title' => $checklistItem->title,
-                ]);
-            }
-
-            return redirect()
-                ->route('home')
-                ->with('success', 'Company onboarding submitted successfully.');
-
-        } catch (\Exception $e) {
-
-            foreach ($storedFiles as $filePath) {
-                if (Storage::exists($filePath)) {
-                    Storage::delete($filePath);
+                if ($owner['signature']) {
+                    $companyOwner->addMedia($owner['signature'])
+                        ->toMediaCollection('SIGNATURE');
                 }
             }
 
-            return redirect()
-                ->back()
-                ->withInput()
-                ->withErrors(['error' => 'An error occurred while submitting the form. Please try again.']);
+            DB::commit();
+
+            return redirect()->back();
+
+        } catch (\Exception $exception) {
+            DB::rollBack();
+
+            return back()
+                ->withErrors([
+                    'error' => $exception->getMessage(),
+                    'server_error' => 'An error occurred while creating the company. Please try again. If the problem persists, contact support.',
+                ])->withInput();
         }
+    }
+
+    public function unverified(Request $request)
+    {
+        $companies = QueryBuilder::for(Company::class)
+            ->with(['owners.profilePicture', 'companyLogo'])
+            ->where('is_verified', false)
+            ->select('companies.*')
+            ->selectSub(function ($query) {
+                $query->from('users')
+                    ->selectRaw('COUNT(*)')
+                    ->whereColumn('users.company_id', 'companies.id');
+            }, 'owners_count')
+            ->allowedFilters([
+                AllowedFilter::partial('search', 'name'),
+            ])
+            ->allowedSorts([
+                'name',
+                'owners_count',
+                'created_at',
+            ])
+            ->paginate(20);
+
+        return Inertia::render('companies/unverified', [
+            'companies' => $companies,
+            'query' => [
+                ...$request->only(['sort', 'perPage', 'page']),
+                'filter' => $request->input('filter', []),
+            ],
+        ]);
+    }
+
+    public function verify(Company $company)
+    {
+        $company->update(['is_verified' => true]);
+
+        return redirect('/companies');
     }
 }

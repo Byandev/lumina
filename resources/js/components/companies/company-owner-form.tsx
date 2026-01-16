@@ -4,6 +4,7 @@ import InputError from '@/components/input-error';
 import React, { useState } from 'react';
 import { CompanyForm, OwnerPayload } from '@/types/models/Company';
 import { AvatarEditor } from '@/components/ui/avatar-editor';
+import FileInput from '@/components/ui/file-input';
 
 type Errors = Record<string, string>;
 
@@ -12,10 +13,11 @@ type Props = {
     data: CompanyForm;
     setData: (key: string, value: OwnerPayload[] ) => void;
     errors: Errors;
-    isEditing?: boolean
+    isEditing?: boolean;
+    withSignature?: boolean
 };
 
-const CompanyOwnerForm = ({ index,  data, setData, errors, isEditing = false }: Props) => {
+const CompanyOwnerForm = ({ index,  data, setData, errors, isEditing = false, withSignature = false }: Props) => {
     const [imageUrl, setImageUrl] = useState<string | null>(
         data.owners[index] ? data.owners[index].profile_picture?.original_url : null
     );
@@ -24,7 +26,7 @@ const CompanyOwnerForm = ({ index,  data, setData, errors, isEditing = false }: 
         name: '', email: '', phone: '', address: '', birthdate: '', facebook: ''
     };
 
-    const setOwner = (field: 'name' | 'email' | 'phone' | 'address' | 'birthdate' | 'facebook' | 'profile_picture' | 'new_profile_picture', value: string | File | null) => {
+    const setOwner = (field: 'name' | 'email' | 'phone' | 'address' | 'birthdate' | 'facebook' | 'profile_picture' | 'new_profile_picture' | 'signature', value: string | File | null) => {
         const next = [...data.owners];
         next[index] = { ...owner, [field]: value };
         setData('owners', next);
@@ -37,34 +39,56 @@ const CompanyOwnerForm = ({ index,  data, setData, errors, isEditing = false }: 
     }
 
     return (
-        <div className='border-2 border-dashed p-4 rounded-xl'>
-            <div className="mb-2 flex justify-between items-center">
-                <p className="font-bold text-sm">{`Owner #${index+1}`}</p>
+        <div className="rounded-xl border-2 border-dashed p-4">
+            <div className="mb-2 flex items-center justify-between">
+                <p className="text-sm font-bold">{`Owner #${index + 1}`}</p>
 
-                {index > 0 && <p className="font-bold text-sm text-red-500 cursor-pointer" onClick={removeOwner}>Delete Owner</p>}
+                {index > 0 && (
+                    <p
+                        className="cursor-pointer text-sm font-bold text-red-500"
+                        onClick={removeOwner}
+                    >
+                        Delete Owner
+                    </p>
+                )}
             </div>
 
-            <div className="grid grid-cols-2 gap-6">
-                <div className="flex flex-col gap-2 col-span-2">
-                    <Label className="text-sm font-medium">Profile Picture</Label>
+            <div className="grid md:grid-cols-2 gap-6">
+                <div className="flex flex-col md:col-span-2 gap-2">
+                    <Label className="text-sm font-medium">
+                        Profile Picture
+                    </Label>
 
                     <AvatarEditor
                         fallbackText="O"
+                        removable={false}
                         value={{ url: imageUrl }}
                         onChange={(result) => {
                             if (!result) {
                                 setImageUrl(null);
-                                setOwner(isEditing ? 'new_profile_picture' : 'profile_picture', null)
+                                setOwner(
+                                    isEditing
+                                        ? 'new_profile_picture'
+                                        : 'profile_picture',
+                                    null,
+                                );
                                 return;
                             }
 
-                            setImageUrl(result.previewUrl)
-                            setOwner(isEditing ? 'new_profile_picture' : 'profile_picture', result.file)
+                            setImageUrl(result.previewUrl);
+                            setOwner(
+                                isEditing
+                                    ? 'new_profile_picture'
+                                    : 'profile_picture',
+                                result.file,
+                            );
                         }}
                         maxFileMB={5}
                     />
 
-                    <InputError message={errors[`owners.${index}.profile_picture`]} />
+                    <InputError
+                        message={errors[`owners.${index}.profile_picture`]}
+                    />
                 </div>
 
                 <Field
@@ -123,6 +147,17 @@ const CompanyOwnerForm = ({ index,  data, setData, errors, isEditing = false }: 
                     placeholder="Birthdate"
                     type={'date'}
                 />
+
+                {withSignature && (
+                    <FileInput
+                        label="Signature Speciment"
+                        accept="image/*"
+                        value={owner.signature}
+                        onChange={(file) => setOwner('signature', file)}
+                        error={errors[`owners.${index}.signature`]}
+                        required
+                    />
+                )}
             </div>
         </div>
     );

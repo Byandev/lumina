@@ -121,4 +121,10 @@ class Company extends Model implements HasMedia
         return $this->morphOne(Media::class, 'model')
             ->where('collection_name', 'COMPANY_LOGO');
     }
+
+    public function proofOfPayment(): MorphOne
+    {
+        return $this->morphOne(Media::class, 'model')
+            ->where('collection_name', 'PROOF_OF_PAYMENT');
+    }
 }

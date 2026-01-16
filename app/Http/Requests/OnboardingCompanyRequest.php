@@ -4,9 +4,8 @@ namespace App\Http\Requests;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
-class StoreCompanyRequest extends FormRequest
+class OnboardingCompanyRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -35,32 +34,20 @@ class StoreCompanyRequest extends FormRequest
                 'email',
                 'max:255',
             ],
-            'phone' => 'nullable|string|max:20',
-            'address' => 'nullable|string|max:500',
+            'phone' => 'required|string|max:20',
+            'address' => 'required|string|max:500',
             'logo' => [
-                'nullable',
+                'required',
                 'image',
                 'mimes:jpeg,png,jpg,gif,webp',
                 'max:5120',
             ],
-
-            'sponsor_id' => [
-                'nullable',
-                'string',
-                Rule::exists('companies', 'id'),
+            'proof_of_payment' => [
+                'required',
+                'image',
+                'mimes:jpeg,png,jpg,gif,webp',
+                'max:5120',
             ],
-            'coach_id' => [
-                'nullable',
-                'string',
-                Rule::exists('users', 'id')->where(function ($query) {
-                    return $query->whereNull('company_id');
-                }),
-            ],
-            'status' => 'required',
-            'erp_status' => 'required',
-            'sales_activity' => 'required',
-            'notarization_status' => 'required',
-
             // Owners - array validation
             'owners' => 'required|array|min:1',
             'owners.*.name' => 'required|string|max:255',
@@ -89,8 +76,8 @@ class StoreCompanyRequest extends FormRequest
                 'mimes:jpeg,png,jpg,gif,webp',
                 'max:5120', // 5MB
             ],
-            'owners.*.id_file' => [
-                'nullable',
+            'owners.*.signature' => [
+                'required',
                 'file',
                 'mimes:jpeg,png,jpg,pdf',
                 'max:10240', // 10MB for ID files

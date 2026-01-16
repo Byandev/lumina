@@ -17,18 +17,21 @@ Route::get('/', function () {
     ]);
 })->name('home');
 
-Route::get('/partnership-application', function () {
-    return Inertia::render('companies/welcome');
+Route::get('/companies/onboarding', function () {
+    return Inertia::render('companies/onboarding');
 });
 
-Route::post('/partnership-application', [CompanyController::class, 'submit'])->name('company.submit');
+Route::post('/companies/onboarding', [CompanyController::class, 'submit'])->name('company.submit');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', [\App\Http\Controllers\DashboardController::class, 'index'])->middleware(['auth'])->name('dashboard');
     Route::get('companies', [CompanyController::class, 'index'])->name('companies.performance');
+    Route::get('companies/unverified', [CompanyController::class, 'unverified'])->name('companies.unverified');
+    Route::get('companies/unverified/{company}', [CompanyController::class, 'showUnverified'])->name('companies.unverified');
     Route::get('companies/create', [CompanyController::class, 'create'])->name('companies.create');
     Route::get('companies/{company}/edit', [CompanyController::class, 'edit'])->name('companies.edit');
     Route::put('companies/{company}', [CompanyController::class, 'update'])->name('companies.update');
+    Route::post('companies/{company}/verify', [CompanyController::class, 'verify'])->name('companies.verify');
     Route::post('companies', [CompanyController::class, 'store'])->name('companies.store');
     Route::get('/events', [EventController::class, 'index'])->name('events');
     Route::post('/events', [EventController::class, 'store'])->name('events.store');
