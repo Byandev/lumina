@@ -133,7 +133,7 @@ class CompanyController extends Controller
 
             DB::commit();
 
-            return redirect()->route('companies.performance');
+            return redirect()->route('companies.index');
 
         } catch (\Exception $exception) {
             DB::rollBack();
