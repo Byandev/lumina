@@ -74,15 +74,6 @@ export default function Login({
                                         >
                                             Password
                                         </Label>
-                                        {canResetPassword && (
-                                            <TextLink
-                                                href={request()}
-                                                className="ml-auto bg-gradient-to-r from-pink-500 via-blue-500 to-sky-500 bg-clip-text text-sm text-transparent transition-all duration-300 hover:from-cyan-400 hover:to-pink-400"
-                                                tabIndex={5}
-                                            >
-                                                Forgot password?
-                                            </TextLink>
-                                        )}
                                     </div>
                                     <Input
                                         id="password"
@@ -158,21 +149,6 @@ export default function Login({
                                 )}
                             </Button>
                         </div>
-
-                        {canRegister && (
-                            <div className="text-center text-sm">
-                                <span className="text-muted-foreground">
-                                    Don't have an account?{' '}
-                                </span>
-                                <TextLink
-                                    href={register()}
-                                    tabIndex={5}
-                                    className="bg-gradient-to-r from-cyan-500 to-pink-500 bg-clip-text font-semibold text-transparent transition-all duration-300 hover:from-cyan-400 hover:to-pink-400"
-                                >
-                                    Create an account
-                                </TextLink>
-                            </div>
-                        )}
                     </>
                 )}
             </Form>

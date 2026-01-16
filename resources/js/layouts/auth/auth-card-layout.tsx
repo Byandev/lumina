@@ -26,8 +26,8 @@ export default function AuthCardLayout({
                     href={home()}
                     className="flex items-center gap-2 self-center font-medium"
                 >
-                    <div className="flex h-9 w-9 items-center justify-center">
-                        <AppLogoIcon className="size-9 fill-current text-black dark:text-white" />
+                    <div className="mb-1 flex h-12 w-12 items-center justify-center rounded-lg transition-all group-hover:shadow-lg">
+                        <img src={'/favicon.png'} alt="logo" />
                     </div>
                 </Link>
 
