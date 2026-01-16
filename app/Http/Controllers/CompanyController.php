@@ -248,6 +248,8 @@ class CompanyController extends Controller
 
     public function submit(Request $request)
     {
+
+
         $validated = $request->validate([
             'company_name' => ['required', 'string', 'max:255'],
             'company_email' => ['nullable', 'email', 'max:255'],
@@ -280,6 +282,8 @@ class CompanyController extends Controller
             $storedFiles[] = $companyLogoPath;
         }
 
+
+
         if ($request->hasFile('company_owners_image')) {
             $ownersImagePath = $request->file('company_owners_image')->store('companies/owners-group', 's3');
             $storedFiles[] = $ownersImagePath;
@@ -299,13 +303,20 @@ class CompanyController extends Controller
                 'phone' => $validated['company_phone'] ?? null,
                 'address' => $validated['address'] ?? null,
                 'has_existing_ecomm_process' => $validated['has_existing_ecomm_process'],
-                'logo' => $companyLogoPath,
                 'owner_photo' => $ownersImagePath,
                 'proof_of_payment' => $proofPath,
                 'e_signature' => $signaturePath,
             ]);
 
+            if ($request->hasFile('company_logo')) {
+                $company->addMediaFromRequest('company_logo')
+                    ->toMediaCollection('COMPANY_LOGO');
+            }
+
             // CREATE OWNERS
+
+
+
             foreach ($validated['owners'] as $index => $ownerData) {
                 $photoPath = $request->file("owners.$index.photo")->store('owners/photos', 's3');
                 $storedFiles[] = $photoPath;
@@ -313,7 +324,7 @@ class CompanyController extends Controller
                 $idPath = $request->file("owners.$index.id_with_signature")->store('owners/ids', 's3');
                 $storedFiles[] = $idPath;
 
-                User::create([
+                $companyOwner = User::create([
                     'name' => $ownerData['name'],
                     'email' => $ownerData['email'],
                     'password' => bcrypt('password'),
@@ -321,14 +332,17 @@ class CompanyController extends Controller
                     'address' => $ownerData['address'] ?? null,
                     'facebook' => $ownerData['facebook_link'] ?? null,
                     'birthdate' => $ownerData['birthdate'] ?? null,
-                    'photo' => $photoPath,
                     'role' => 'owner',
                     'ids' => $idPath,
                     'company_id' => $company->id,
                 ]);
+
+                if ($ownerData['photo']) {
+                    $companyOwner->addMedia($ownerData['photo'])
+                        ->toMediaCollection('PROFILE_PICTURE');
+                }
             }
 
-            // ATTACH CHECKLIST ITEMS TO COMPANY
             $checklistItems = OnboardingChecklist::all();
 
             foreach ($checklistItems as $checklistItem) {
@@ -343,11 +357,6 @@ class CompanyController extends Controller
 
         } catch (\Exception $e) {
 
-            foreach ($storedFiles as $filePath) {
-                if (Storage::exists($filePath)) {
-                    Storage::delete($filePath);
-                }
-            }
 
             return redirect()
                 ->back()
