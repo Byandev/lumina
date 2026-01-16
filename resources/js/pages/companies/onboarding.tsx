@@ -1,18 +1,27 @@
-import React from 'react';
-import ComponentCard from '@/components/component-card';
-import { Link, useForm } from '@inertiajs/react';
-import { Label } from '@/components/ui/label';
-import { AvatarEditor } from '@/components/ui/avatar-editor';
-import InputError from '@/components/input-error';
+import React, { FormEvent, useState } from 'react';
+import { useForm } from '@inertiajs/react';
+
 import { Input } from '@/components/ui/input';
-import CompanyOwnerForm from '@/components/companies/company-owner-form';
-import FileInput from '@/components/ui/file-input';
+import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
+import FileInput from '@/components/ui/file-input';
+import InputError from '@/components/input-error';
+import ComponentCard from '@/components/component-card';
+import { AvatarEditor } from '@/components/ui/avatar-editor';
+import CompanyOwnerForm from '@/components/companies/company-owner-form';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
 
 const Onboarding = () => {
+    const [showSuccess, setShowSuccess] = useState(false);
     const [logoUrl, setLogoUrl] = React.useState<string | null>(null);
 
-    const { data, errors, setData, post, processing } = useForm({
+    const { data, errors, setData, post, processing , reset } = useForm({
         name: '',
         email: null,
         phone: null,
@@ -44,13 +53,34 @@ const Onboarding = () => {
                 facebook: '',
                 birthdate: '',
                 profile_picture: null,
-                new_profile_picture: null,
+                signature: null
             },
         ]);
     };
 
+    const handleSubmit = (e: FormEvent) => {
+        e.preventDefault();
+
+        post('/companies/onboarding', {
+            onSuccess: () => {
+                reset();
+                setShowSuccess(true)
+            }
+        });
+    }
+
     return (
         <div className="min-h-screen bg-gray-100 text-base">
+            <Dialog open={showSuccess} onOpenChange={setShowSuccess}>
+                <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
+                    <DialogHeader>
+                        <DialogTitle>Congratulations</DialogTitle>
+                        <DialogDescription>
+                            We received your information. We will keep in touch once we verified your information.
+                        </DialogDescription>
+                    </DialogHeader>
+                </DialogContent>
+            </Dialog>
             <div className="mx-auto max-w-4xl space-y-12 px-4 py-8 text-gray-700">
                 <section className="space-y-12">
                     <p className="text-center text-3xl font-extrabold text-gray-800">
@@ -95,7 +125,7 @@ const Onboarding = () => {
                     </div>
                 </section>
 
-                <form>
+                <form onSubmit={handleSubmit}>
                     <section className="space-y-8">
                         <ComponentCard
                             title={'Company Information'}
@@ -251,7 +281,7 @@ const Onboarding = () => {
                         </ComponentCard>
                     </section>
 
-                    <section className='my-8'>
+                    <section className="my-8">
                         <div className="flex justify-end">
                             <Button type="submit" disabled={processing}>
                                 {processing ? (

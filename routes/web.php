@@ -17,16 +17,11 @@ Route::get('/', function () {
     ]);
 })->name('home');
 
-Route::get('/partnership-application', function () {
-    return Inertia::render('companies/welcome');
-});
-
 Route::get('/companies/onboarding', function () {
     return Inertia::render('companies/onboarding');
 });
 
-
-Route::post('/partnership-application', [CompanyController::class, 'submit'])->name('company.submit');
+Route::post('/companies/onboarding', [CompanyController::class, 'submit'])->name('company.submit');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', [\App\Http\Controllers\DashboardController::class, 'index'])->middleware(['auth'])->name('dashboard');
