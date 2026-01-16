@@ -1,5 +1,8 @@
-import { OnboardingChecklist } from '@/types/models/OnboardingChecklist';
+import { FormEvent } from 'react';
+import { Loader2 } from 'lucide-react';
 import { useForm } from '@inertiajs/react';
+
+import { OnboardingChecklist } from '@/types/models/OnboardingChecklist';
 import {
     Dialog,
     DialogContent,
@@ -9,7 +12,6 @@ import {
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { Loader2 } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
 import FileInput from '@/components/ui/file-input';
 
@@ -18,6 +20,7 @@ interface Props {
     onOpenChange: (bool: boolean) => void;
     checklist: OnboardingChecklist;
 }
+
 const OnboardingRemark = ({ open, onOpenChange, checklist }: Props) => {
     const { data, setData, processing, errors, put, setError } =
         useForm<{
@@ -28,7 +31,9 @@ const OnboardingRemark = ({ open, onOpenChange, checklist }: Props) => {
             new_attachment: null,
         });
 
-    const handleSubmit = () => {
+    const handleSubmit = (e: FormEvent) => {
+        e.preventDefault();
+
         put(`/companies/${checklist.company_id}/onboarding/${checklist.id}`, {
             preserveScroll: true,
             preserveState: false,

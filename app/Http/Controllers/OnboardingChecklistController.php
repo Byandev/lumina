@@ -21,8 +21,6 @@ class OnboardingChecklistController extends Controller
 
     public function update(Request $request, Company $company, CompanyOnboardingChecklist $onboardingChecklist)
     {
-        $company = $company->load(['onboardingChecklists']);
-        $company->onboarding_percentage = $company->getOnboardingPercentage();
         $onboardingChecklist->load('attachment');
 
         $data = $request->validate([
