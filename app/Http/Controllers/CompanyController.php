@@ -23,6 +23,7 @@ class CompanyController extends Controller
     {
         $companies = QueryBuilder::for(Company::class)
             ->with(['owners.profilePicture', 'companyLogo'])
+            ->where('is_verified', true)
             ->select('companies.*')
             ->selectSub(function ($query) {
                 $query->from('users')
@@ -89,11 +90,12 @@ class CompanyController extends Controller
         DB::beginTransaction();
 
         try {
-            $company = Company::create(
-                collect($request->validated())
+            $company = Company::create([
+                ...collect($request->validated())
                     ->except(['owners', 'logo'])
-                    ->toArray()
-            );
+                    ->toArray(),
+                'is_verified' => true,
+            ]);
 
             $companyOnboardingChecklist = [];
 
@@ -153,6 +155,15 @@ class CompanyController extends Controller
             'company' => $company,
             'sponsors' => \App\Models\Company::all(),
             'coaches' => \App\Models\User::all(),
+        ]);
+    }
+
+    public function showUnverified(Company $company)
+    {
+        $company = $company->load('owners.signature', 'owners.profilePicture', 'proofOfPayment', 'companyLogo');
+
+        return Inertia::render('companies/show', [
+            'company' => $company,
         ]);
     }
 
@@ -252,11 +263,16 @@ class CompanyController extends Controller
         DB::beginTransaction();
 
         try {
-            $company = Company::create(
-                collect($request->validated())
+            $company = Company::create([
+                ...collect($request->validated())
                     ->except(['owners', 'logo', 'proof_of_payment'])
-                    ->toArray()
-            );
+                    ->toArray(),
+                'is_verified' => false,
+                'status' => 'active',
+                'erp_status' => 'inactive',
+                'sales_activity' => 'inactive',
+                'notarization_status' => 'pending',
+            ]);
 
             if ($request->hasFile('logo')) {
                 $company->addMediaFromRequest('logo')
@@ -304,5 +320,42 @@ class CompanyController extends Controller
                     'server_error' => 'An error occurred while creating the company. Please try again. If the problem persists, contact support.',
                 ])->withInput();
         }
+    }
+
+    public function unverified(Request $request)
+    {
+        $companies = QueryBuilder::for(Company::class)
+            ->with(['owners.profilePicture', 'companyLogo'])
+            ->where('is_verified', false)
+            ->select('companies.*')
+            ->selectSub(function ($query) {
+                $query->from('users')
+                    ->selectRaw('COUNT(*)')
+                    ->whereColumn('users.company_id', 'companies.id');
+            }, 'owners_count')
+            ->allowedFilters([
+                AllowedFilter::partial('search', 'name'),
+            ])
+            ->allowedSorts([
+                'name',
+                'owners_count',
+                'created_at',
+            ])
+            ->paginate(20);
+
+        return Inertia::render('companies/unverified', [
+            'companies' => $companies,
+            'query' => [
+                ...$request->only(['sort', 'perPage', 'page']),
+                'filter' => $request->input('filter', []),
+            ],
+        ]);
+    }
+
+    public function verify(Company $company)
+    {
+        $company->update(['is_verified' => true]);
+
+        return redirect('/companies');
     }
 }

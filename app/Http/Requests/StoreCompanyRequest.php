@@ -56,6 +56,10 @@ class StoreCompanyRequest extends FormRequest
                     return $query->whereNull('company_id');
                 }),
             ],
+            'status' => 'required',
+            'erp_status' => 'required',
+            'sales_activity' => 'required',
+            'notarization_status' => 'required',
 
             // Owners - array validation
             'owners' => 'required|array|min:1',
