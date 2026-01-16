@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Spatie\QueryBuilder\AllowedFilter;
+use Spatie\QueryBuilder\AllowedSort;
 use Spatie\QueryBuilder\QueryBuilder;
 
 class CompanyController extends Controller
@@ -22,9 +23,10 @@ class CompanyController extends Controller
     public function index(Request $request)
     {
         $companies = QueryBuilder::for(Company::class)
-            ->with(['owners.profilePicture', 'companyLogo'])
+            ->with(['owners.profilePicture', 'companyLogo', 'coach'])
             ->where('is_verified', true)
             ->select('companies.*')
+            ->leftJoin('users as coach_user', 'coach_user.id', '=', 'companies.coach_id')
             ->selectSub(function ($query) {
                 $query->from('users')
                     ->selectRaw('COUNT(*)')
@@ -51,6 +53,7 @@ class CompanyController extends Controller
                 'level',
                 'owners_count',
                 'onboarding_percentage',
+                AllowedSort::field('coach', 'coach_user.name'),
             ])
             ->paginate(20);
 
@@ -148,7 +151,7 @@ class CompanyController extends Controller
 
     public function show(Company $company)
     {
-        $company = $company->load('owners', 'coach:id,name,photo', 'sponsor:id,name,logo', 'companyLogo');
+        $company = $company->load('owners', 'coach.profilePicture', 'sponsor.companyLogo', 'companyLogo');
         $company->onboarding_percentage = $company->getOnboardingPercentage();
 
         return Inertia::render('companies/company/detail-tab', [

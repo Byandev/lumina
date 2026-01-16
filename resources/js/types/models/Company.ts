@@ -31,6 +31,7 @@ export interface Company {
     sponsor_id: number | string| null;
     attendance_status: AttendanceStatus | null
     proof_of_payment?: Media | null
+    coach?: User;
 }
 
 export type OwnerPayload = Pick<User, 'name' | 'email' | 'phone' | 'facebook' | 'birthdate' | 'address' | 'profile_picture'> & {

@@ -45,6 +45,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 export default function CompaniesIndex({ companies, query }: CompaniesProps) {
     const getInitials = useInitials();
+    console.log(companies)
 
     const [searchValue, setSearchValue] = useState(query?.filter?.search ?? '');
 
@@ -89,14 +90,14 @@ export default function CompaniesIndex({ companies, query }: CompaniesProps) {
 
                 return (
                     <div className="flex items-center gap-2 sm:gap-3">
-                        <Avatar className='cursor-pointer'>
-                            {company.company_logo &&
+                        <Avatar className="cursor-pointer">
+                            {company.company_logo && (
                                 <AvatarImage
                                     src={company.company_logo?.original_url}
                                     alt={company.name}
                                 />
-                            }
-                            <AvatarFallback className='bg-blue-600 text-white'>
+                            )}
+                            <AvatarFallback className="bg-blue-600 text-white">
                                 {getInitials(company.name)}
                             </AvatarFallback>
                         </Avatar>
@@ -124,6 +125,45 @@ export default function CompaniesIndex({ companies, query }: CompaniesProps) {
                 <SortableHeader column={column} title={'Owners'} />
             ),
             cell: ({ row }) => <CompanyOwnersAvatar company={row.original} />,
+        },
+        {
+            accessorKey: 'coach',
+            header: ({ column }) => (
+                <SortableHeader column={column} title={'Coach'} />
+            ),
+            cell: ({ row }) => {
+                const { coach } = row.original
+
+                return (
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <Avatar className="cursor-pointer border border-white">
+                                {coach && (
+                                    <AvatarImage
+                                        src={
+                                            coach.profile_picture?.original_url
+                                        }
+                                        alt={coach.name}
+                                    />
+                                )}
+                                <AvatarFallback
+                                    className={
+                                        coach
+                                            ? `border border-blue-700 bg-blue-600 text-white`
+                                            : 'border border-dashed border-blue-700 bg-blue-100 text-blue-700'
+                                    }
+                                >
+                                    {coach ? getInitials(coach.name) : 'U'}
+                                </AvatarFallback>
+                            </Avatar>
+                        </TooltipTrigger>
+
+                        <TooltipContent>
+                            {coach ? coach.name : 'Unassigned'}
+                        </TooltipContent>
+                    </Tooltip>
+                );
+            }
         },
         {
             accessorKey: 'onboarding_percentage',
@@ -190,50 +230,52 @@ export default function CompaniesIndex({ companies, query }: CompaniesProps) {
         {
             accessorKey: 'id',
             header: ({ column }) => (
-                <SortableHeader column={column} title={'Actions'} sortable={false} />
+                <SortableHeader
+                    column={column}
+                    title={'Actions'}
+                    sortable={false}
+                />
             ),
             cell: ({ row }) => {
-                return <div>
-                    <TooltipProvider>
-                        <div className="flex items-center justify-center gap-1.5">
-                            <Tooltip>
-                                <TooltipTrigger
-                                    asChild
-                                >
-                                    <Link
-                                        href={`/companies/${row.original.id}/details`}
-                                        className="inline-flex h-8 w-8 items-center justify-center rounded-md hover:bg-muted"
-                                        aria-label="View event"
-                                    >
-                                        <Eye className="h-4 w-4" />
-                                    </Link>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                    View Company
-                                </TooltipContent>
-                            </Tooltip>
+                return (
+                    <div>
+                        <TooltipProvider>
+                            <div className="flex items-center justify-center gap-1.5">
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <Link
+                                            href={`/companies/${row.original.id}/details`}
+                                            className="inline-flex h-8 w-8 items-center justify-center rounded-md hover:bg-muted"
+                                            aria-label="View event"
+                                        >
+                                            <Eye className="h-4 w-4" />
+                                        </Link>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                        View Company
+                                    </TooltipContent>
+                                </Tooltip>
 
-                            <Tooltip>
-                                <TooltipTrigger
-                                    asChild
-                                >
-                                    <Link
-                                        href={`/companies/${row.original.id}/edit`}
-                                        className="inline-flex h-8 w-8 items-center justify-center rounded-md hover:bg-muted"
-                                        aria-label="View event"
-                                    >
-                                        <Edit className="h-4 w-4" />
-                                    </Link>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                    Edit company
-                                </TooltipContent>
-                            </Tooltip>
-                        </div>
-                    </TooltipProvider>
-                </div>
-            }
-        }
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <Link
+                                            href={`/companies/${row.original.id}/edit`}
+                                            className="inline-flex h-8 w-8 items-center justify-center rounded-md hover:bg-muted"
+                                            aria-label="View event"
+                                        >
+                                            <Edit className="h-4 w-4" />
+                                        </Link>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                        Edit company
+                                    </TooltipContent>
+                                </Tooltip>
+                            </div>
+                        </TooltipProvider>
+                    </div>
+                );
+            },
+        },
     ];
 
     return (
