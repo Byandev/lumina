@@ -32,7 +32,11 @@ class StorePerformanceRecordRequest extends FormRequest
             'highlights' => ['nullable', 'string', 'max:2000'],
             'challenges' => ['nullable', 'string', 'max:2000'],
             'action_plan' => ['nullable', 'string', 'max:2000'],
-            'attachment' => ['image', 'nullable'],
+            'attachment' => [
+                'nullable',
+                'file',
+                'max:5120',
+            ],
         ];
     }
 }

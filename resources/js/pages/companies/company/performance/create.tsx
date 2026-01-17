@@ -218,7 +218,7 @@ const Create = ({ company }: Props) => {
                                     setData('attachment', file)
                                 }
                             />
-                            <InputError message={errors.action_plan} />
+                            <InputError message={errors.attachment} />
                         </div>
                     </div>
 

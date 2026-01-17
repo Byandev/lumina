@@ -96,7 +96,7 @@ class PerformanceRecordController extends Controller
 
         $record->update(collect($request->validated())->except('attachment')->toArray());
 
-        return redirect()->route('companies.performance-records.index', ['company' => $company]);
+        return redirect()->route('companies.performance-records.index', ['company' => $company])->with('success', 'Record updated successfully.');
     }
 
     public function destroy(Company $company, PerformanceRecord $record)
