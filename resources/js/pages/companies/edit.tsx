@@ -49,6 +49,7 @@ const Edit = ({ company, coaches, companies: sponsorCompanies }: Props) => {
         logo: company.company_logo,
         new_logo: null,
         owners: (company.owners ?? []).map((owner) => ({
+            id: owner.id,
             name: owner.name,
             email: owner.email,
             phone: owner.phone,
