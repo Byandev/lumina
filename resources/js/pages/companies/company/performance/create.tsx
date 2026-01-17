@@ -9,6 +9,7 @@ import React from 'react';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button';
+import FileInput from '@/components/ui/file-input';
 
 interface Props {
     company: Company
@@ -205,6 +206,17 @@ const Create = ({ company }: Props) => {
                                 }
                             ></Textarea>
                             <InputError message={errors.action_plan} />
+                        </div>
+
+                        <div className={'col-span-4'}>
+                            <FileInput
+                                label="Attachment"
+                                accept="image/*"
+                                value={data.attachment}
+                                onChange={(file) => setData('attachment', file)}
+                                error={errors.attachment}
+                                required
+                            />
                         </div>
                     </div>
 

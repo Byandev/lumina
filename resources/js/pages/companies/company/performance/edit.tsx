@@ -20,6 +20,7 @@ import ComponentCard from '@/components/component-card';
 
 import { Company } from '@/types/models/Company';
 import { PerformanceRecord } from '@/types/models/PerformanceRecord';
+import FileInput from '@/components/ui/file-input';
 
 interface Props {
     company: Company;
@@ -39,7 +40,7 @@ const Edit = ({ record, company }: Props) => {
         highlights: record.highlights,
         challenges: record.challenges,
         action_plan: record.action_plan,
-        attachment: null,
+        new_attachment: null,
     });
 
     const onSubmit = (e: React.FormEvent) => {
@@ -219,6 +220,19 @@ const Edit = ({ record, company }: Props) => {
                                 }
                             ></Textarea>
                             <InputError message={errors.action_plan} />
+                        </div>
+
+                        <div className={'col-span-4'}>
+                            <FileInput
+                                label="Attachment"
+                                accept="image/*"
+                                value={data.new_attachment ?? record.attachment}
+                                onChange={(file) =>
+                                    setData('new_attachment', file)
+                                }
+                                error={errors.new_attachment}
+                                required
+                            />
                         </div>
                     </div>
 

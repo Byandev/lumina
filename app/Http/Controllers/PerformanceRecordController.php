@@ -33,16 +33,23 @@ class PerformanceRecordController extends Controller
 
     public function store(StorePerformanceRecordRequest $request, Company $company)
     {
-        PerformanceRecord::create([
+        $record = PerformanceRecord::create([
             'company_id' => $company->id,
-            ...collect($request->validated())->except('attachment')->toArray(),
+            ...collect($request->validated())->except(['attachment', 'new_attachment'])->toArray(),
         ]);
+
+        if ($request->hasFile('attachment')) {
+            $record->addMediaFromRequest('attachment')
+                ->toMediaCollection('PERFORMANCE_RECORD_ATTACHMENT');
+        }
 
         return redirect()->route('companies.performance-records.index', ['company' => $company]);
     }
 
     public function show(Company $company, PerformanceRecord $record)
     {
+        $record->load('attachment');
+
         return Inertia::render('companies/company/performance/show', [
             'record' => $record,
             'company' => $company,
@@ -51,6 +58,8 @@ class PerformanceRecordController extends Controller
 
     public function edit(Company $company, PerformanceRecord $record)
     {
+        $record->load('attachment');
+
         return Inertia::render('companies/company/performance/edit', [
             'record' => $record,
             'company' => $company,
@@ -63,7 +72,16 @@ class PerformanceRecordController extends Controller
             return back()->with('error', 'Index record not found for this company.');
         }
 
-        $record->update(collect($request->validated())->except('attachment')->toArray());
+        $record->load('attachment');
+
+        $record->update(collect($request->validated())->except(['attachment', 'new_attachment'])->toArray());
+
+        if ($request->hasFile('new_attachment')) {
+            $record->attachment()->delete();
+
+            $record->addMediaFromRequest('new_attachment')
+                ->toMediaCollection('PERFORMANCE_RECORD_ATTACHMENT');
+        }
 
         return redirect()->route('companies.performance-records.index', ['company' => $company]);
     }

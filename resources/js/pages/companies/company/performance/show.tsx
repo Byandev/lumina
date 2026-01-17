@@ -32,6 +32,9 @@ const Show = ({ company, record }: Props) => {
                     </div>
                     <div>{record.roas} ROAS</div>
                     <div>{percentageFormatter(record.rts / 100)} RTS</div>
+                    {record.attachment && <div>
+                        <a target='_blank' href={record.attachment.original_url} className="font-medium text-blue-700 cursor-pointer">Download Attachment</a>
+                    </div>}
                 </div>
 
                 <div className="grid grid-cols-3 gap-5">
@@ -54,6 +57,7 @@ const Show = ({ company, record }: Props) => {
                             {record.challenges}
                         </Label>
                     </div>
+
                     <div className="flex flex-col gap-1 rounded-xl border border-blue-700 bg-blue-200 p-4">
                         <Label className="text-sm font-medium">
                             Action Plan
