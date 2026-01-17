@@ -21,6 +21,7 @@ class OnboardingChecklistController extends Controller
 
     public function update(Request $request, Company $company, CompanyOnboardingChecklist $onboardingChecklist)
     {
+
         $onboardingChecklist->load('attachment');
 
         $data = $request->validate([
@@ -38,6 +39,14 @@ class OnboardingChecklistController extends Controller
 
         $onboardingChecklist->update(collect($data)->except('new_attachment')->toArray());
 
-        return redirect()->back();
+        $status = 'Updated successfully';
+
+        if ($request->has('is_completed')) {
+            $status = ($data['is_completed'] ?? false)
+                ? 'Checklist marked as completed.'
+                : 'Checklist marked as not completed.';
+        }
+
+        return redirect()->back()->with('success', $status);
     }
 }
