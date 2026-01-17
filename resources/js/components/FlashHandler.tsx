@@ -1,13 +1,31 @@
 import { usePage } from '@inertiajs/react';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 
 export function FlashHandler() {
     const { props } = usePage() as any;
+    const flash = props.flash || {};
+    const shownMessages = useRef<Set<string>>(new Set());
 
     useEffect(() => {
+        // Create a unique key for this flash message
+        const flashKey = JSON.stringify(flash);
 
-        const flash = props.flash || {};
+        // Skip if we've already shown this exact message
+        if (shownMessages.current.has(flashKey)) {
+            return;
+        }
+
+        // Mark this message as shown
+        if (flash.success || flash.error || flash.warning || flash.info) {
+            shownMessages.current.add(flashKey);
+
+            // Clear old messages from the set to prevent memory leak
+            if (shownMessages.current.size > 10) {
+                const values = Array.from(shownMessages.current);
+                shownMessages.current = new Set(values.slice(-10));
+            }
+        }
 
         if (flash.success) {
             console.log('FlashHandler: Showing success toast:', flash.success);
@@ -25,7 +43,7 @@ export function FlashHandler() {
             console.log('FlashHandler: Showing info toast:', flash.info);
             toast.info(flash.info);
         }
-    }, [props.flash]);
+    }, [flash.success, flash.error, flash.warning, flash.info]);
 
     return null;
 }
