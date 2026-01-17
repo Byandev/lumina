@@ -1,3 +1,8 @@
+interface Attachment {
+    original_url: string;
+    file_name: string
+}
+
 export interface PerformanceRecord {
     id: number;
     company_id: number;
@@ -11,4 +16,5 @@ export interface PerformanceRecord {
     highlights: string;
     challenges: string;
     action_plan: string;
+    attachment: Attachment;
 }

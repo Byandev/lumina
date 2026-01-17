@@ -9,6 +9,7 @@ import React from 'react';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button';
+import FileInput from '@/components/ui/file-input';
 
 interface Props {
     company: Company
@@ -37,6 +38,8 @@ const Create = ({ company }: Props) => {
         post(`/companies/${company.id}/performance-records`);
     };
 
+    // @ts-ignore
+    // @ts-ignore
     return (
         <CompanyLayout company={company}>
             <ComponentCard desc={'Create new performance record'}>
@@ -204,6 +207,17 @@ const Create = ({ company }: Props) => {
                                     setData('action_plan', e.target.value)
                                 }
                             ></Textarea>
+                            <InputError message={errors.action_plan} />
+                        </div>
+                        <div className="col-span-4 flex flex-col gap-2">
+
+                            <FileInput
+                                label="Attachment"
+                                value={data.attachment}
+                                onChange={(file) =>
+                                    setData('attachment', file)
+                                }
+                            />
                             <InputError message={errors.action_plan} />
                         </div>
                     </div>

@@ -6,6 +6,7 @@ use App\Http\Requests\Company\StorePerformanceRecordRequest;
 use App\Models\Company;
 use App\Models\PerformanceRecord;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
@@ -33,16 +34,46 @@ class PerformanceRecordController extends Controller
 
     public function store(StorePerformanceRecordRequest $request, Company $company)
     {
-        PerformanceRecord::create([
-            'company_id' => $company->id,
-            ...collect($request->validated())->except('attachment')->toArray(),
-        ]);
 
-        return redirect()->route('companies.performance-records.index', ['company' => $company]);
+        try {
+            DB::beginTransaction();
+
+            $record = PerformanceRecord::create([
+                'company_id' => $company->id,
+                ...collect($request->validated())->except('attachment')->toArray(),
+            ]);
+
+            if ($request->hasFile('attachment')) {
+                if ($record->attachment) {
+                    $record->attachment->delete();
+                }
+                $record
+                    ->addMediaFromRequest('attachment')
+                    ->toMediaCollection('PERFORMANCE_RECORD_ATTACHMENT');
+            }
+
+            DB::commit();
+
+            return redirect()->route('companies.performance-records.index', ['company' => $company]);
+
+        }catch (\Exception $exception){
+
+            DB::rollBack();
+
+            return back()
+                ->withErrors([
+                    'error' => $exception->getMessage(),
+                    'server_error' => 'An error occurred while creating record. Please try again. If the problem persists, contact support.',
+                ])->withInput();
+        }
+
+
     }
 
     public function show(Company $company, PerformanceRecord $record)
     {
+        $record->load(['attachment']);
+
         return Inertia::render('companies/company/performance/show', [
             'record' => $record,
             'company' => $company,

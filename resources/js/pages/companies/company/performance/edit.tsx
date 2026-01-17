@@ -20,6 +20,7 @@ import ComponentCard from '@/components/component-card';
 
 import { Company } from '@/types/models/Company';
 import { PerformanceRecord } from '@/types/models/PerformanceRecord';
+import FileInput from '@/components/ui/file-input';
 
 interface Props {
     company: Company;
@@ -220,6 +221,16 @@ const Edit = ({ record, company }: Props) => {
                             ></Textarea>
                             <InputError message={errors.action_plan} />
                         </div>
+                    </div>
+                    <div className="col-span-4 flex flex-col mt-6 gap-2">
+
+
+                        <FileInput
+                            label="Attachment"
+                            value={data.attachment}
+                            onChange={(file) => setData('attachment', file)}
+                        />
+                        <InputError message={errors.action_plan} />
                     </div>
 
                     <div className="my-5 flex justify-end">
