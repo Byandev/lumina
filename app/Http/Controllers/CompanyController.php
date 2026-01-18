@@ -365,6 +365,17 @@ class CompanyController extends Controller
     {
         $company->update(['is_verified' => true]);
 
+        $companyOnboardingChecklist = [];
+
+        OnboardingChecklist::get()->each(function ($checklist) use ($company, &$companyOnboardingChecklist) {
+            $companyOnboardingChecklist[] = [
+                'company_id' => $company->id,
+                'title' => $checklist->title,
+            ];
+        });
+
+        CompanyOnboardingChecklist::insert($companyOnboardingChecklist);
+
         return redirect('/companies');
     }
 }
