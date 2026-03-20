@@ -1,75 +1,181 @@
-import { User } from '@/types';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Cake, Download, Facebook, Mail, MapPin, Phone, Signature } from 'lucide-react';
-import React from 'react';
+import { Button } from '@/components/ui/button';
+import { User } from '@/types';
+import {
+    Cake,
+    Check,
+    Copy,
+    Download,
+    ExternalLink,
+    Facebook,
+    Mail,
+    MapPin,
+    Phone,
+} from 'lucide-react';
+import { useState } from 'react';
 
 interface Props {
-    owner: User
+    owner: User;
 }
 
 const CompanyOwnerCard = ({ owner }: Props) => {
-    console.log(owner)
+    const [copiedField, setCopiedField] = useState<string | null>(null);
+
+    const getInitials = (name: string) => {
+        return name
+            .split(' ')
+            .map((word) => word[0])
+            .join('')
+            .toUpperCase()
+            .slice(0, 2);
+    };
+
+    const formatDate = (dateString?: string) => {
+        if (!dateString) return null;
+        try {
+            return new Date(dateString).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+            });
+        } catch {
+            return null;
+        }
+    };
+
+    const copyToClipboard = (text: string, field: string) => {
+        navigator.clipboard.writeText(text);
+        setCopiedField(field);
+        setTimeout(() => setCopiedField(null), 2000);
+    };
+
+    const birthday = formatDate(owner.birthdate);
+
     return (
-        <div className="space-y-6 rounded-xl border p-4">
-            <div className="space-y-2">
-                <div className="flex justify-center">
-                    <Avatar className="size-12">
-                        <AvatarImage src={`/${owner.photo}`} alt="@shadcn" />
-                        <AvatarFallback>CN</AvatarFallback>
-                    </Avatar>
+        <div className="group  border bg-card p-4 transition-all duration-200 hover:border-pink-500/30 hover:shadow-md">
+            {/* Header with Avatar and Name */}
+            <div className="flex items-start gap-3">
+                <Avatar className="h-12 w-12 shadow-sm ring-2 ring-background">
+                    <AvatarImage src={owner.photo} alt={owner.name} />
+                    <AvatarFallback className="bg-gradient-to-br from-pink-500 to-blue-500 text-sm font-medium text-white">
+                        {getInitials(owner.name)}
+                    </AvatarFallback>
+                </Avatar>
+
+                <div className="min-w-0 flex-1">
+                    <h3 className="truncate text-base font-semibold text-foreground">
+                        {owner.name}
+                    </h3>
+                    {owner.role && (
+                        <p className="mt-0.5 text-xs text-muted-foreground">
+                            {owner.role}
+                        </p>
+                    )}
                 </div>
-                <p className="text-center text-sm font-medium">{owner.name}</p>
             </div>
 
-            <div className="grid grid-cols-2 gap-4 text-sm text-gray-800">
-                <p className="flex items-center space-x-2 text-center">
-                    <Mail className="size-4" />
-                    <span>{owner.email}</span>
-                </p>
+            {/* Divider */}
+            <div className="my-3 h-px bg-border" />
 
-                <p className="flex items-center space-x-2 text-center">
-                    <Phone className="size-4" />
-                    <span>{owner.phone}</span>
-                </p>
+            {/* Contact Information Grid */}
+            <div className="space-y-2">
+                {/* Email */}
+                <div className="group/row flex items-center gap-2 text-sm">
+                    <Mail className="h-3.5 w-3.5 shrink-0 text-pink-500" />
+                    <a
+                        href={`mailto:${owner.email}`}
+                        className="flex-1 truncate text-foreground transition-colors hover:text-pink-600"
+                    >
+                        {owner.email}
+                    </a>
+                    <button
+                        onClick={() => copyToClipboard(owner.email, 'email')}
+                        className="shrink-0 opacity-0 transition-opacity group-hover/row:opacity-100"
+                    >
+                        {copiedField === 'email' ? (
+                            <Check className="h-3 w-3 text-green-500" />
+                        ) : (
+                            <Copy className="h-3 w-3 text-muted-foreground hover:text-foreground" />
+                        )}
+                    </button>
+                </div>
 
-                <p className="flex items-center space-x-2 text-center">
-                    <Facebook className="size-4" />
-                    <span>
+                {/* Phone */}
+                <div className="group/row flex items-center gap-2 text-sm">
+                    <Phone className="h-3.5 w-3.5 shrink-0 text-pink-500" />
+                    <a
+                        href={`tel:${owner.phone}`}
+                        className="flex-1 truncate text-foreground transition-colors hover:text-pink-600"
+                    >
+                        {owner.phone}
+                    </a>
+                    <button
+                        onClick={() => copyToClipboard(owner.phone, 'phone')}
+                        className="shrink-0 opacity-0 transition-opacity group-hover/row:opacity-100"
+                    >
+                        {copiedField === 'phone' ? (
+                            <Check className="h-3 w-3 text-green-500" />
+                        ) : (
+                            <Copy className="h-3 w-3 text-muted-foreground hover:text-foreground" />
+                        )}
+                    </button>
+                </div>
+
+                {/* Facebook */}
+                {owner.facebook && (
+                    <div className="flex items-center gap-2 text-sm">
+                        <Facebook className="h-3.5 w-3.5 shrink-0 text-pink-500" />
                         <a
-                            className="text-blue-700"
                             href={owner.facebook}
-                            target={'_blank'}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex flex-1 items-center gap-1 truncate text-foreground transition-colors hover:text-pink-600"
                         >
-                            View Facebook
+                            View Profile
+                            <ExternalLink className="h-3 w-3" />
                         </a>
-                    </span>
-                </p>
+                    </div>
+                )}
 
-                <p className="flex items-center space-x-2 text-center">
-                    <Cake className="size-4" />
-                    <span>{owner.birthdate}</span>
-                </p>
+                {/* Birthday */}
+                {birthday && (
+                    <div className="flex items-center gap-2 text-sm">
+                        <Cake className="h-3.5 w-3.5 shrink-0 text-pink-500" />
+                        <span className="flex-1 truncate text-foreground">
+                            {birthday}
+                        </span>
+                    </div>
+                )}
 
-                <p className="col-span-2 flex items-center space-x-2 text-center">
-                    <MapPin className="size-4" />
-                    <span>{owner.address}</span>
-                </p>
-
-                {!! owner.signature &&
-                    <p className="col-span-2 flex items-center space-x-2 text-center">
-                        <Signature className="size-4" />
-                        <a
-                            target={'_blank'}
-                            href={owner.signature?.original_url}
-                            className="flex items-center gap-x-2 text-blue-700"
-                        >
-                            Download Signature
-                        </a>
-                    </p>
-                }
+                {/* Address */}
+                {owner.address && (
+                    <div className="flex items-start gap-2 text-sm">
+                        <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0 text-pink-500" />
+                        <span className="line-clamp-2 flex-1 text-foreground">
+                            {owner.address}
+                        </span>
+                    </div>
+                )}
             </div>
+
+            {/* Signature Footer */}
+            {owner.signature?.original_url && (
+                <div className="mt-3 border-t pt-2">
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 w-full gap-2 text-xs hover:bg-pink-50 hover:text-pink-600 dark:hover:bg-pink-950/20"
+                        onClick={() =>
+                            window.open(owner.signature?.original_url, '_blank')
+                        }
+                    >
+                        <Download className="h-3.5 w-3.5" />
+                        Download Signature
+                    </Button>
+                </div>
+            )}
         </div>
     );
-}
+};
 
-export default CompanyOwnerCard
+export default CompanyOwnerCard;
