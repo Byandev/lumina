@@ -24,6 +24,7 @@ import { toBackendSort } from '@/lib/sort';
 import { TriangleDownIcon, TriangleUpIcon } from '@radix-ui/react-icons';
 import { PaginatedData } from '@/types';
 import Pagination from '@/components/ui/pagination';
+import { Inbox } from 'lucide-react';
 
 interface DataTableProps<TData, TValue> {
     columns: ColumnDef<TData, TValue>[]
@@ -55,82 +56,85 @@ export function DataTable<TData, TValue>({
         onSortingChange: (updater) => {
             const next = typeof updater === "function" ? updater(sorting) : updater
             setSorting(next)
-
             if (onFetch) onFetch({ sort: toBackendSort(next), page: 1 })
         },
         getSortedRowModel: getSortedRowModel(),
-        state: {
-            sorting,
-            pagination
-        },
+        state: { sorting, pagination },
         manualSorting: true,
     })
 
-
     return (
-        <div>
-            <div className="max-w-full overflow-x-auto custom-scrollbar">
-                <Table>
-                    <TableHeader className="border-t border-gray-100 dark:border-white/[0.05] rounded-t-xl">
-                        {table.getHeaderGroups().map((headerGroup) => (
-                            <TableRow key={headerGroup.id}>
-                                {headerGroup.headers.map((header) => {
-                                    return (
-                                        <TableHead key={header.id} className="px-4 py-3 border border-gray-100 dark:border-white/[0.05] rounded-t-xl">
+        <div className="flex flex-col h-[80dvh]">
+            {/* Table container scrollable */}
+            <div className="flex-1 overflow-y-auto max-h-screen">
+                <div className="max-w-full overflow-x-auto custom-scrollbar">
+                    <Table>
+                        <TableHeader className="border-t border-gray-100 dark:border-white/[0.05] rounded-t-xl">
+                            {table.getHeaderGroups().map((headerGroup) => (
+                                <TableRow key={headerGroup.id}>
+                                    {headerGroup.headers.map((header) => (
+                                        <TableHead
+                                            key={header.id}
+                                            className="px-4 py-3 bg-gray-100 border border-gray-100 border-r border-gray-200 dark:border-white/[0.05]"
+                                        >
                                             {header.isPlaceholder
                                                 ? null
-                                                : flexRender(
-                                                    header.column.columnDef.header,
-                                                    header.getContext()
-                                                )}
+                                                : flexRender(header.column.columnDef.header, header.getContext())}
                                         </TableHead>
-                                    )
-                                })}
-                            </TableRow>
-                        ))}
-                    </TableHeader>
-                    <TableBody>
-                        {table.getRowModel().rows?.length ? (
-                            table.getRowModel().rows.map((row) => (
-                                <TableRow
-                                    key={row.id}
-                                    data-state={row.getIsSelected() && "selected"}
-                                >
-                                    {row.getVisibleCells().map((cell) => (
-                                        <TableCell key={cell.id} className='px-4 py-2 border border-gray-100 dark:border-white/[0.05]text-gray-700 text-theme-xs dark:text-gray-400'>
-                                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                                        </TableCell>
                                     ))}
                                 </TableRow>
-                            ))
-                        ) : (
-                            <TableRow>
-                                <TableCell colSpan={columns.length} className="h-24 text-center">
-                                    No results.
-                                </TableCell>
-                            </TableRow>
-                        )}
-                    </TableBody>
-                </Table>
+                            ))}
+                        </TableHeader>
+                        <TableBody>
+                            {table.getRowModel().rows?.length ? (
+                                table.getRowModel().rows.map((row) => (
+                                    <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
+                                        {row.getVisibleCells().map((cell) => (
+                                            <TableCell
+                                                key={cell.id}
+                                                className='px-4 py-2 border-b border-gray-100 text-gray-700 text-theme-xs dark:text-gray-400'
+                                            >
+                                                {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                                            </TableCell>
+                                        ))}
+                                    </TableRow>
+                                ))
+                            ) : (
+                                <TableRow>
+                                    <TableCell colSpan={columns.length} className="h-64 text-center">
+                                        <div className="flex flex-col items-center justify-center gap-2">
+                                            <div className="rounded-full bg-muted p-3">
+                                                <Inbox className="h-6 w-6 text-muted-foreground" />
+                                            </div>
+                                            <p className="text-sm text-muted-foreground">No results found</p>
+                                        </div>
+                                    </TableCell>
+                                </TableRow>
+                            )}
+                        </TableBody>
+                    </Table>
+                </div>
             </div>
 
-            {
-                meta?.links?.length &&
-                <div className="border border-t-0 rounded-b-xl border-gray-100 py-4 pl-[18px] pr-4 dark:border-white/[0.05]">
+            {/* Pagination fixed at bottom */}
+            {meta?.links?.length && (
+                <div className="  py-4 pl-[18px] pr-4 dark:border-white/[0.05]">
                     <div className="flex flex-col xl:flex-row xl:items-center xl:justify-between">
                         <div className="pb-3 xl:pb-0">
                             <p className="pb-3 text-sm font-medium text-center text-gray-500 border-b border-gray-100 dark:border-gray-800 dark:text-gray-400 xl:border-b-0 xl:pb-0 xl:text-left">
                                 Showing {meta?.from} to {meta?.to} of {meta?.total} entries
                             </p>
                         </div>
-
-                        <Pagination currentPage={meta.current_page} totalPages={meta.last_page} onPageChange={(page) => {
-                            if (onFetch) onFetch({ page, sort: toBackendSort(sorting) })
-                        }} />
-
+                        <Pagination
+                            currentPage={meta.current_page}
+                            totalPages={meta.last_page}
+                            onPageChange={(page) => {
+                                if (onFetch) onFetch({ page, sort: toBackendSort(sorting) })
+                            }}
+                        />
                     </div>
                 </div>
-            }
+            )}
         </div>
     )
 }
