@@ -12,6 +12,7 @@ import AttendanceSelector from '@/components/events/attendance-selector';
 import { router } from '@inertiajs/react';
 import { Input } from '@/components/ui/input';
 import EventTypeBadge from '@/components/events/type-badge';
+import { Search } from 'lucide-react';
 
 interface Props {
     company: Company;
@@ -98,44 +99,51 @@ const CompanyAttendance = ({ company, query, events }: Props) => {
         },
     ]
 
-    return <CompanyLayout company={company}>
-        <ComponentCard desc={"Track company attendance to events"}>
-            <form className="relative w-full sm:w-64 pb-4">
-                <Input
-                    type="text"
-                    value={searchValue}
-                    onChange={(e) =>
-                        setSearchValue(e.target.value)
-                    }
-                    placeholder="Search event..."
-                    className="text-sm"
-                />
-            </form>
+    return (
+        <CompanyLayout company={company}>
+            <div className="">
+                <div className="flex items-center justify-between">
+                    <h1 className="font-bold">Company Attended Events</h1>
+                    <form className="relative w-full pb-4 sm:w-64">
+                        <div className="pointer-events-none absolute top-2.5 left-0 flex items-center pl-3">
+                            <Search className="z-10 h-4 w-4 text-gray-400" />
+                        </div>
 
-            <DataTable
-                columns={columns}
-                enableInternalPagination={false}
-                data={events.data || []}
-                initialSorting={initialSorting}
-                meta={{ ...omit(events, ['data'])  }}
-                onFetch={(params) => {
-                    router.get(
-                        `/companies/${company.id}/attendance`,
-                        {
-                            sort: params?.sort,
-                            'filter[search]': searchValue || undefined,
-                            page: params?.page ?? 1
-                        },
-                        {
-                            preserveState: false,
-                            replace: true,
-                            preserveScroll: true,
-                        },
-                    );
-                }}
-            />
-        </ComponentCard>
-    </CompanyLayout>
+                        <Input
+                            type="text"
+                            value={searchValue}
+                            onChange={(e) => setSearchValue(e.target.value)}
+                            placeholder="Search event..."
+                            className="h-9 pl-8 text-sm"
+                        />
+                    </form>
+                </div>
+
+                <DataTable
+                    columns={columns}
+                    enableInternalPagination={false}
+                    data={events.data || []}
+                    initialSorting={initialSorting}
+                    meta={{ ...omit(events, ['data']) }}
+                    onFetch={(params) => {
+                        router.get(
+                            `/companies/${company.id}/attendance`,
+                            {
+                                sort: params?.sort,
+                                'filter[search]': searchValue || undefined,
+                                page: params?.page ?? 1,
+                            },
+                            {
+                                preserveState: false,
+                                replace: true,
+                                preserveScroll: true,
+                            },
+                        );
+                    }}
+                />
+            </div>
+        </CompanyLayout>
+    );
 }
 
 export default CompanyAttendance
