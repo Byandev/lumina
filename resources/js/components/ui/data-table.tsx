@@ -64,18 +64,18 @@ export function DataTable<TData, TValue>({
     })
 
     return (
-        <div className="flex flex-col h-[80dvh] ">
-            {/* Fixed Header */}
-            <div className="sticky top-0 z-10 border-b border-gray-200">
-                <div className="max-w-full overflow-x-auto">
+        <div className="flex flex-col h-[80dvh] bg-white">
+            {/* Table container scrollable */}
+            <div className="flex-1 overflow-y-auto max-h-screen">
+                <div className="max-w-full overflow-x-auto custom-scrollbar">
                     <Table>
-                        <TableHeader>
+                        <TableHeader className="bg-gradient-to-r from-pink-100 to-violet-100 border-t border-gray-100 dark:border-white/[0.05] rounded-t-xl">
                             {table.getHeaderGroups().map((headerGroup) => (
-                                <TableRow key={headerGroup.id} className="bg-gradient-to-r from-pink-100 to-violet-100">
+                                <TableRow key={headerGroup.id}>
                                     {headerGroup.headers.map((header) => (
                                         <TableHead
                                             key={header.id}
-                                            className="px-4 bg-transparent py-3 border-r border-gray-200 last:border-r-0"
+                                            className="px-4 py-3 bg-transparent border border-gray-100 border-r border-gray-200 dark:border-white/[0.05]"
                                         >
                                             {header.isPlaceholder
                                                 ? null
@@ -85,26 +85,14 @@ export function DataTable<TData, TValue>({
                                 </TableRow>
                             ))}
                         </TableHeader>
-                    </Table>
-                </div>
-            </div>
-
-            {/* Scrollable Body with Custom Scrollbar */}
-            <div className="flex-1 overflow-y-auto custom-scrollbar">
-                <div className="max-w-full overflow-x-auto">
-                    <Table>
                         <TableBody>
                             {table.getRowModel().rows?.length ? (
                                 table.getRowModel().rows.map((row) => (
-                                    <TableRow
-                                        key={row.id}
-                                        data-state={row.getIsSelected() && "selected"}
-                                        className="hover:bg-gray-50 transition-colors duration-200"
-                                    >
+                                    <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
                                         {row.getVisibleCells().map((cell) => (
                                             <TableCell
                                                 key={cell.id}
-                                                className="px-4 py-3 border-b border-gray-100 text-gray-700"
+                                                className='px-4 py-2 border-b border-gray-100 text-gray-700 text-theme-xs dark:text-gray-400'
                                             >
                                                 {flexRender(cell.column.columnDef.cell, cell.getContext())}
                                             </TableCell>
@@ -113,15 +101,12 @@ export function DataTable<TData, TValue>({
                                 ))
                             ) : (
                                 <TableRow>
-                                    <TableCell
-                                        colSpan={columns.length}
-                                        className="h-64 text-center"
-                                    >
-                                        <div className="flex flex-col items-center justify-center gap-3">
-                                            <div className="border border-gray-200 bg-gray-50 p-4">
-                                                <Inbox className="h-8 w-8 text-gray-400" />
+                                    <TableCell colSpan={columns.length} className="h-64 text-center">
+                                        <div className="flex flex-col items-center justify-center gap-2">
+                                            <div className="rounded-full p-3">
+                                                <Inbox className="h-6 w-6 text-muted-foreground" />
                                             </div>
-                                            <p className="text-sm text-gray-500">No results found</p>
+                                            <p className="text-sm text-muted-foreground">No results found</p>
                                         </div>
                                     </TableCell>
                                 </TableRow>
@@ -131,12 +116,12 @@ export function DataTable<TData, TValue>({
                 </div>
             </div>
 
-            {/* Pagination */}
+            {/* Pagination fixed at bottom */}
             {meta?.links?.length && (
-                <div className="border-t border-gray-200 bg-white px-6 py-4">
-                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                        <div>
-                            <p className="text-sm text-gray-500">
+                <div className="  py-4 pl-[18px] pr-4 dark:border-white/[0.05]">
+                    <div className="flex flex-col xl:flex-row xl:items-center xl:justify-between">
+                        <div className="pb-3 xl:pb-0">
+                            <p className="pb-3 text-sm font-medium text-center text-gray-500 border-b border-gray-100 dark:border-gray-800 dark:text-gray-400 xl:border-b-0 xl:pb-0 xl:text-left">
                                 Showing {meta?.from} to {meta?.to} of {meta?.total} entries
                             </p>
                         </div>
@@ -154,6 +139,7 @@ export function DataTable<TData, TValue>({
     )
 }
 
+
 type SortableHeaderProps<TData> = {
     column: Column<TData, unknown>
     title: string
@@ -165,36 +151,35 @@ export function SortableHeader<TData>({ column, title, sortable = true }: Sortab
 
     return (
         <div
-            className="flex items-center justify-between gap-2 cursor-pointer select-none"
+            className="flex items-center justify-between cursor-pointer"
             onClick={() => column.toggleSorting(sorted === 'asc')}
         >
-            <span className="text-sm font-medium text-gray-700">
+            <p className="font-medium text-gray-700 text-theme-xs dark:text-gray-400">
                 {title}
-            </span>
-            {sortable && (
-                <div className="flex flex-col">
-                    <TriangleUpIcon
-                        className={`-mb-1 h-3 w-3 ${
-                            sorted === 'asc' ? 'text-pink-600' : 'text-gray-400'
-                        }`}
-                    />
-                    <TriangleDownIcon
-                        className={`-mt-1 h-3 w-3 ${
-                            sorted === 'desc' ? 'text-pink-600' : 'text-gray-400'
-                        }`}
-                    />
-                </div>
-            )}
+            </p>
+            { sortable && <button className="flex flex-col">
+                <TriangleUpIcon className={`-mb-1 ${sorted === 'asc' ? 'text-brand-500': 'text-gray-300'}`}/>
+                <TriangleDownIcon className={`-mt-1 ${sorted === 'desc' ? 'text-brand-500': 'text-gray-300'}`}/>
+            </button>}
         </div>
     )
 }
 
-export function NormalHeader<TData>({ title }: { title: string }) {
+
+
+
+export function NormalHeader<TData>({ column, title }: SortableHeaderProps<TData>) {
+    const sorted = useMemo(() => column.getIsSorted(), [column])
+
     return (
-        <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-gray-700">
+        <div
+            className="flex items-center justify-between cursor-pointer"
+        >
+            <p className="font-medium text-gray-700 text-theme-xs dark:text-gray-400">
                 {title}
-            </span>
+            </p>
         </div>
     )
 }
+
+

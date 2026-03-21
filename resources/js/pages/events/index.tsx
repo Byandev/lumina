@@ -240,28 +240,25 @@ export default function EventList({
                 onConfirm={() => handleDeleteConfirm()}
             />
 
-            <div className="min-h-screen p-4 sm:p-8">
-                <p className="my-0 pb-6 text-3xl font-semibold text-foreground">
-                    Events
-                </p>
-
-                <ComponentCard desc={'Manage all events in your system'}>
-                    <div className="mb-6 flex justify-between">
-                        <div className="flex items-end space-x-2">
-                            <div className="relative max-w-md">
-                                <Search className="pointer-events-none absolute top-4.5 left-3 z-10 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                                <Input
-                                    type="text"
-                                    placeholder="Search events..."
-                                    value={searchValue}
-                                    onChange={(e) =>
-                                        setSearchValue(e.target.value)
-                                    }
-                                    className="h-9 pr-9 pl-9"
-                                />
-                            </div>
+            <div className="bg-white/60 min-h-[calc(100vh-60px)] py-6 md:px-6 lg:px-8">
+                <div className="flex justify-between">
+                    <p className="flex flex-col text-xl font-semibold text-foreground">
+                        Events
+                        <span className="my-0 pb-6 text-sm font-medium text-gray-500">
+                            Manage all events in your system
+                        </span>
+                    </p>
+                    <div className="flex space-x-2">
+                        <div className="relative max-w-md">
+                            <Search className="pointer-events-none absolute top-4.5 left-3 z-10 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                            <Input
+                                type="text"
+                                placeholder="Search events..."
+                                value={searchValue}
+                                onChange={(e) => setSearchValue(e.target.value)}
+                                className="h-9 pr-9 pl-9"
+                            />
                         </div>
-
                         <Button
                             onClick={() => {
                                 setSelectedEvent(null);
@@ -272,30 +269,30 @@ export default function EventList({
                             Add New Event
                         </Button>
                     </div>
+                </div>
 
-                    <DataTable
-                        columns={columns}
-                        enableInternalPagination={false}
-                        data={events.data || []}
-                        initialSorting={initialSorting}
-                        meta={{ ...omit(events, ['data']) }}
-                        onFetch={(params) => {
-                            router.get(
-                                '/events',
-                                {
-                                    sort: params?.sort,
-                                    'filter[search]': searchValue || undefined,
-                                    page: params?.page ?? 1,
-                                },
-                                {
-                                    preserveState: false,
-                                    replace: true,
-                                    preserveScroll: true,
-                                },
-                            );
-                        }}
-                    />
-                </ComponentCard>
+                <DataTable
+                    columns={columns}
+                    enableInternalPagination={false}
+                    data={events.data || []}
+                    initialSorting={initialSorting}
+                    meta={{ ...omit(events, ['data']) }}
+                    onFetch={(params) => {
+                        router.get(
+                            '/events',
+                            {
+                                sort: params?.sort,
+                                'filter[search]': searchValue || undefined,
+                                page: params?.page ?? 1,
+                            },
+                            {
+                                preserveState: false,
+                                replace: true,
+                                preserveScroll: true,
+                            },
+                        );
+                    }}
+                />
             </div>
         </AppLayout>
     );

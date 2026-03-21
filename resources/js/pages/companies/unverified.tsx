@@ -131,13 +131,16 @@ export default function CompaniesIndex({ companies, query }: CompaniesProps) {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Companies" />
 
-            <div className="min-h-screen p-4 sm:p-8">
-                <p className="my-0 pb-6 text-3xl font-semibold text-foreground">
-                    For Verification New Companies
-                </p>
-
-                <ComponentCard desc="List of new companies submitted using onboarding form">
-                    <div className="mb-6 flex items-center gap-x-2 justify-between">
+            <div className="bg-white/70 py-6 md:px-6 lg:px-8">
+                <div className="flex justify-between">
+                    <p className="flex flex-col text-xl font-semibold text-foreground">
+                        Unverified Companies
+                        <span className="my-0 pb-6 text-sm font-medium text-gray-500">
+                            Check the status of new companies and verify their
+                            information before approval.
+                        </span>
+                    </p>
+                    <div className="mb-6 flex items-center gap-x-2">
                         <form className="relative w-full sm:w-64">
                             <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
                                 <Search className="z-10 h-4 w-4 text-gray-400" />
@@ -154,36 +157,36 @@ export default function CompaniesIndex({ companies, query }: CompaniesProps) {
 
                         <Link
                             href="/companies/create"
-                            className="inline-flex items-center gap-2 rounded-md bg-gradient-to-r from-pink-500 via-blue-500 to-cyan-500 px-4 py-2 text-sm font-semibold text-white transition hover:scale-105"
+                            className="inline-flex items-center gap-2 bg-gradient-to-r from-pink-500 to-violet-400 px-4 py-2 text-sm font-semibold text-white transition hover:scale-105"
                         >
                             <Plus className="h-4 w-4" />
-                            <span className='hidden sm:block '>Add Company</span>
+                            <span className="hidden sm:block">Add Company</span>
                         </Link>
                     </div>
+                </div>
 
-                    <DataTable
-                        columns={columns}
-                        enableInternalPagination={false}
-                        data={companies.data || []}
-                        initialSorting={initialSorting}
-                        meta={{ ...omit(companies, ['data']) }}
-                        onFetch={(params) => {
-                            router.get(
-                                '/companies/unverified',
-                                {
-                                    sort: params?.sort,
-                                    'filter[search]': searchValue || undefined,
-                                    page: params?.page ?? 1,
-                                },
-                                {
-                                    preserveState: false,
-                                    replace: true,
-                                    preserveScroll: true,
-                                },
-                            );
-                        }}
-                    />
-                </ComponentCard>
+                <DataTable
+                    columns={columns}
+                    enableInternalPagination={false}
+                    data={companies.data || []}
+                    initialSorting={initialSorting}
+                    meta={{ ...omit(companies, ['data']) }}
+                    onFetch={(params) => {
+                        router.get(
+                            '/companies/unverified',
+                            {
+                                sort: params?.sort,
+                                'filter[search]': searchValue || undefined,
+                                page: params?.page ?? 1,
+                            },
+                            {
+                                preserveState: false,
+                                replace: true,
+                                preserveScroll: true,
+                            },
+                        );
+                    }}
+                />
             </div>
         </AppLayout>
     );

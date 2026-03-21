@@ -208,15 +208,13 @@ const Index = ({ company, records, query }: Props) => {
                 onConfirm={() => handleDeleteConfirm()}
             />
 
-            <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                    <div>
+            <div className="space-y-4  bg-gradient-to-r from-pink-50 to-violet-50 p-2">
+                <div className="flex items-center justify-between ">
+                    <div className='p-2'>
                         <h1 className="text-xl font-bold text-gray-900">
                             Performance Record
                         </h1>
-                        <p className="mt-1 text-sm text-gray-500">
-                            {company.name} campaign performance data
-                        </p>
+
                     </div>
 
                     <Link
