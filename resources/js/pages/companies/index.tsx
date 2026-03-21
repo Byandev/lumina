@@ -97,7 +97,7 @@ export default function CompaniesIndex({ companies, query }: CompaniesProps) {
                                     alt={company.name}
                                 />
                             )}
-                            <AvatarFallback className="bg-blue-600 text-white">
+                            <AvatarFallback className="bg-gradient-to-r from-pink-400 to-violet-400 border border-violet-500 text-white">
                                 {getInitials(company.name)}
                             </AvatarFallback>
                         </Avatar>
