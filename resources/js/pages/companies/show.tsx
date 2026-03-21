@@ -26,7 +26,7 @@ const Show = ({ company }: Props) => {
         <AppLayout breadcrumbs={[]}>
             <Head title="Companies" />
 
-            <div className="min-h-screen p-4 sm:p-8">
+            <div className="h-screen bg-white p-4 sm:p-8">
                 <div className="flex items-center justify-between pb-6">
                     <p className="my-0 text-3xl font-semibold text-foreground">
                         {company.name}

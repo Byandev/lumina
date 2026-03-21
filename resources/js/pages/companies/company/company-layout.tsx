@@ -9,7 +9,7 @@ import {
     Clock,
     TrendingUp,
 } from 'lucide-react';
-import { ReactNode } from 'react';
+import React, { ReactNode } from 'react';
 import { Company } from '@/types/models/Company';
 
 interface CompanyLayoutProps {
@@ -70,11 +70,18 @@ export default function CompanyLayout({
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={title || `${company.name} - Company Details`} />
 
-            <div className="px-4 sm:px-8 pb-8">
+            <div className="bg-white min-h-[calc(100vh-80px)] px-4 pb-8 sm:px-8">
                 <div className="my-4 sm:my-8">
-                    <p className="font-semibold text-foreground text-3xl my-0">
-                        Company Details
-                    </p>
+                    <div className="flex flex-col">
+                        <h1 className="text-xl font-semibold text-foreground">
+                            Company Details
+                        </h1>
+                        <p className="mt-1 text-sm font-medium text-gray-500">
+                            Overview of company information, employee
+                            onboarding, attendance tracking, and performance
+                            management.
+                        </p>
+                    </div>
                 </div>
 
                 <div className="mb-4 sm:mb-6">
@@ -85,9 +92,9 @@ export default function CompanyLayout({
                                     key={tab.name}
                                     href={tab.href}
                                     className={cn(
-                                        'group relative inline-flex items-center gap-2 border-b-2 px-3 py-2.5 font-medium whitespace-nowrap transition-all sm:px-4 sm:py-3 text-sm',
+                                        'group relative inline-flex items-center gap-2 border-b-2 px-3 py-2.5 text-sm font-medium whitespace-nowrap transition-all sm:px-4 sm:py-3',
                                         tab.current
-                                            ? 'border-blue-600 bg-blue-50/50 text-blue-600'
+                                            ? 'border-transparent bg-gradient-to-r from-pink-500 to-violet-500 bg-clip-text text-transparent'
                                             : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700',
                                     )}
                                 >
@@ -95,13 +102,13 @@ export default function CompanyLayout({
                                         className={cn(
                                             'h-3.5 w-3.5 transition-colors sm:h-4 sm:w-4',
                                             tab.current
-                                                ? 'text-blue-600'
+                                                ? 'text-pink-500' // Optional: gradient icons require SVG tricks; simplest is a solid accent
                                                 : 'text-gray-400 group-hover:text-gray-500',
                                         )}
                                     />
                                     {tab.name}
                                     {tab.current && (
-                                        <div className="absolute right-0 bottom-0 left-0 h-0.5 bg-blue-600" />
+                                        <div className="absolute right-0 bottom-0 left-0 h-0.5 bg-gradient-to-r from-pink-500 to-violet-500" />
                                     )}
                                 </Link>
                             ))}
@@ -109,9 +116,7 @@ export default function CompanyLayout({
                     </div>
                 </div>
 
-                <div>
-                    {children}
-                </div>
+                <div>{children}</div>
             </div>
 
             {/*<div className="min-h-screen bg-gradient-to-b from-white via-gray-50/50 to-blue-50/30 p-3 sm:p-4 md:p-6">*/}
@@ -130,8 +135,6 @@ export default function CompanyLayout({
             {/*            </div>*/}
             {/*        </div>*/}
             {/*    </div>*/}
-
-
 
             {/*    /!* Content Area *!/*/}
             {/*    <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">*/}

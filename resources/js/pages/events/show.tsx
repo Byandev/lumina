@@ -1,7 +1,7 @@
 import { omit } from 'lodash';
-import { Head, router } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import { ColumnDef } from '@tanstack/react-table';
-import { Calendar, MapPin, PinIcon, Search } from 'lucide-react';
+import { ArrowLeft, Calendar, MapPin, PinIcon, Search } from 'lucide-react';
 import React, { useEffect, useMemo, useState } from 'react';
 
 import { Event } from '@/types/models/Event'
@@ -120,71 +120,85 @@ const Show = ({ event, companies, query }: Props) => {
         },
     ];
 
-    return <AppLayout breadcrumbs={breadcrumbs}>
-        <Head title="Events" />
+    return (
+        <AppLayout breadcrumbs={breadcrumbs}>
+            <Head title="Events" />
 
-        <div className="p-4 sm:p-8">
-            <div className='mb-4 sm:mb-8'>
-                <p className="font-semibold text-foreground text-3xl my-0 mb-2">
-                    {event.name.toUpperCase()}
-                </p>
+            <div className="min-h-[calc(100vh-60px)] bg-white/60 py-6 md:px-6 lg:px-8">
+                <div className="flex items-start">
+                    <Link href='/events'>
+                        <ArrowLeft className="mt-1 mr-2 h-5 w-5" />
+                    </Link>
+                    <div className="mb-6 flex flex-col space-y-4">
+                        <p className="flex flex-col text-xl font-semibold text-foreground">
+                            {event.name}
+                        </p>
+                        <div className="flex space-x-5 text-sm font-medium text-gray-600">
+                            <div className="flex gap-x-2">
+                                <PinIcon className="size-5" />
+                                <span>{event.type}</span>
+                            </div>
 
-                <div className='flex space-x-5 text-sm font-medium text-gray-600'>
-                    <div className="flex gap-x-2">
-                        <PinIcon className="size-5"/>
-                        <span>{event.type}</span>
-                    </div>
+                            <div className="flex gap-x-2">
+                                <Calendar className="size-5" />
+                                <span>{event.date}</span>
+                            </div>
 
-                    <div className="flex gap-x-2">
-                        <Calendar className="size-5"/>
-                        <span>{event.date}</span>
-                    </div>
-
-                    <div className="flex gap-x-2">
-                        <MapPin className="size-5"/>
-                        <span>{event.location}</span>
+                            <div className="flex gap-x-2">
+                                <MapPin className="size-5" />
+                                <span>{event.location}</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <ComponentCard desc="Manage company attenance">
-                <form className="relative w-full sm:w-64 pb-4">
-                    <Input
-                        type="text"
-                        value={searchValue}
-                        onChange={(e) =>
-                            setSearchValue(e.target.value)
-                        }
-                        placeholder="Search companies..."
-                        className="text-sm"
+                <div className="bg-gradient-to-r from-pink-50 to-violet-50 p-2">
+                    <div className="flex items-center justify-between p-4">
+                        <p className="text-lg font-semibold">
+                            Joined Companies
+                        </p>
+                        <form className="relative w-full sm:w-64">
+                            <div className="relative max-w-md">
+                                <Search className="pointer-events-none absolute top-4.5 left-3 z-10 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                <Input
+                                    type="text"
+                                    placeholder="Search company..."
+                                    value={searchValue}
+                                    onChange={(e) =>
+                                        setSearchValue(e.target.value)
+                                    }
+                                    className="h-9 pr-9 pl-9"
+                                />
+                            </div>
+                        </form>
+                    </div>
+
+                    <DataTable
+                        columns={columns}
+                        enableInternalPagination={false}
+                        data={companies.data || []}
+                        initialSorting={initialSorting}
+                        meta={{ ...omit(companies, ['data']) }}
+                        onFetch={(params) => {
+                            router.get(
+                                `/events/${event.id}`,
+                                {
+                                    sort: params?.sort,
+                                    'filter[search]': searchValue || undefined,
+                                    page: params?.page ?? 1,
+                                },
+                                {
+                                    preserveState: false,
+                                    replace: true,
+                                    preserveScroll: true,
+                                },
+                            );
+                        }}
                     />
-                </form>
-
-                <DataTable
-                    columns={columns}
-                    enableInternalPagination={false}
-                    data={companies.data || []}
-                    initialSorting={initialSorting}
-                    meta={{ ...omit(companies, ['data']) }}
-                    onFetch={(params) => {
-                        router.get(
-                            `/events/${event.id}`,
-                            {
-                                sort: params?.sort,
-                                'filter[search]': searchValue || undefined,
-                                page: params?.page ?? 1,
-                            },
-                            {
-                                preserveState: false,
-                                replace: true,
-                                preserveScroll: true,
-                            },
-                        );
-                    }}
-                />
-        </ComponentCard>
-        </div>
-    </AppLayout>
+                </div>
+            </div>
+        </AppLayout>
+    );
 }
 
 export default Show

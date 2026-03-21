@@ -15,8 +15,8 @@ interface Props {
     onOpenChange: (bool: boolean) => void;
     title?: string;
     description?: string;
-    cancelText?: string;
-    confirmText?: string;
+    cancelText?: React.ReactNode;
+    confirmText?: React.ReactNode;
     onCancel: () => void;
     onConfirm: () => void;
 }
@@ -36,21 +36,19 @@ const ConfirmationDialog = ({
             <AlertDialogContent>
                 <AlertDialogHeader>
                     <AlertDialogTitle>{title}</AlertDialogTitle>
-                    {
-                        description && <AlertDialogDescription>
+                    {description && (
+                        <AlertDialogDescription>
                             {description}
                         </AlertDialogDescription>
-                    }
+                    )}
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                    <AlertDialogCancel
-                        onClick={onCancel}
-                    >
+                    <AlertDialogCancel onClick={onCancel}>
                         {cancelText}
                     </AlertDialogCancel>
                     <AlertDialogAction
                         onClick={onConfirm}
-                        className="bg-red-600 hover:bg-red-700"
+                        className="flex items-center gap-2 bg-red-600 hover:bg-red-700 h-9"
                     >
                         {confirmText}
                     </AlertDialogAction>

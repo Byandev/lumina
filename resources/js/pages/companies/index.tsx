@@ -1,6 +1,5 @@
 import CompanyOwnersAvatar from '@/components/companies/company-owners-avatar';
 import StatusBadge from '@/components/companies/status-badge';
-import ComponentCard from '@/components/component-card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import CircularProgress from '@/components/ui/circular-progress';
 import { DataTable, SortableHeader } from '@/components/ui/data-table';
@@ -22,6 +21,7 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { Button } from '@/components/ui/button';
 
 interface CompaniesProps {
     companies: PaginatedData<Company>;
@@ -97,7 +97,7 @@ export default function CompaniesIndex({ companies, query }: CompaniesProps) {
                                     alt={company.name}
                                 />
                             )}
-                            <AvatarFallback className="bg-blue-600 text-white">
+                            <AvatarFallback className="bg-gradient-to-r from-pink-400 to-violet-400 border border-violet-500 text-white">
                                 {getInitials(company.name)}
                             </AvatarFallback>
                         </Avatar>
@@ -132,7 +132,7 @@ export default function CompaniesIndex({ companies, query }: CompaniesProps) {
                 <SortableHeader column={column} title={'Coach'} />
             ),
             cell: ({ row }) => {
-                const { coach } = row.original
+                const { coach } = row.original;
 
                 return (
                     <Tooltip>
@@ -149,8 +149,8 @@ export default function CompaniesIndex({ companies, query }: CompaniesProps) {
                                 <AvatarFallback
                                     className={
                                         coach
-                                            ? `border border-blue-700 bg-blue-600 text-white`
-                                            : 'border border-dashed border-blue-700 bg-blue-100 text-blue-700'
+                                            ? `border border-violet-700 bg-violet-400 text-white`
+                                            : 'border border-dashed border-violet-700 bg-violet-100 text-violet-700'
                                     }
                                 >
                                     {coach ? getInitials(coach.name) : 'U'}
@@ -163,7 +163,7 @@ export default function CompaniesIndex({ companies, query }: CompaniesProps) {
                         </TooltipContent>
                     </Tooltip>
                 );
-            }
+            },
         },
         {
             accessorKey: 'onboarding_percentage',
@@ -238,39 +238,49 @@ export default function CompaniesIndex({ companies, query }: CompaniesProps) {
             ),
             cell: ({ row }) => {
                 return (
-                    <div>
+                    <div className="flex items-center justify-end gap-1">
                         <TooltipProvider>
-                            <div className="flex items-center justify-center gap-1.5">
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                                        asChild
+                                    >
                                         <Link
                                             href={`/companies/${row.original.id}/details`}
-                                            className="inline-flex h-8 w-8 items-center justify-center rounded-md hover:bg-muted"
-                                            aria-label="View event"
+                                            aria-label={`View details for ${row.original.name || 'company'}`}
                                         >
                                             <Eye className="h-4 w-4" />
                                         </Link>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                        View Company
-                                    </TooltipContent>
-                                </Tooltip>
+                                    </Button>
+                                </TooltipTrigger>
+                                <TooltipContent side="bottom">
+                                    <p>View details</p>
+                                </TooltipContent>
+                            </Tooltip>
 
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                                        asChild
+                                    >
                                         <Link
                                             href={`/companies/${row.original.id}/edit`}
-                                            className="inline-flex h-8 w-8 items-center justify-center rounded-md hover:bg-muted"
-                                            aria-label="View event"
+                                            aria-label={`Edit ${row.original.name || 'company'}`}
                                         >
                                             <Edit className="h-4 w-4" />
                                         </Link>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                        Edit company
-                                    </TooltipContent>
-                                </Tooltip>
-                            </div>
+                                    </Button>
+                                </TooltipTrigger>
+                                <TooltipContent side="bottom">
+                                    <p>Edit company</p>
+                                </TooltipContent>
+                            </Tooltip>
                         </TooltipProvider>
                     </div>
                 );
@@ -282,13 +292,15 @@ export default function CompaniesIndex({ companies, query }: CompaniesProps) {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Companies" />
 
-            <div className="min-h-screen p-4 sm:p-8">
-                <p className="my-0 pb-6 text-3xl font-semibold text-foreground">
-                    Companies
-                </p>
-
-                <ComponentCard desc="Manage all companies in your system">
-                    <div className="mb-6 flex items-center gap-x-2 justify-between">
+            <div className=" bg-white/70 py-6 md:px-6 lg:px-8">
+                <div className="flex justify-between">
+                    <p className="flex flex-col text-xl font-semibold text-foreground">
+                        Companies
+                        <span className="my-0 pb-6 text-sm font-medium text-gray-500">
+                            Manage all companies in your system
+                        </span>
+                    </p>
+                    <div className="mb-6 flex items-center justify-between gap-x-2">
                         <form className="relative w-full sm:w-64">
                             <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
                                 <Search className="z-10 h-4 w-4 text-gray-400" />
@@ -302,39 +314,38 @@ export default function CompaniesIndex({ companies, query }: CompaniesProps) {
                                 className="h-9 pl-8 text-sm"
                             />
                         </form>
-
                         <Link
                             href="/companies/create"
-                            className="inline-flex items-center gap-2 rounded-md bg-gradient-to-r from-pink-500 via-blue-500 to-cyan-500 px-4 py-2 text-sm font-semibold text-white transition hover:scale-105"
+                            className="flex  items-center gap-2 border border-white bg-gradient-to-r from-pink-500 to-violet-400 px-4 py-2 text-sm font-semibold text-white transition hover:scale-105"
                         >
                             <Plus className="h-4 w-4" />
-                            <span className='hidden sm:block '>Add Company</span>
+                            <span className="hidden sm:block">Add Company</span>
                         </Link>
                     </div>
+                </div>
 
-                    <DataTable
-                        columns={columns}
-                        enableInternalPagination={false}
-                        data={companies.data || []}
-                        initialSorting={initialSorting}
-                        meta={{ ...omit(companies, ['data']) }}
-                        onFetch={(params) => {
-                            router.get(
-                                '/companies',
-                                {
-                                    sort: params?.sort,
-                                    'filter[search]': searchValue || undefined,
-                                    page: params?.page ?? 1,
-                                },
-                                {
-                                    preserveState: false,
-                                    replace: true,
-                                    preserveScroll: true,
-                                },
-                            );
-                        }}
-                    />
-                </ComponentCard>
+                <DataTable
+                    columns={columns}
+                    enableInternalPagination={false}
+                    data={companies.data || []}
+                    initialSorting={initialSorting}
+                    meta={{ ...omit(companies, ['data']) }}
+                    onFetch={(params) => {
+                        router.get(
+                            '/companies',
+                            {
+                                sort: params?.sort,
+                                'filter[search]': searchValue || undefined,
+                                page: params?.page ?? 1,
+                            },
+                            {
+                                preserveState: false,
+                                replace: true,
+                                preserveScroll: true,
+                            },
+                        );
+                    }}
+                />
             </div>
         </AppLayout>
     );
