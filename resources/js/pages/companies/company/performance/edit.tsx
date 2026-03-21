@@ -40,7 +40,7 @@ const Edit = ({ record, company }: Props) => {
         highlights: record.highlights,
         challenges: record.challenges,
         action_plan: record.action_plan,
-        attachment: null,
+        new_attachment: null,
     });
 
     const onSubmit = (e: React.FormEvent) => {
@@ -220,6 +220,19 @@ const Edit = ({ record, company }: Props) => {
                                 }
                             ></Textarea>
                             <InputError message={errors.action_plan} />
+                        </div>
+
+                        <div className={'col-span-4'}>
+                            <FileInput
+                                label="Attachment"
+                                accept="image/*"
+                                value={data.new_attachment ?? record.attachment}
+                                onChange={(file) =>
+                                    setData('new_attachment', file)
+                                }
+                                error={errors.new_attachment}
+                                required
+                            />
                         </div>
                     </div>
                     <div className="col-span-4 flex flex-col mt-6 gap-2">

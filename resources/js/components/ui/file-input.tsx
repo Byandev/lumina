@@ -97,9 +97,13 @@ export default function FileInput({
                                 </div>
 
                                 <div className="min-w-0">
-                                    <p className="truncate text-sm font-semibold text-zinc-900">
+                                    {'original_url' in value ? <a target={'_blank'} href={value.original_url}  onClick={(e) => e.stopPropagation()}>
+                                        <p className="truncate text-sm font-semibold text-blue-700">
+                                            {truncateFileName(value.name, 30)}
+                                        </p>
+                                    </a> : <p className="truncate text-sm font-semibold text-zinc-900">
                                         {truncateFileName(value.name, 30)}
-                                    </p>
+                                    </p>}
                                     <p className="text-xs text-zinc-500">
                                         {(value.size / 1024 / 1024).toFixed(2)} MB
                                     </p>

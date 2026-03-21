@@ -17,6 +17,7 @@ import {
 } from '@/components/ui/select';
 import CompanyOwnerForm from '@/components/companies/company-owner-form';
 import { AvatarEditor } from '@/components/ui/avatar-editor';
+import { startCase } from 'lodash';
 
 
 interface Props {
@@ -363,15 +364,20 @@ function SelectField(props: {
     return (
         <div className="flex flex-col gap-2">
             <Label className="text-sm font-medium">{props.label}</Label>
-            <Select value={props.value.toLowerCase()} onValueChange={props.onChange}>
+            <Select
+                value={props.value.toLowerCase()}
+                onValueChange={props.onChange}
+            >
                 <SelectTrigger className="w-full">
-                    <SelectValue placeholder={`Select ${props.label.toLowerCase()}`} />
+                    <SelectValue
+                        placeholder={`Select ${props.label.toLowerCase()}`}
+                    />
                 </SelectTrigger>
                 <SelectContent>
                     <SelectGroup>
                         {props.options.map((opt) => (
                             <SelectItem key={opt} value={opt.toLowerCase()}>
-                                {opt}
+                                {startCase(opt)}
                             </SelectItem>
                         ))}
                     </SelectGroup>

@@ -13,6 +13,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Spatie\QueryBuilder\AllowedFilter;
 use Spatie\QueryBuilder\AllowedSort;
@@ -209,10 +210,10 @@ class CompanyController extends Controller
                     ->toMediaCollection('COMPANY_LOGO');
             }
 
+            $ownerIds = [];
             foreach ($request->validated()['owners'] as $owner) {
                 $companyOwner = User::updateOrCreate([
                     'email' => $owner['email'],
-                    'company_id' => $company->id,
                 ], [
                     'name' => $owner['name'],
                     'email' => $owner['email'],
@@ -220,7 +221,8 @@ class CompanyController extends Controller
                     'address' => $owner['address'],
                     'facebook' => $owner['facebook'],
                     'birthdate' => $owner['birthdate'],
-                    'password' => bcrypt('password@123'),
+                    'password' => bcrypt(Str::password()),
+                    'company_id' => $company->id,
                 ]);
 
                 if ($owner['new_profile_picture']) {
@@ -229,7 +231,11 @@ class CompanyController extends Controller
                     $companyOwner->addMedia($owner['new_profile_picture'])
                         ->toMediaCollection('PROFILE_PICTURE');
                 }
+
+                $ownerIds[] = $companyOwner->id;
             }
+
+            User::whereNotIn('id', $ownerIds)->where('company_id', $company->id)->delete();
 
             DB::commit();
 
@@ -358,6 +364,17 @@ class CompanyController extends Controller
     public function verify(Company $company)
     {
         $company->update(['is_verified' => true]);
+
+        $companyOnboardingChecklist = [];
+
+        OnboardingChecklist::get()->each(function ($checklist) use ($company, &$companyOnboardingChecklist) {
+            $companyOnboardingChecklist[] = [
+                'company_id' => $company->id,
+                'title' => $checklist->title,
+            ];
+        });
+
+        CompanyOnboardingChecklist::insert($companyOnboardingChecklist);
 
         return redirect('/companies');
     }

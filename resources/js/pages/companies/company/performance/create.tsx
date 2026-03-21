@@ -209,16 +209,16 @@ const Create = ({ company }: Props) => {
                             ></Textarea>
                             <InputError message={errors.action_plan} />
                         </div>
-                        <div className="col-span-4 flex flex-col gap-2">
 
+                        <div className={'col-span-4'}>
                             <FileInput
                                 label="Attachment"
+                                accept="image/*"
                                 value={data.attachment}
-                                onChange={(file) =>
-                                    setData('attachment', file)
-                                }
+                                onChange={(file) => setData('attachment', file)}
+                                error={errors.attachment}
+                                required
                             />
-                            <InputError message={errors.attachment} />
                         </div>
                     </div>
 

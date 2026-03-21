@@ -1,7 +1,4 @@
-interface Attachment {
-    original_url: string;
-    file_name: string
-}
+import { Media } from '@/types/models/Media';
 
 export interface PerformanceRecord {
     id: number;
@@ -16,5 +13,5 @@ export interface PerformanceRecord {
     highlights: string;
     challenges: string;
     action_plan: string;
-    attachment: Attachment;
+    attachment?: Media
 }

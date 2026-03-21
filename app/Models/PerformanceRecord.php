@@ -10,6 +10,8 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 class PerformanceRecord extends Model implements HasMedia
 {
+    use InteractsWithMedia;
+
     protected $table = 'performance_records';
 
     use InteractsWithMedia;
@@ -45,7 +47,6 @@ class PerformanceRecord extends Model implements HasMedia
     {
         return $this->belongsTo(Company::class);
     }
-
 
     public function attachment(): MorphOne
     {
