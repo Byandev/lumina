@@ -32,6 +32,7 @@ const OnboardingChecklistItem = ({ checklist }: Props) => {
 
         <div className="flex flex-col sm:flex-row justify-between gap-2">
             <div className='flex items-center gap-x-2'>
+
                 <Checkbox checked={checklist.is_completed} onCheckedChange={onChange}/>
                 <div>{checklist.title}</div>
             </div>

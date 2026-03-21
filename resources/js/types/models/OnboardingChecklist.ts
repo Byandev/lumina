@@ -6,5 +6,6 @@ export interface OnboardingChecklist {
     remark?: string;
     is_completed: boolean;
     company_id: number;
-    attachment: Media | null
+    attachment: Media | null;
+    length?: number | null;
 }
