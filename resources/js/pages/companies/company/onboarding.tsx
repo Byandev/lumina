@@ -12,7 +12,7 @@ interface Props {
 const Onboarding  = ({ company}: Props) => {
     return <CompanyLayout company={company}>
         <div className="space-y-6">
-            <ComponentCard desc={`Onboarding summary progress: ${percentageFormatter(company.onboarding_percentage as number)}`}>
+                <ComponentCard desc={`Onboarding summary progress: ${percentageFormatter(company.onboarding_percentage as number)}`}>
                 <Progress color={'blue'} value={(company.onboarding_percentage ?? 0) * 100} max={100}/>
             </ComponentCard>
 

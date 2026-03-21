@@ -19,7 +19,7 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { Edit, Eye, Trash2 } from 'lucide-react';
+import { Edit, Eye, PlusIcon, Trash2 } from 'lucide-react';
 import ConfirmationDialog from '@/components/confirmation-dialog';
 
 interface Props {
@@ -208,16 +208,25 @@ const Index = ({ company, records, query }: Props) => {
                 onConfirm={() => handleDeleteConfirm()}
             />
 
-            <ComponentCard
-                desc={'Track company performance'}
-                rightHeader={
+            <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h1 className="text-xl font-bold text-gray-900">
+                            Performance Record
+                        </h1>
+                        <p className="mt-1 text-sm text-gray-500">
+                            {company.name} campaign performance data
+                        </p>
+                    </div>
+
                     <Link
                         href={`/companies/${company.id}/performance-records/create`}
+                        className="flex h-9 items-center gap-2 border border-white bg-gradient-to-r from-pink-500 to-violet-400 px-4 py-2 text-sm font-semibold text-white transition hover:scale-105"
                     >
-                        <Button>Add new Record</Button>
+                        <PlusIcon className="h-5" />
+                        Add new Record
                     </Link>
-                }
-            >
+                </div>
                 <DataTable
                     columns={columns}
                     enableInternalPagination={false}
@@ -239,7 +248,7 @@ const Index = ({ company, records, query }: Props) => {
                         );
                     }}
                 />
-            </ComponentCard>
+            </div>
         </CompanyLayout>
     );
 }

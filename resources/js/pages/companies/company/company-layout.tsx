@@ -70,7 +70,7 @@ export default function CompanyLayout({
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={title || `${company.name} - Company Details`} />
 
-            <div className="bg-white px-4 pb-8 sm:px-8">
+            <div className="bg-white min-h-[calc(100vh-80px)] px-4 pb-8 sm:px-8">
                 <div className="my-4 sm:my-8">
                     <div className="flex flex-col">
                         <h1 className="text-xl font-semibold text-foreground">

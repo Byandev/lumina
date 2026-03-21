@@ -101,10 +101,17 @@ const CompanyAttendance = ({ company, query, events }: Props) => {
 
     return (
         <CompanyLayout company={company}>
-            <div className="">
+            <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                    <h1 className="font-bold">Company Attended Events</h1>
-                    <form className="relative w-full pb-4 sm:w-64">
+                    <div>
+                        <h1 className="text-xl font-bold text-gray-900">
+                            Attendance Record
+                        </h1>
+                        <p className="mt-1 text-sm text-gray-500">
+                            {company.name} attended events attendance
+                        </p>
+                    </div>
+                    <form className="relative w-full sm:w-64">
                         <div className="pointer-events-none absolute top-2.5 left-0 flex items-center pl-3">
                             <Search className="z-10 h-4 w-4 text-gray-400" />
                         </div>

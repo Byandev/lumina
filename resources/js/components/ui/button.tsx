@@ -5,13 +5,13 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-    "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl text-sm font-medium transition-all duration-300 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none relative overflow-hidden group isolate",
+    "inline-flex items-center justify-center gap-2 whitespace-nowrap   text-sm font-medium transition-all duration-300 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none relative overflow-hidden group isolate",
     {
         variants: {
             variant: {
                 // Main pink-cyan gradient
                 default:
-                    "bg-gradient-to-r from-pink-500 via-blue-500 to-sky-500 text-white shadow-lg shadow-pink-500/25 hover:shadow-xl hover:shadow-cyan-500/35 hover:scale-[1.02] active:scale-[0.98] focus-visible:shadow-2xl focus-visible:shadow-cyan-500/50 focus-visible:ring-2 focus-visible:ring-white/70",
+                    "b bg-gradient-to-r from-pink-500 to-violet-400 text-white   hover:shadow-cyan-500/35 hover:scale-[1.02] active:scale-[0.98] focus-visible:shadow-2xl focus-visible:shadow-cyan-500/50 focus-visible:ring-2 focus-visible:ring-white/70",
 
                 // Glowing outline variant
                 outline:
@@ -33,22 +33,22 @@ const buttonVariants = cva(
 
                 // Premium variants with inner glow
                 gradient:
-                    "bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-500 text-white shadow-lg shadow-pink-500/25 hover:shadow-xl hover:shadow-cyan-500/40 hover:scale-[1.02] before:absolute before:inset-0 before:rounded-xl before:bg-gradient-to-r before:from-white/40 before:via-white/20 before:to-transparent before:opacity-0 hover:before:opacity-30 before:transition-opacity before:duration-500",
+                    "bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-500 text-white shadow-lg shadow-pink-500/25 hover:shadow-xl hover:shadow-cyan-500/40 hover:scale-[1.02] before:absolute before:inset-0 before:  before:bg-gradient-to-r before:from-white/40 before:via-white/20 before:to-transparent before:opacity-0 hover:before:opacity-30 before:transition-opacity before:duration-500",
 
                 "neon-glow":
-                    "bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-500 text-white shadow-lg shadow-pink-500/30 hover:shadow-xl hover:shadow-cyan-500/40 animate-pulse-slow border border-white/20 hover:border-white/40 before:absolute before:inset-0 before:rounded-xl before:bg-gradient-to-r before:from-white/30 before:via-white/10 before:to-transparent before:opacity-0 hover:before:opacity-40 before:transition-opacity",
+                    "bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-500 text-white shadow-lg shadow-pink-500/30 hover:shadow-xl hover:shadow-cyan-500/40 animate-pulse-slow border border-white/20 hover:border-white/40 before:absolute before:inset-0 before:  before:bg-gradient-to-r before:from-white/30 before:via-white/10 before:to-transparent before:opacity-0 hover:before:opacity-40 before:transition-opacity",
 
                 "glass-morphism":
                     "bg-gradient-to-r from-white/10 to-white/5 backdrop-blur-xl border border-white/20 text-white shadow-lg shadow-black/10 hover:shadow-xl hover:shadow-black/20 hover:bg-gradient-to-r hover:from-pink-500/20 hover:via-purple-500/20 hover:to-cyan-500/20 hover:border-pink-400/30 focus-visible:border-cyan-400/50",
             },
             size: {
-                default: "h-9 px-6 py-2 has-[>svg]:px-4 text-sm rounded-md ",
-                sm: "h-8 rounded-lg gap-1.5 px-3.5 has-[>svg]:px-2.5 text-xs",
-                lg: "h-12 rounded-lg px-8 has-[>svg]:px-5 text-base font-semibold",
-                xl: "h-14 rounded-xl px-10 has-[>svg]:px-6 text-base font-semibold",
-                icon: "size-10 rounded-lg",
-                "icon-sm": "size-8 rounded-md",
-                "icon-lg": "size-12 rounded-lg",
+                default: "h-9 px-6 py-2 has-[>svg]:px-4 text-sm   ",
+                sm: "h-8   gap-1.5 px-3.5 has-[>svg]:px-2.5 text-xs",
+                lg: "h-12   px-8 has-[>svg]:px-5 text-base font-semibold",
+                xl: "h-14   px-10 has-[>svg]:px-6 text-base font-semibold",
+                icon: "size-10  ",
+                "icon-sm": "size-8  ",
+                "icon-lg": "size-12  ",
             },
             animation: {
                 none: "",

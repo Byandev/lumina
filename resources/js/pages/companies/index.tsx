@@ -292,7 +292,7 @@ export default function CompaniesIndex({ companies, query }: CompaniesProps) {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Companies" />
 
-            <div className=" bg-white py-6 md:px-6 lg:px-8">
+            <div className=" bg-white/70 py-6 md:px-6 lg:px-8">
                 <div className="flex justify-between">
                     <p className="flex flex-col text-xl font-semibold text-foreground">
                         Companies
@@ -316,7 +316,7 @@ export default function CompaniesIndex({ companies, query }: CompaniesProps) {
                         </form>
                         <Link
                             href="/companies/create"
-                            className="flex h-10 items-center gap-2 border border-white bg-gradient-to-r from-pink-500 to-violet-400 px-4 py-2 text-sm font-semibold text-white transition hover:scale-105"
+                            className="flex  items-center gap-2 border border-white bg-gradient-to-r from-pink-500 to-violet-400 px-4 py-2 text-sm font-semibold text-white transition hover:scale-105"
                         >
                             <Plus className="h-4 w-4" />
                             <span className="hidden sm:block">Add Company</span>

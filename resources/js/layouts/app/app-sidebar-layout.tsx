@@ -14,7 +14,7 @@ export default function AppSidebarLayout({
             <AppSidebar />
             <AppContent
                 variant="sidebar"
-                className="overflow-x-hidden bg-gradient-to-r from-fuchsia-50 to-violet-50 p-4"
+                className="overflow-x-hidden bg-gradient-to-r from-fuchsia-50 to-violet-50"
             >
                 <AppSidebarHeader breadcrumbs={breadcrumbs} />
 

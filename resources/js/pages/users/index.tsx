@@ -1,6 +1,6 @@
 import { omit } from 'lodash';
 import { router, useForm, usePage } from '@inertiajs/react';
-import { Key, Mail, Search, Trash2 } from 'lucide-react';
+import { Key, Mail, Plus, Search, Trash, Trash2 } from 'lucide-react';
 import { ColumnDef } from '@tanstack/react-table';
 import React, { useEffect, useMemo, useState } from 'react';
 
@@ -223,13 +223,11 @@ export default function Index({ users, query }: UsersPageProps) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <FormModal open={openFormModal} onOpenChange={setOpenFormModal} />
-
             <ChangePasswordModal
                 open={openChangePasswordModal}
                 onOpenChange={setOpenChangePasswordModal}
                 user={selectedUser}
             />
-
             <ConfirmationDialog
                 isOpen={openConfirmationModal}
                 onOpenChange={setOpenConfirmationModal}
@@ -239,18 +237,25 @@ export default function Index({ users, query }: UsersPageProps) {
                 }}
                 description={`This action cannot be undone. This will permanently delete the user "${selectedUser?.name}" and remove it from our servers.`}
                 onConfirm={() => handleDeleteConfirm()}
+                confirmText={
+                    <div className={' flex gap-2 items-center'}>
+                        <Trash className="h-3 w-4" />
+                        Delete
+                    </div>
+                }
             />
-
-            <div className="min-h-screen p-4 sm:p-8">
-                <p className="my-0 pb-6 text-3xl font-semibold text-foreground">
-                    Users
-                </p>
-
-                <ComponentCard desc="Manage all users in your system">
-                    <div className="mb-6 flex justify-between">
-                        <div className="flex items-end space-x-2">
+            <div className="bg-white/60 py-6 md:px-6 lg:px-8">
+                <div className="flex justify-between">
+                    <p className="flex flex-col text-xl font-semibold text-foreground">
+                        Users
+                        <span className="my-0 pb-6 text-sm font-medium text-gray-500">
+                            Manage all users in your system
+                        </span>
+                    </p>
+                    <div className="flex gap-2 pt-1.5">
+                        <div className="flex">
                             <div className="relative max-w-md">
-                                <Search className="pointer-events-none absolute top-4.5 left-3 z-10 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                <Search className="borde pointer-events-none absolute top-4.5 left-3 z-10 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                                 <Input
                                     type="text"
                                     placeholder="Search users..."
@@ -267,32 +272,34 @@ export default function Index({ users, query }: UsersPageProps) {
                             variant={'default'}
                             onClick={() => setOpenFormModal(true)}
                         >
+                            <Plus />
                             Add new User
                         </Button>
                     </div>
-                    <DataTable
-                        columns={columns}
-                        enableInternalPagination={false}
-                        data={users.data || []}
-                        initialSorting={initialSorting}
-                        meta={{ ...omit(users, ['data']) }}
-                        onFetch={(params) => {
-                            router.get(
-                                '/users',
-                                {
-                                    sort: params?.sort,
-                                    'filter[search]': searchValue || undefined,
-                                    page: params?.page ?? 1,
-                                },
-                                {
-                                    preserveState: false,
-                                    replace: true,
-                                    preserveScroll: true,
-                                },
-                            );
-                        }}
-                    />
-                </ComponentCard>
+                </div>
+
+                <DataTable
+                    columns={columns}
+                    enableInternalPagination={false}
+                    data={users.data || []}
+                    initialSorting={initialSorting}
+                    meta={{ ...omit(users, ['data']) }}
+                    onFetch={(params) => {
+                        router.get(
+                            '/users',
+                            {
+                                sort: params?.sort,
+                                'filter[search]': searchValue || undefined,
+                                page: params?.page ?? 1,
+                            },
+                            {
+                                preserveState: false,
+                                replace: true,
+                                preserveScroll: true,
+                            },
+                        );
+                    }}
+                />
             </div>
         </AppLayout>
     );
