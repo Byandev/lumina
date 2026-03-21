@@ -33,6 +33,7 @@ class StorePerformanceRecordRequest extends FormRequest
             'challenges' => ['nullable', 'string', 'max:2000'],
             'action_plan' => ['nullable', 'string', 'max:2000'],
             'attachment' => ['image', 'nullable'],
+            'new_attachment' => ['image', 'nullable'],
         ];
     }
 }

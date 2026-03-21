@@ -3,9 +3,15 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\MorphOne;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
-class PerformanceRecord extends Model
+class PerformanceRecord extends Model implements HasMedia
 {
+    use InteractsWithMedia;
+
     protected $table = 'performance_records';
 
     protected $fillable = [
@@ -38,5 +44,11 @@ class PerformanceRecord extends Model
     public function company(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(Company::class);
+    }
+
+    public function attachment(): MorphOne
+    {
+        return $this->morphOne(Media::class, 'model')
+            ->where('collection_name', 'PERFORMANCE_RECORD_ATTACHMENT');
     }
 }

@@ -64,6 +64,7 @@ class UpdateCompanyRequest extends FormRequest
 
             // Owners - array validation
             'owners' => 'required|array|min:1',
+            'owners.*.id' => 'nullable|exists:users,id',
             'owners.*.name' => 'required|string|max:255',
             'owners.*.email' => [
                 'required',

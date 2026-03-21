@@ -39,10 +39,14 @@ class OnboardingChecklistController extends Controller
 
         $onboardingChecklist->update(collect($data)->except('new_attachment')->toArray());
 
-        $status = ($data['is_completed'] ?? false)
-            ? 'Checklist marked as completed.'
-            : 'Checklist marked as not completed.';
 
+        $status = 'Updated successfully';
+
+        if ($request->has('is_completed')) {
+            $status = ($data['is_completed'] ?? false)
+                ? 'Checklist marked as completed.'
+                : 'Checklist marked as not completed.';
+        }
 
         return redirect()->back()->with('success', $status);
     }

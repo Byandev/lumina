@@ -44,7 +44,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
 });
 
-Route::prefix('companies/{company}')->group(function () {
+Route::prefix('companies/{company}')->middleware('auth')->group(function () {
     Route::get('/details', [CompanyController::class, 'show'])->name('companies.show');
     //    Route::put('/details', [CompanyController::class, 'update'])->name('companies.update');
     Route::post('/owners', [OwnerController::class, 'store'])->name('owners.store');

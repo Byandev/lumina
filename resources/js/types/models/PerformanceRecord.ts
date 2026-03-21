@@ -1,3 +1,5 @@
+import { Media } from '@/types/models/Media';
+
 export interface PerformanceRecord {
     id: number;
     company_id: number;
@@ -11,4 +13,5 @@ export interface PerformanceRecord {
     highlights: string;
     challenges: string;
     action_plan: string;
+    attachment?: Media
 }
