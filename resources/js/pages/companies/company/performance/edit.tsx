@@ -414,6 +414,15 @@ const Edit = ({ record, company }: Props) => {
                             </p>
                         </div>
                     </div>
+                    <div className="col-span-4 flex flex-col mt-6 gap-2">
+
+                        <FileInput
+                            label="Attachment"
+                            value={data.attachment}
+                            onChange={(file) => setData('attachment', file)}
+                        />
+                        <InputError message={errors.attachment} />
+                    </div>
 
                     {/* Form Actions */}
                     <div className="flex justify-end space-x-3 border-t border-gray-200 pt-6">

@@ -5,6 +5,10 @@ namespace App\Http\Controllers;
 use App\Http\Requests\Company\StorePerformanceRecordRequest;
 use App\Models\Company;
 use App\Models\PerformanceRecord;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 
 class PerformanceRecordController extends Controller
