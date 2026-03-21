@@ -38,6 +38,8 @@ const Create = ({ company }: Props) => {
         post(`/companies/${company.id}/performance-records`);
     };
 
+    // @ts-ignore
+    // @ts-ignore
     return (
         <CompanyLayout company={company}>
             <ComponentCard desc={'Create new performance record'}>

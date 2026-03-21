@@ -14,6 +14,8 @@ class PerformanceRecord extends Model implements HasMedia
 
     protected $table = 'performance_records';
 
+    use InteractsWithMedia;
+
     protected $fillable = [
         'company_id',
         'start_date',

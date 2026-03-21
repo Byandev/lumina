@@ -235,6 +235,15 @@ const Edit = ({ record, company }: Props) => {
                             />
                         </div>
                     </div>
+                    <div className="col-span-4 flex flex-col mt-6 gap-2">
+
+                        <FileInput
+                            label="Attachment"
+                            value={data.attachment}
+                            onChange={(file) => setData('attachment', file)}
+                        />
+                        <InputError message={errors.attachment} />
+                    </div>
 
                     <div className="my-5 flex justify-end">
                         <Button type={'submit'} variant={'default'}>

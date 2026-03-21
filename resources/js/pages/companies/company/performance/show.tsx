@@ -9,6 +9,9 @@ import { Label } from '@/components/ui/label';
 import ComponentCard from '@/components/component-card';
 import PerformancePhaseBadge from '@/components/companies/performance-phase-badge';
 import { currencyFormatter, percentageFormatter } from '@/lib/formatter';
+import { Link } from '@inertiajs/react';
+import { Download, Eye, Paperclip } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 interface Props {
     company: Company;
@@ -36,7 +39,6 @@ const Show = ({ company, record }: Props) => {
                         <a target='_blank' href={record.attachment.original_url} className="font-medium text-blue-700 cursor-pointer">Download Attachment</a>
                     </div>}
                 </div>
-
                 <div className="grid grid-cols-3 gap-5">
                     <div className="flex flex-col gap-1 rounded-xl border border-green-700 bg-green-200 p-4">
                         <Label className="text-sm font-medium">
@@ -68,6 +70,45 @@ const Show = ({ company, record }: Props) => {
                         </Label>
                     </div>
                 </div>
+                {record.attachment && (
+                    <div className="mt-8">
+                        <Label className="mb-3 block text-sm font-semibold text-gray-800">
+                            Attachment
+                        </Label>
+                        <div className="inline-flex items-center gap-3 rounded-lg border border-gray-200 bg-white px-4 py-3 shadow-sm">
+
+                            <div className="min-w-0 flex-1">
+                                <p className="flex items-center text-gray-600 truncate text-sm font-medium text-gray-900">
+                                    <Paperclip className='h-4 '/>
+                                    {record.attachment.file_name}
+                                </p>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() =>
+                                        window.open(
+                                            record.attachment?.original_url,
+                                            '_blank',
+                                        )
+                                    }
+                                    className="h-8 px-2"
+                                >
+                                    <Eye className="h-4 w-4" />
+                                </Button>
+                                <a
+                                    href={record.attachment?.original_url}
+                                    download
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                >
+                                    <Download className="h-4 w-4" />
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </ComponentCard>
         </CompanyLayout>
     );
