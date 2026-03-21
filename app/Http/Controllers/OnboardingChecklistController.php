@@ -39,6 +39,7 @@ class OnboardingChecklistController extends Controller
 
         $onboardingChecklist->update(collect($data)->except('new_attachment')->toArray());
 
+
         $status = 'Updated successfully';
 
         if ($request->has('is_completed')) {

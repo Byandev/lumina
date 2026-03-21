@@ -45,6 +45,10 @@ class CompanyController extends Controller
             }, 'onboarding_percentage')
             ->allowedFilters([
                 AllowedFilter::partial('search', 'name'),
+                AllowedFilter::exact('notarization', 'notarization_status'),
+                AllowedFilter::exact('erp', 'erp_status'),
+                AllowedFilter::exact('sales', 'sales_activity'),
+                AllowedFilter::exact('level', 'level'),
             ])
             ->allowedSorts([
                 'name',

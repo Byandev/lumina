@@ -13,7 +13,7 @@ import { Company } from '@/types/models/Company';
 import { Head, Link, router } from '@inertiajs/react';
 import { ColumnDef } from '@tanstack/react-table';
 import { omit } from 'lodash';
-import { Edit, Eye, Mail, Plus, Search } from 'lucide-react';
+import { Edit, Eye, Mail, Plus, Filter, Search } from 'lucide-react';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useInitials } from '@/hooks/use-initials';
 import {
@@ -22,6 +22,24 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from '@/components/ui/tooltip';
+import {
+    Select,
+    SelectContent,
+    SelectGroup,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuGroup,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 
 interface CompaniesProps {
     companies: PaginatedData<Company>;
@@ -32,6 +50,10 @@ interface CompaniesProps {
         page?: number | string;
         filter?: {
             search?: string;
+            notarization?: string;
+            erp?: string;
+            sales?: string;
+            level?: string;
         };
     };
 }
@@ -43,16 +65,58 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
+const NOTARIZATION_STATUS_OPTIONS = [
+    { value: 'all', label: 'All' },
+    { value: 'pending', label: 'Pending' },
+    { value: 'done', label: 'Done' },
+];
+
+const ERP_STATUS_OPTIONS = [
+    { value: 'all', label: 'All' },
+    { value: 'active', label: 'Active' },
+    { value: 'inactive', label: 'Inactive' },
+];
+
+const SALES_STATUS_OPTIONS = [
+    { value: 'all', label: 'All' },
+    { value: 'generating', label: 'Generating' },
+    { value: 'testing', label: 'Testing' },
+    { value: 'inactive', label: 'Inactive' },
+];
+
+const LEVEL_STATUS_OPTIONS = [
+    { value: 'all', label: 'All' },
+    { value: 'educate', label: 'Educate' },
+    { value: 'empowerment', label: 'Empowerment' },
+    { value: 'enterprise', label: 'Enterprise' },
+    { value: 'exponential', label: 'Exponential' },
+];
+
 export default function CompaniesIndex({ companies, query }: CompaniesProps) {
     const getInitials = useInitials();
-    console.log(companies)
 
     const [searchValue, setSearchValue] = useState(query?.filter?.search ?? '');
+    const [notarization, setNotarization] = useState(
+        query?.filter?.notarization ?? 'all',
+    );
+    const [erp, setErp] = useState(query?.filter?.erp ?? 'all');
+    const [sales, setSales] = useState(query?.filter?.sales ?? 'all');
+    const [level, setLevel] = useState(query?.filter?.level ?? 'all');
 
     useEffect(() => {
         const currentSearchParam = query?.filter?.search ?? '';
+        const currentNotarization = query?.filter?.notarization ?? 'all';
+        const currentErp = query?.filter?.erp ?? 'all';
+        const currentSales = query?.filter?.sales ?? 'all';
+        const currentLevel = query?.filter?.level ?? 'all';
 
-        if (searchValue === currentSearchParam) {
+        if (
+            searchValue === currentSearchParam &&
+            notarization === currentNotarization &&
+            erp === currentErp &&
+            sales === currentSales &&
+            level === currentLevel
+        ) {
             return;
         }
 
@@ -62,6 +126,11 @@ export default function CompaniesIndex({ companies, query }: CompaniesProps) {
                 {
                     sort: query?.sort,
                     'filter[search]': searchValue || undefined,
+                    'filter[notarization]':
+                        notarization === 'all' ? undefined : notarization,
+                    'filter[erp]': erp === 'all' ? undefined : erp,
+                    'filter[sales]': sales === 'all' ? undefined : sales,
+                    'filter[level]': level === 'all' ? undefined : level,
                     page: 1,
                 },
                 {
@@ -73,7 +142,33 @@ export default function CompaniesIndex({ companies, query }: CompaniesProps) {
         }, 500);
 
         return () => clearTimeout(timer);
-    }, [searchValue, query?.filter?.search, query?.sort]);
+    }, [
+        searchValue,
+        notarization,
+        erp,
+        sales,
+        level,
+        query?.sort,
+        query?.filter,
+    ]);
+
+    const activeFilters = useMemo(() => {
+        const filters = [];
+        if (notarization !== 'all') filters.push('Notarization');
+        if (erp !== 'all') filters.push('ERP');
+        if (sales !== 'all') filters.push('Sales');
+        if (level !== 'all') filters.push('Level');
+        return filters;
+    }, [notarization, erp, sales, level]);
+
+    const clearFilter = () => {
+        setSearchValue('');
+        setNotarization('all');
+        setErp('all');
+        setSales('all');
+        setLevel('all');
+    };
+
 
     const initialSorting = useMemo(() => {
         return toFrontendSort(query?.sort ?? null);
@@ -288,27 +383,165 @@ export default function CompaniesIndex({ companies, query }: CompaniesProps) {
                 </p>
 
                 <ComponentCard desc="Manage all companies in your system">
-                    <div className="mb-6 flex items-center gap-x-2 justify-between">
-                        <form className="relative w-full sm:w-64">
-                            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                                <Search className="z-10 h-4 w-4 text-gray-400" />
-                            </div>
+                    <div className="mb-6 flex items-center justify-between gap-x-2">
+                        <div className="flex flex-1 items-center gap-4">
+                            <form className="relative w-full sm:w-64">
+                                <div className="pointer-events-none absolute top-2.5 left-0 flex items-center pl-3">
+                                    <Search className="z-10 h-4 w-4 text-gray-400" />
+                                </div>
 
-                            <Input
-                                type="text"
-                                value={searchValue}
-                                onChange={(e) => setSearchValue(e.target.value)}
-                                placeholder="Search companies..."
-                                className="h-9 pl-8 text-sm"
-                            />
-                        </form>
+                                <Input
+                                    type="text"
+                                    value={searchValue}
+                                    onChange={(e) =>
+                                        setSearchValue(e.target.value)
+                                    }
+                                    placeholder="Search companies..."
+                                    className="h-9 pl-8 text-sm"
+                                />
+                            </form>
+
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="outline" className="relative">
+                                        <Filter className="h-4 w-4 mr-2 text-gray-600" />
+                                        Filters
+                                        {activeFilters.length > 0 && (
+                                            <Badge
+                                                variant="secondary"
+                                                className="ml-2 h-5 w-5 rounded-full p-0 flex items-center justify-center"
+                                            >
+                                                {activeFilters.length}
+                                            </Badge>
+                                        )}
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent className="w-80" align="start">
+                                    <DropdownMenuLabel>
+                                        <div className="flex items-center justify-between">
+                                            <span>Filter Companies</span>
+                                            {activeFilters.length > 0 && (
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    onClick={clearFilter}
+                                                    className="h-6 text-xs"
+                                                >
+                                                    Clear all
+                                                </Button>
+                                            )}
+                                        </div>
+                                    </DropdownMenuLabel>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuGroup className="space-y-4 p-2">
+                                        <div className="space-y-2">
+                                            <label className="text-sm font-medium">Notarization Status</label>
+                                            <Select
+                                                value={notarization}
+                                                onValueChange={setNotarization}
+                                            >
+                                                <SelectTrigger className="w-full">
+                                                    <SelectValue />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectGroup>
+                                                        {NOTARIZATION_STATUS_OPTIONS.map(
+                                                            (option) => (
+                                                                <SelectItem
+                                                                    key={option.value}
+                                                                    value={option.value}
+                                                                >
+                                                                    {option.label}
+                                                                </SelectItem>
+                                                            ),
+                                                        )}
+                                                    </SelectGroup>
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+
+                                        <div className="space-y-2">
+                                            <label className="text-sm font-medium">ERP Status</label>
+                                            <Select value={erp} onValueChange={setErp}>
+                                                <SelectTrigger className="w-full">
+                                                    <SelectValue />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectGroup>
+                                                        {ERP_STATUS_OPTIONS.map(
+                                                            (option) => (
+                                                                <SelectItem
+                                                                    key={option.value}
+                                                                    value={option.value}
+                                                                >
+                                                                    {option.label}
+                                                                </SelectItem>
+                                                            ),
+                                                        )}
+                                                    </SelectGroup>
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+
+                                        <div className="space-y-2">
+                                            <label className="text-sm font-medium">Sales Status</label>
+                                            <Select value={sales} onValueChange={setSales}>
+                                                <SelectTrigger className="w-full">
+                                                    <SelectValue />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectGroup>
+                                                        {SALES_STATUS_OPTIONS.map(
+                                                            (option) => (
+                                                                <SelectItem
+                                                                    key={option.value}
+                                                                    value={option.value}
+                                                                >
+                                                                    {option.label}
+                                                                </SelectItem>
+                                                            ),
+                                                        )}
+                                                    </SelectGroup>
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+
+                                        <div className="space-y-2">
+                                            <label className="text-sm font-medium">Level</label>
+                                            <Select
+                                                value={level}
+                                                onValueChange={setLevel}
+                                            >
+                                                <SelectTrigger className="w-full">
+                                                    <SelectValue />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectGroup>
+                                                        {LEVEL_STATUS_OPTIONS.map(
+                                                            (option) => (
+                                                                <SelectItem
+                                                                    key={option.value}
+                                                                    value={option.value}
+                                                                >
+                                                                    {option.label}
+                                                                </SelectItem>
+                                                            ),
+                                                        )}
+                                                    </SelectGroup>
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                    </DropdownMenuGroup>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        </div>
 
                         <Link
                             href="/companies/create"
                             className="inline-flex items-center gap-2 rounded-md bg-gradient-to-r from-pink-500 via-blue-500 to-cyan-500 px-4 py-2 text-sm font-semibold text-white transition hover:scale-105"
                         >
                             <Plus className="h-4 w-4" />
-                            <span className='hidden sm:block '>Add Company</span>
+                            <span className="hidden sm:block">Add Company</span>
                         </Link>
                     </div>
 
